@@ -5,6 +5,7 @@ import { safeRedirect } from "~/shared/api/auth"
 
 export function useRegister() {
   const [email, setEmail] = useState("")
+  const [name, setName] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -18,7 +19,7 @@ export function useRegister() {
     try {
       await apiFetch("/members", {
         method: "POST",
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, name }),
       })
       await apiFetch("/auth/otp/send", {
         method: "POST",
@@ -42,5 +43,5 @@ export function useRegister() {
     }
   }
 
-  return { email, setEmail, error, loading, redirect, handleSubmit }
+  return { email, setEmail, name, setName, error, loading, redirect, handleSubmit }
 }

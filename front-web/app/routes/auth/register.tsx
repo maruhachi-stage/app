@@ -4,14 +4,11 @@ import { Input } from "~/shared/ui/Input"
 import { useRegister } from "~/features/auth/useRegister"
 
 export default function RegisterPage() {
-  const { email, setEmail, error, loading, redirect, handleSubmit } = useRegister()
+  const { email, setEmail, name, setName, error, loading, redirect, handleSubmit } = useRegister()
 
   return (
-    <div className="py-12 max-w-md mx-auto">
-      <h1 className="mb-2 text-2xl font-bold">新規会員登録</h1>
-        <p className="mb-6 text-sm text-gray-500">
-          メールアドレスを入力してください。認証コードを送信します。
-        </p>
+    <div className="py-12 max-w-md mx-auto text-white">
+      <h1 className="mt-45 mb-15 text-6xl font-bold text-center">新規会員登録</h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Input
             id="email"
@@ -23,12 +20,25 @@ export default function RegisterPage() {
             required
             autoComplete="email"
           />
+          <Input
+            id="name"
+            label="ユーザー名"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="例: hal_user"
+            required
+            autoComplete="name"
+          />
+          <p className="mt-1 mb-1 text-sm">
+            メールアドレス、ユーザー名を入力してください。認証コードを送信します。
+          </p>
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" size="lg" disabled={loading}>
+          <Button
+              type="submit" size="lg" disabled={loading}>
             {loading ? "送信中..." : "認証コードを送信"}
           </Button>
         </form>
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-5 text-center text-sm text-white">
           既にアカウントをお持ちの方は{" "}
           <Link to={`/login?redirect=${encodeURIComponent(redirect)}`} className="text-red-600 hover:underline">
             ログイン

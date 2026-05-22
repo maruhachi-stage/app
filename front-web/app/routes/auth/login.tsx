@@ -7,11 +7,8 @@ export default function LoginPage() {
     const {email, setEmail, error, loading, redirect, handleSubmit, handleGuestContinue} = useLogin()
 
     return (
-        <div className="py-12 max-w-md mx-auto">
-            <h1 className="mb-2 text-2xl font-bold">ログイン</h1>
-            <p className="mb-6 text-sm text-gray-500">
-                登録済みのメールアドレスに認証コードを送信します。
-            </p>
+        <div className="py-12 max-w-md mx-auto text-white">
+            <h1 className="mt-45 mb-15 text-6xl font-bold text-center">ログイン</h1>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <Input
                     id="email"
@@ -23,13 +20,17 @@ export default function LoginPage() {
                     required
                     autoComplete="email"
                 />
+                <p className="mt-1 mb-1 text-sm">
+                    登録済みのメールアドレスに認証コードを送信します。
+                </p>
+
                 {error && <p className="text-sm text-red-600">{error}</p>}
                 <Button type="submit" size="lg" disabled={loading}>
                     {loading ? "送信中..." : "認証コードを送信"}
                 </Button>
             </form>
-            <div className="mt-6 flex flex-col gap-2 text-center text-sm text-gray-500">
-                <p>
+            <div className="mt-5 flex flex-col gap-2 text-center text-sm text-white">
+                <p className="mb-2">
                     アカウントをお持ちでない方は{" "}
                     <Link to={`/register?redirect=${encodeURIComponent(redirect)}`}
                           className="text-red-600 hover:underline">

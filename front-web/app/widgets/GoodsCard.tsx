@@ -11,7 +11,7 @@ type Props = { item: GoodsItem; showNew?: boolean }
 export function GoodsCard({ item, showNew = false }: Props) {
   return (
     <div className="group cursor-pointer">
-      <div className="relative aspect-square mb-3 overflow-hidden rounded-lg bg-muted border border-border transition-all group-hover:border-primary/30">
+      <div className="relative aspect-square mb-3 overflow-hidden rounded-app bg-muted border border-border transition-all group-hover:border-primary/30">
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-muted-foreground text-6xl">🖼️</span>
         </div>

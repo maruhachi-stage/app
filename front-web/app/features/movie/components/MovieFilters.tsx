@@ -84,7 +84,7 @@ export function MovieFilters({
             </div>
 
             {/* 下段: 検索ボックス + 表示切替 */}
-            <div className='flex items-center gap-3 rounded-xl bg-muted/60 p-3 sm:p-4 border border-border'>
+            <div className='flex items-center gap-3 rounded-app bg-muted/60 p-3 sm:p-4 border border-border'>
                 <div className='relative flex-1 flex items-center'>
                     <div className='flex items-center rounded-lg border border-border bg-background px-4 py-2 w-full focus-within:ring-1 focus-within:ring-primary transition-all'>
                         <svg className='mr-2 h-4 w-4 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>

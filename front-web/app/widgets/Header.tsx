@@ -167,7 +167,7 @@ export function Header() {
                 key={to}
                 to={to}
                 onClick={() => setMenuOpen(false)}
-                className="rounded-xl px-4 py-4 text-2xl font-black text-foreground hover:bg-muted hover:text-primary transition-colors"
+                className="rounded-app px-4 py-4 text-2xl font-black text-foreground hover:bg-muted hover:text-primary transition-colors"
               >
                 {label}
               </Link>
@@ -180,13 +180,13 @@ export function Header() {
                 <Link
                   to="/member/reservations"
                   onClick={() => setMenuOpen(false)}
-                  className="rounded-xl px-4 py-4 text-xl font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  className="rounded-app px-4 py-4 text-xl font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 >
                   予約履歴
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="rounded-xl px-4 py-4 text-left text-xl font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  className="rounded-app px-4 py-4 text-left text-xl font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 >
                   ログアウト
                 </button>
@@ -195,7 +195,7 @@ export function Header() {
               <Link
                 to="/login"
                 onClick={() => setMenuOpen(false)}
-                className="mt-2 rounded-xl bg-primary px-4 py-4 text-center text-xl font-bold text-primary-foreground hover:opacity-90 transition-opacity"
+                className="mt-2 rounded-app bg-primary px-4 py-4 text-center text-xl font-bold text-primary-foreground hover:opacity-90 transition-opacity"
               >
                 ログイン
               </Link>

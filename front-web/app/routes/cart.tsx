@@ -42,14 +42,14 @@ export default function CartPage() {
               <h2 className="text-lg font-bold mb-4 border-l-4 border-primary pl-3">{category}</h2>
               <div className="space-y-4">
                 {categoryItems.map((item) => (
-                  <div key={item.id} className="bg-card border border-border rounded-xl p-4 flex items-center gap-4">
+                  <div key={item.id} className="bg-card border border-border rounded-app p-4 flex items-center gap-4">
                     <div className="flex-1">
                       <h3 className="font-bold">{item.name}</h3>
                       {item.movie && <p className="text-xs text-muted-foreground mt-1">作品: {item.movie}</p>}
                       <p className="text-sm font-bold mt-1 text-primary">¥{item.price.toLocaleString()}</p>
                     </div>
 
-                    <div className="flex items-center gap-3 bg-muted rounded-lg p-1">
+                    <div className="flex items-center gap-3 bg-muted rounded-app p-1">
                       <button
                         onClick={() => updateQuantity(item.id, -1)}
                         disabled={item.quantity === 1}

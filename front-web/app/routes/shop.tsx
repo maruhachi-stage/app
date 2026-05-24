@@ -28,7 +28,7 @@ export default function Shop() {
           
           <div className="flex gap-4 overflow-hidden">
             {[1, 2, 3].map((i) => (
-              <div key={i} className={`h-40 w-80 shrink-0 rounded-lg bg-zinc-800 ${i !== 2 ? 'opacity-50 scale-90' : ''}`} />
+              <div key={i} className={`h-40 w-80 shrink-0 rounded-app bg-zinc-800 ${i !== 2 ? 'opacity-50 scale-90' : ''}`} />
             ))}
           </div>
 
@@ -46,7 +46,7 @@ export default function Shop() {
 
       <div className="container-center">
         {/* フィルタバー */}
-        <div className="mb-12 flex items-center justify-between rounded-xl bg-zinc-900/50 p-4 border border-zinc-800">
+        <div className="mb-12 flex items-center justify-between rounded-app bg-zinc-900/50 p-4 border border-zinc-800">
           <div className="flex gap-2">
             {["すべて", "フード", "ドリンク", "セット"].map((cat) => (
               <button key={cat} className={`rounded-md px-4 py-1.5 text-xs font-bold border transition ${cat === 'すべて' ? 'bg-primary border-primary text-primary-foreground' : 'border-zinc-800 text-zinc-400 hover:bg-zinc-800'}`}>
@@ -66,7 +66,7 @@ export default function Shop() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-10">
           {items.map((item, i) => (
             <div key={i} className="group cursor-pointer">
-              <div className="relative aspect-square mb-3 overflow-hidden rounded-lg bg-zinc-800 border border-zinc-800 transition-all group-hover:border-zinc-700">
+              <div className="relative aspect-square mb-3 overflow-hidden rounded-app bg-zinc-800 border border-zinc-800 transition-all group-hover:border-zinc-700">
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="text-zinc-600 text-6xl">{i % 3 === 0 ? '🍿' : i % 3 === 1 ? '🥤' : '🌭'}</span>
                 </div>

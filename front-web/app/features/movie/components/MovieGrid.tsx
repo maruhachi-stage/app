@@ -22,7 +22,7 @@ export function MovieGrid({ movies, selectedDate, loading, view, error }: Props)
 
   if (error) {
     return (
-      <div className="rounded-xl bg-red-500/10 p-4 text-center text-red-500 font-medium border border-red-500/20">
+      <div className="rounded-app bg-red-500/10 p-4 text-center text-red-500 font-medium border border-red-500/20">
         {error}
       </div>
     );

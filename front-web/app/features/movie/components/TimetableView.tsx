@@ -32,7 +32,7 @@ export default function TimetableView({ movies, selectedDate }: Props) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-background">
+    <div className="overflow-x-auto rounded-app border border-border bg-background">
       <div className="min-w-[1020px]">
         {/* ヘッダー行: 時刻 */}
         <div className="flex border-b border-border">

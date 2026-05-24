@@ -28,7 +28,7 @@ export default function Goods() {
           </button>
           <div className="flex gap-4 overflow-hidden">
             {[1, 2, 3].map((i) => (
-              <div key={i} className={`h-40 w-80 shrink-0 rounded-lg bg-muted ${i !== 2 ? "opacity-50 scale-90" : ""}`} />
+              <div key={i} className={`h-40 w-80 shrink-0 rounded-app bg-muted ${i !== 2 ? "opacity-50 scale-90" : ""}`} />
             ))}
           </div>
           <button className="h-12 w-8 shrink-0 rounded bg-foreground/10 flex items-center justify-center hover:bg-foreground/20 transition-colors">
@@ -43,7 +43,7 @@ export default function Goods() {
       </div>
 
       <div className="container-center">
-        <div className="mb-12 flex items-center justify-between rounded-xl bg-muted/50 p-4 border border-border">
+        <div className="mb-12 flex items-center justify-between rounded-app bg-muted/50 p-4 border border-border">
           <div className="flex-1" />
           <button className="flex items-center gap-2 text-sm font-bold hover:text-primary transition-colors">
             <span>映画ごとに絞り込む</span>

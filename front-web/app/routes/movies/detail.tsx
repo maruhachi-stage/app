@@ -101,10 +101,10 @@ export default function MovieDetailPage() {
                     alt={data.movie.title}
                     crossOrigin="anonymous"
                     onLoad={handleImageLoad}
-                    className="w-full aspect-[2/3] rounded-xl object-cover shadow-2xl"
+                    className="w-full aspect-[2/3] rounded-app object-cover shadow-2xl"
                   />
                 ) : (
-                  <div className="flex aspect-[2/3] w-full items-center justify-center rounded-xl bg-white/10 text-6xl shadow-2xl">
+                  <div className="flex aspect-[2/3] w-full items-center justify-center rounded-app bg-white/10 text-6xl shadow-2xl">
                     🎬
                   </div>
                 )}

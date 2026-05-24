@@ -42,16 +42,16 @@ export default function ReservationDetailPage() {
             </div>
 
             {cancelled && (
-                <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">予約をキャンセルしました。</div>
+                <div className="mb-4 rounded-app bg-red-50 p-3 text-sm text-red-700">予約をキャンセルしました。</div>
             )}
 
-            <div className="mb-4 rounded-lg border border-border p-4 text-center">
+            <div className="mb-4 rounded-app border border-border p-4 text-center">
                 <p className="text-xs text-muted-foreground">予約番号</p>
                 <p className="mt-1 text-2xl font-bold tracking-widest">{detail.reservationCode}</p>
             </div>
 
             {detail.qrCodeUrl && (
-                <div className="mb-4 flex flex-col items-center rounded-lg border border-border p-4">
+                <div className="mb-4 flex flex-col items-center rounded-app border border-border p-4">
                     <p className="mb-2 text-sm text-muted-foreground">QRコード（入場時にご提示ください）</p>
                     <img src={detail.qrCodeUrl} alt="QRコード" className="h-40 w-40 rounded"/>
                 </div>
@@ -62,7 +62,7 @@ export default function ReservationDetailPage() {
                 <div className="flex gap-4">
                     {detail.movie.thumbnailUrl && (
                         <img src={detail.movie.thumbnailUrl} alt={detail.movie.title}
-                             className="h-20 w-14 rounded-lg object-cover"/>
+                             className="h-20 w-14 rounded-app object-cover"/>
                     )}
                     <div>
                         <p className="font-black text-foreground">{detail.movie.title}</p>
@@ -112,7 +112,7 @@ export default function ReservationDetailPage() {
 
             {showCancelModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-                    <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+                    <div className="w-full max-w-sm rounded-app bg-white p-6 shadow-xl">
                         <h2 className="mb-3 text-lg font-bold">予約をキャンセルしますか？</h2>
                         <p className="mb-4 text-sm text-gray-600">キャンセル後は元に戻せません。本当にキャンセルしますか？</p>
                         <div className="mb-4">

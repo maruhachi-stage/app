@@ -18,7 +18,7 @@ export default function Home() {
       </p>
       <Link
         to="/movies"
-        className="inline-flex items-center justify-center rounded-lg bg-primary px-8 py-3 text-lg font-bold text-primary-foreground hover:opacity-90 transition-all shadow-lg shadow-primary/20 hover:-translate-y-0.5"
+        className="inline-flex items-center justify-center rounded-app bg-primary px-8 py-3 text-lg font-bold text-primary-foreground hover:opacity-90 transition-all shadow-lg shadow-primary/20 hover:-translate-y-0.5"
       >
         映画一覧を見る
       </Link>

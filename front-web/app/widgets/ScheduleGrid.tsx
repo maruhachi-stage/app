@@ -92,7 +92,7 @@ export function ScheduleGrid({
           </>
         )
 
-        const className = `flex flex-col items-start rounded-lg border p-3 transition-all ${cfg.cardClass} ${
+        const className = `flex flex-col items-start rounded-app border p-3 transition-all ${cfg.cardClass} ${
           isSelected ? "ring-2 ring-primary scale-[1.02] border-primary" : ""
         }`
 

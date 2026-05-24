@@ -14,7 +14,7 @@ export function MovieGridCard({ movie, selectedDate }: Props) {
 
   return (
     <div className="group flex flex-col gap-3">
-      <div className="relative aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg transition-transform duration-300 group-hover:-translate-y-1">
+      <div className="relative aspect-2/3 overflow-hidden rounded-app bg-muted shadow-lg transition-transform duration-300 group-hover:-translate-y-1">
         {/* ポスターリンク */}
         <Link
           to={`/movies/${movie.id}${selectedDate ? `?date=${selectedDate}` : ""}`}

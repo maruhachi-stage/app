@@ -10,31 +10,31 @@ type Props = {
 export function SeatMap({ mapData, mapLoading, selectedSeatIds, toggleSeat }: Props) {
   return (
     <>
-      <div className="mt-6 flex justify-center gap-6 text-xs font-bold text-gray-500">
+      <div className="mt-6 flex justify-center gap-6 text-xs font-bold text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span className="h-3 w-3 rounded-sm bg-emerald-400" />
           空席
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-sm bg-red-500" />
+          <span className="h-3 w-3 rounded-sm bg-primary" />
           選択中
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-sm bg-gray-300" />
+          <span className="h-3 w-3 rounded-sm bg-muted-foreground/50" />
           予約済
         </span>
       </div>
 
       {mapLoading ? (
-        <div className="flex aspect-video w-full items-center justify-center rounded-2xl bg-gray-900 mt-6">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-700 border-t-red-600" />
+        <div className="flex aspect-video w-full items-center justify-center rounded-app bg-secondary mt-6">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-border border-t-primary" />
         </div>
       ) : (
         <div
-          className="relative mx-auto mt-6 w-full max-w-2xl overflow-hidden rounded-2xl bg-gray-900 p-8 shadow-2xl"
+          className="relative mx-auto mt-6 w-full max-w-2xl overflow-hidden rounded-app bg-secondary p-8 shadow-2xl"
           style={{ aspectRatio: mapData.layout.aspectRatio.replace("/", " / ") }}
         >
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-full bg-gray-800 px-10 py-1 text-[10px] font-black tracking-[0.5em] text-gray-500">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-full bg-muted px-10 py-1 text-[10px] font-black tracking-[0.5em] text-muted-foreground">
             SCREEN
           </div>
           {mapData.seats.map((seat) => (
@@ -52,9 +52,9 @@ export function SeatMap({ mapData, mapLoading, selectedSeatIds, toggleSeat }: Pr
               }}
               className={`rounded-sm transition-all duration-200 ${
                 seat.status === "reserved"
-                  ? "bg-gray-700 opacity-40 cursor-not-allowed"
+                  ? "bg-muted-foreground/30 opacity-40 cursor-not-allowed"
                   : selectedSeatIds.includes(seat.seatId)
-                  ? "bg-red-500 ring-4 ring-red-500/30 scale-125 z-10"
+                  ? "bg-primary ring-4 ring-primary/30 scale-125 z-10"
                   : "bg-emerald-400 hover:bg-emerald-300 hover:scale-110"
               }`}
             />

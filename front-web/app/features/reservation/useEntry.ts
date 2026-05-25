@@ -1,23 +1,11 @@
-import { useEffect } from "react"
-import { useNavigate } from "react-router"
-import { draft } from "~/entities/reservation/draft"
-import { getEntryGuardIssue } from "~/processes/reservation-flow/guards"
+import { useReservationFlow } from "~/processes/reservation-flow/context"
 
 export function useEntry() {
-  const navigate = useNavigate()
-  const d = draft.get()
+  const { setBookingType } = useReservationFlow()
 
-  useEffect(() => {
-    const issue = getEntryGuardIssue(d)
-    if (issue) {
-      navigate(issue.redirectTo, { replace: true })
-    }
-  }, [])
-
-  function handleGuest() {
-    draft.set({ bookingType: "guest" })
-    navigate("/reservations/customer")
+  function selectGuest() {
+    setBookingType("guest")
   }
 
-  return { handleGuest }
+  return { selectGuest }
 }

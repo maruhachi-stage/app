@@ -7,14 +7,16 @@ type ReservationResult = {
   qrCodeUrl: string
 }
 
+const COMPLETE_KEY = "hal_cinema_last_reservation"
+
 export function useComplete() {
   const [result, setResult] = useState<ReservationResult | null>(null)
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("hal_cinema_last_reservation")
+    const raw = sessionStorage.getItem(COMPLETE_KEY)
     if (raw) {
       setResult(JSON.parse(raw) as ReservationResult)
-      sessionStorage.removeItem("hal_cinema_last_reservation")
+      sessionStorage.removeItem(COMPLETE_KEY)
     }
   }, [])
 

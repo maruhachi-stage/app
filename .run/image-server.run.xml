@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="image-server" type="NodeJSConfigurationType" path-to-node="node" path-to-js-file="server.js" working-dir="$PROJECT_DIR$/image-server">
+    <method v="2" />
+  </configuration>
+</component>

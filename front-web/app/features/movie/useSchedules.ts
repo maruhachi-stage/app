@@ -34,7 +34,7 @@ export function useSchedules() {
       const n = new URLSearchParams(p)
       if (date) n.set("date", date); else n.delete("date")
       return n
-    })
+    }, { preventScrollReset: true })
   }
 
   function selectSchedule(scheduleId: number) {

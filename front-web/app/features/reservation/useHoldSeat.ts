@@ -1,7 +1,6 @@
-import { useNavigate } from "react-router"
 import { apiFetch, ApiError } from "~/shared/api/client"
-import { draft, type SelectedSeat } from "~/entities/reservation/draft"
-import { getAuthState } from "~/shared/api/auth"
+import type { SelectedSeat } from "~/entities/reservation/draft"
+import { useReservationFlow } from "~/processes/reservation-flow/context"
 import type { SeatMapData } from "~/features/reservation/useSeatMap"
 
 type Props = {
@@ -12,22 +11,18 @@ type Props = {
 }
 
 export function useHoldSeat({ selectedScheduleId, mapData, selectedSeatIds, showToast }: Props) {
-  const navigate = useNavigate()
+  const { setSeatsAndHold } = useReservationFlow()
 
-  async function handleNext() {
-    if (!selectedScheduleId || !mapData || selectedSeatIds.length === 0) return
+  async function holdSeats(): Promise<boolean> {
+    if (!selectedScheduleId || !mapData || selectedSeatIds.length === 0) return false
 
     try {
-      // 1. バックエンドで座席を仮押さえ
       const result = await apiFetch<{ reservationCode: string; expiresAt: string }>(
         "/reservations/hold",
         {
           method: "POST",
-          body: JSON.stringify({
-            scheduleId: selectedScheduleId,
-            seatIds: selectedSeatIds,
-          }),
-        }
+          body: JSON.stringify({ scheduleId: selectedScheduleId, seatIds: selectedSeatIds }),
+        },
       )
 
       const seats = mapData.seats.filter(s => selectedSeatIds.includes(s.seatId))
@@ -35,34 +30,26 @@ export function useHoldSeat({ selectedScheduleId, mapData, selectedSeatIds, show
         seatId: s.seatId,
         row: s.row,
         col: s.col,
-        ticketType: "general"
+        ticketType: "general" as const,
       }))
 
-      // 2. ドラフトに保存
-      draft.set({
+      setSeatsAndHold({
         scheduleId: selectedScheduleId,
         reservationCode: result.reservationCode,
         expiresAt: result.expiresAt,
         selectedSeats,
         layoutVersion: mapData.layout.layoutVersion,
-        ticketCounts: { general: selectedSeats.length, university: 0, highschool: 0, child: 0 }
       })
-
-      // 3. 次の画面へ
-      const auth = await getAuthState()
-      if (auth.authenticated) {
-        navigate("/reservations/tickets")
-      } else {
-        navigate("/reservations/entry")
-      }
+      return true
     } catch (err) {
       if (err instanceof ApiError && err.code === "SEAT_ALREADY_RESERVED") {
         showToast("選択した座席はすでに他の人が予約中または仮押さえ中です。")
       } else {
         showToast("エラーが発生しました。再度お試しください。")
       }
+      return false
     }
   }
 
-  return { handleNext }
+  return { holdSeats }
 }

@@ -4,6 +4,14 @@ import { AppError } from '#lib/errors.js'
 import { successResponse } from '#utils/response.js'
 import * as MovieService from '#modules/movies/service.js'
 
+const IMAGE_BASE = process.env.IMAGE_BASE_URL ?? 'http://localhost:3001'
+
+function imageUrl(filename: string | null): string | null {
+  if (!filename) return null
+  if (filename.startsWith('http')) return filename
+  return `${IMAGE_BASE}/images/${filename}`
+}
+
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export const listMovies = async (c: Context<AppEnv>) => {
@@ -24,7 +32,7 @@ export const listMovies = async (c: Context<AppEnv>) => {
       title: r.title,
       description: r.description,
       durationMin: r.duration_min,
-      thumbnailUrl: r.thumbnail_url,
+      thumbnailUrl: imageUrl(r.thumbnail_url),
       status: r.status,
       schedules: schedules.map(s => ({
         scheduleId: s.schedule_id,
@@ -32,6 +40,7 @@ export const listMovies = async (c: Context<AppEnv>) => {
         startsAt: s.starts_at,
         endsAt: s.ends_at,
         remainingSeats: Number(s.remaining_seats),
+        totalSeats: Number(s.total_seats),
       })),
     }
   }))
@@ -53,7 +62,7 @@ export const getMovie = async (c: Context<AppEnv>) => {
     title: movie.title,
     description: movie.description,
     durationMin: movie.duration_min,
-    thumbnailUrl: movie.thumbnail_url,
+    thumbnailUrl: imageUrl(movie.thumbnail_url),
     status: movie.status,
   }, requestId))
 }
@@ -77,7 +86,7 @@ export const getMovieSchedules = async (c: Context<AppEnv>) => {
       title: movie.title,
       description: movie.description,
       durationMin: movie.duration_min,
-      thumbnailUrl: movie.thumbnail_url,
+      thumbnailUrl: imageUrl(movie.thumbnail_url),
       status: movie.status,
     },
     schedules: rows.map(r => ({
@@ -86,6 +95,7 @@ export const getMovieSchedules = async (c: Context<AppEnv>) => {
       startsAt: r.starts_at,
       endsAt: r.ends_at,
       remainingSeats: Number(r.remaining_seats),
+      totalSeats: Number(r.total_seats),
     })),
   }, requestId))
 }
@@ -103,11 +113,12 @@ export const getSchedule = async (c: Context<AppEnv>) => {
     scheduleId: r.schedule_id,
     movieId: r.movie_id,
     movieTitle: r.movie_title,
-    thumbnailUrl: r.thumbnail_url,
+    thumbnailUrl: imageUrl(r.thumbnail_url),
     durationMin: r.duration_min,
     screenName: r.screen_name,
     startsAt: r.starts_at,
     endsAt: r.ends_at,
     remainingSeats: Number(r.remaining_seats),
+    totalSeats: Number(r.total_seats),
   }, requestId))
 }

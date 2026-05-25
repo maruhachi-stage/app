@@ -1,10 +1,12 @@
 import {Link} from "react-router"
 import {Button} from "~/shared/ui/Button"
 import {Input} from "~/shared/ui/Input"
-import {TICKET_LABELS, formatJst} from "~/entities/ticket"
+import {formatJst} from "~/entities/ticket"
 import {useReservationDetail} from "~/features/reservation/useReservationDetail"
+import {useAppConfig} from "~/shared/config"
 
 export default function ReservationDetailPage() {
+    const { config } = useAppConfig()
     const {
         detail, notFound, cancelled,
         showCancelModal, setShowCancelModal, closeCancelModal,
@@ -25,7 +27,7 @@ export default function ReservationDetailPage() {
 
     if (!detail) {
         return (
-            <div className="py-12 text-center text-gray-400">読み込み中...</div>
+            <div className="py-12 text-center text-muted-foreground">読み込み中...</div>
         )
     }
 
@@ -35,7 +37,7 @@ export default function ReservationDetailPage() {
     return (
         <div className="py-8 max-w-xl mx-auto">
             <div className="mb-4 flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-900">予約詳細</h1>
+                <h1 className="text-2xl font-bold text-foreground">予約詳細</h1>
                 <span className={`text-sm font-bold ${statusColor}`}>{statusLabel}</span>
             </div>
 
@@ -43,57 +45,59 @@ export default function ReservationDetailPage() {
                 <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">予約をキャンセルしました。</div>
             )}
 
-            <div className="mb-4 rounded-lg border border-gray-200 p-4 text-center">
-                <p className="text-xs text-gray-500">予約番号</p>
+            <div className="mb-4 rounded-lg border border-border p-4 text-center">
+                <p className="text-xs text-muted-foreground">予約番号</p>
                 <p className="mt-1 text-2xl font-bold tracking-widest">{detail.reservationCode}</p>
             </div>
 
             {detail.qrCodeUrl && (
-                <div className="mb-4 flex flex-col items-center rounded-lg border border-gray-200 p-4">
-                    <p className="mb-2 text-sm text-gray-500">QRコード（入場時にご提示ください）</p>
+                <div className="mb-4 flex flex-col items-center rounded-lg border border-border p-4">
+                    <p className="mb-2 text-sm text-muted-foreground">QRコード（入場時にご提示ください）</p>
                     <img src={detail.qrCodeUrl} alt="QRコード" className="h-40 w-40 rounded"/>
                 </div>
             )}
 
-            <section className="mb-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500">上映情報</h2>
+            <section className="mb-4 rounded-app border border-border bg-card p-5 shadow-sm">
+                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">上映情報</h2>
                 <div className="flex gap-4">
                     {detail.movie.thumbnailUrl && (
                         <img src={detail.movie.thumbnailUrl} alt={detail.movie.title}
                              className="h-20 w-14 rounded-lg object-cover"/>
                     )}
                     <div>
-                        <p className="font-black text-gray-900">{detail.movie.title}</p>
-                        <p className="mt-1 text-sm font-bold text-gray-500">{formatJst(detail.schedule.startsAt)}</p>
-                        <p className="text-sm text-gray-400">{detail.schedule.screenName}</p>
+                        <p className="font-black text-foreground">{detail.movie.title}</p>
+                        <p className="mt-1 text-sm font-bold text-muted-foreground">{formatJst(detail.schedule.startsAt)}</p>
+                        <p className="text-sm text-muted-foreground">{detail.schedule.screenName}</p>
                     </div>
                 </div>
             </section>
 
-            <section className="mb-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500">座席・券種</h2>
+            <section className="mb-4 rounded-app border border-border bg-card p-5 shadow-sm">
+                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">座席・券種</h2>
                 <table className="w-full text-sm">
                     <tbody>
-                    {detail.seats.map((s, i) => (
-                        <tr key={i} className="border-b border-gray-50 last:border-0">
-                            <td className="py-2 font-black text-gray-900">{s.row}-{s.col}</td>
-                            <td className="py-2 text-gray-500">{TICKET_LABELS[s.ticketType as keyof typeof TICKET_LABELS] ?? s.ticketType}</td>
-                            <td className="py-2 text-right font-bold text-gray-900">{s.price.toLocaleString()}円</td>
+                    {detail.seats.map((s, i) => {
+                        const t = config?.tickets.find((t) => t.type === s.ticketType)
+                        const label = t?.label ?? s.ticketType
+                        return (
+                        <tr key={i} className="border-b border-border last:border-0">
+                            <td className="py-2 font-black text-foreground">{s.row}-{s.col}</td>
+                            <td className="py-2 text-muted-foreground">{label}</td>
+                            <td className="py-2 text-right font-bold text-foreground">{s.price.toLocaleString()}円</td>
                         </tr>
-                    ))}
+                        )
+                    })}
                     </tbody>
                 </table>
-                <div className="mt-3 flex justify-between border-t border-gray-100 pt-3 font-black text-gray-900">
+                <div className="mt-3 flex justify-between border-t border-border pt-3 font-black text-foreground">
                     <span>合計</span><span>{detail.totalPrice.toLocaleString()}円</span>
                 </div>
             </section>
 
-            <section className="mb-6 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-500">お客様情報</h2>
-                <p className="text-sm text-gray-700"><span
-                    className="font-bold text-gray-400">氏名</span> {detail.customer.name}</p>
-                <p className="mt-2 text-sm text-gray-700"><span
-                    className="font-bold text-gray-400">メール</span> {detail.customer.maskedEmail}</p>
+            <section className="mb-6 rounded-app border border-border bg-card p-5 shadow-sm">
+                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">お客様情報</h2>
+                <p className="text-sm text-foreground"><span
+                    className="font-bold text-muted-foreground">メール</span> {detail.customer.maskedEmail}</p>
             </section>
 
             <div className="flex flex-col gap-3">

@@ -42,12 +42,19 @@
       "request": "launch",
       "command": "npm.cmd run db:reset",
       "cwd": "${workspaceFolder}\\back-api"
+    },
+    {
+      "name": "image-server run",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "node server.js",
+      "cwd": "${workspaceFolder}\\image-server"
     }
   ],
   "compounds": [
     {
       "name": "all dev",
-      "configurations": ["db:up", "back-api dev", "front-web dev", "admin-web dev"]
+      "configurations": ["db:up", "back-api run", "front-web run", "admin-web run", "image-server run"]
     }
   ]
 }

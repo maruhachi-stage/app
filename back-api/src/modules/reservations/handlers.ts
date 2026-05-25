@@ -95,7 +95,6 @@ export const createReservation = async (c: Context<AppEnv>) => {
       ticketType: z.enum(['general', 'university', 'highschool', 'child']),
     })).min(1).max(8),
     customer: z.object({
-      name: z.string().min(1).max(100),
       email: z.string().email().max(254),
     }),
   }).parse(body)
@@ -142,7 +141,6 @@ export const createReservation = async (c: Context<AppEnv>) => {
 
   sendReservationEmail({
     to: data.customer.email,
-    customerName: data.customer.name,
     reservationCode,
     movieTitle: sched.movie_title as string,
     startsAtJst: toJstString(new Date(sched.starts_at as string)),

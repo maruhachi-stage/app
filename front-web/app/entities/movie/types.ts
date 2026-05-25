@@ -14,4 +14,5 @@ export type Schedule = {
   startsAt: string
   endsAt: string
   remainingSeats: number
+  totalSeats: number
 }

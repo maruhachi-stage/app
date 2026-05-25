@@ -10,9 +10,10 @@ import { useState, useEffect } from "react";
 
 import type {Route} from "./+types/root";
 import "~/app.css";
-import {HoldTimer} from "~/widgets/HoldTimer";
-import {Header} from "~/widgets/Header";
+import {DebugTools} from "~/widgets/DebugTools";
 import { AuthContext, getAuthState, type AuthState } from "~/shared/api/auth";
+import { useTheme } from "~/shared/lib/theme";
+import { ConfigProvider } from "~/shared/config";
 
 export const links: Route.LinksFunction = () => [
     {rel: "preconnect", href: "https://fonts.googleapis.com"},
@@ -29,6 +30,7 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({children}: { children: React.ReactNode }) {
     const [auth, setAuth] = useState<AuthState>({ authenticated: false })
+    const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {
         getAuthState().then(setAuth)
@@ -36,26 +38,23 @@ export function Layout({children}: { children: React.ReactNode }) {
 
     return (
         <AuthContext.Provider value={{ auth, setAuth }}>
-        <html lang="ja">
+        <ConfigProvider>
+        <html lang="ja" data-theme={theme} suppressHydrationWarning>
         <head>
             <meta charSet="utf-8"/>
-            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+            <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
             <Meta/>
             <Links/>
         </head>
-        <body
-            className="bg-gray-50 min-h-screen text-gray-900 selection:bg-red-100 selection:text-red-900 antialiased flex flex-col">
-        <div className="sticky top-0 z-50 flex flex-col">
-            <Header/>
-            <HoldTimer/>
-        </div>
-        <main className="mx-auto w-full max-w-5xl px-4 flex-1">
-            <Outlet/>
-        </main>
+        <body className="selection:bg-primary/30 selection:text-primary-foreground antialiased">
+        <Outlet />
         <ScrollRestoration/>
         <Scripts/>
+        <DebugTools theme={theme} toggleTheme={toggleTheme} />
         </body>
         </html>
+        </ConfigProvider>
         </AuthContext.Provider>
     );
 }

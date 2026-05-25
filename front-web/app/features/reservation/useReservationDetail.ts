@@ -13,7 +13,7 @@ export type ReservationDetail = {
   schedule: { startsAt: string; endsAt: string; screenName: string }
   seats: Seat[]
   totalPrice: number
-  customer: { name: string; maskedEmail: string }
+  customer: { maskedEmail: string }
   qrCodeUrl: string | null
 }
 

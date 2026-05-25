@@ -38,7 +38,6 @@ export async function sendOtpEmail(to: string, code: string): Promise<void> {
 
 export type ReservationEmailParams = {
   to: string
-  customerName: string
   reservationCode: string
   movieTitle: string
   startsAtJst: string
@@ -56,8 +55,6 @@ export async function sendReservationEmail(params: ReservationEmailParams): Prom
     return
   }
   const text = [
-    `${params.customerName} 様`,
-    ``,
     `この度はHALシネマをご利用いただき、ありがとうございます。`,
     `以下の内容でご予約が完了しました。`,
     ``,

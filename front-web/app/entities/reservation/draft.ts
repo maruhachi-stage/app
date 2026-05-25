@@ -15,7 +15,7 @@ export type ReservationDraft = {
   selectedSeats?: SelectedSeat[]
   layoutVersion?: number
   bookingType?: "member" | "guest"
-  customer?: { name: string; email: string }
+  customer?: { email: string }
 }
 
 const KEY = "hal_cinema_reservation_draft"

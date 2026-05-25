@@ -2,7 +2,6 @@ import { useState } from "react"
 import { useNavigate, useSearchParams } from "react-router"
 import { apiFetch, ApiError } from "~/shared/api/client"
 import { safeRedirect } from "~/shared/api/auth"
-import { draft } from "~/entities/reservation/draft"
 
 export function useLogin() {
   const [email, setEmail] = useState("")
@@ -39,9 +38,5 @@ export function useLogin() {
     }
   }
 
-  function handleGuestContinue() {
-    draft.set({ bookingType: "guest" })
-  }
-
-  return { email, setEmail, error, loading, redirect, handleSubmit, handleGuestContinue }
+  return { email, setEmail, error, loading, handleSubmit }
 }

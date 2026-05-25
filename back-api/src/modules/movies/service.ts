@@ -16,6 +16,7 @@ export type ScheduleRow = {
   starts_at: Date | string
   ends_at: Date | string
   remaining_seats: number
+  total_seats: number
 }
 
 export type FullScheduleRow = {
@@ -29,11 +30,14 @@ export type FullScheduleRow = {
   starts_at: Date | string
   ends_at: Date | string
   remaining_seats: number
+  total_seats: number
 }
 
 export async function getMovieById(movieId: number): Promise<MovieRow | null> {
   const [rows] = await pool.execute<mysql.RowDataPacket[]>(
-    'SELECT id, title, description, duration_min, thumbnail_url, status FROM movies WHERE id = ?',
+    `SELECT m.id, m.title, m.description, m.duration_min, m.status,
+      (SELECT file_name FROM movie_images WHERE movie_id = m.id ORDER BY display_order LIMIT 1) AS thumbnail_url
+     FROM movies m WHERE m.id = ?`,
     [movieId],
   )
   return (rows[0] as MovieRow) || null
@@ -46,6 +50,7 @@ export async function getSchedulesByMovieId(movieId: number, date?: string): Pro
       sc.name as screen_name,
       sch.starts_at,
       sch.ends_at,
+      sc.total_seats,
       sc.total_seats - COALESCE((
         SELECT COUNT(*) FROM reservation_seats rs
         JOIN reservations r ON r.id = rs.reservation_id
@@ -73,12 +78,13 @@ export async function getFullScheduleById(scheduleId: number): Promise<FullSched
        sch.id as schedule_id,
        sch.movie_id,
        m.title as movie_title,
-       m.thumbnail_url,
+       (SELECT file_name FROM movie_images WHERE movie_id = m.id ORDER BY display_order LIMIT 1) AS thumbnail_url,
        m.duration_min,
        sc.name as screen_name,
        sc.id as screen_id,
        sch.starts_at,
        sch.ends_at,
+       sc.total_seats,
        sc.total_seats - COALESCE((
          SELECT COUNT(*) FROM reservation_seats rs
          JOIN reservations r ON r.id = rs.reservation_id
@@ -95,21 +101,23 @@ export async function getFullScheduleById(scheduleId: number): Promise<FullSched
 }
 
 export async function getMovies(status?: string, date?: string): Promise<MovieRow[]> {
-  let sql = `SELECT id, title, description, duration_min, thumbnail_url, status FROM movies WHERE 1=1`
+  let sql = `SELECT m.id, m.title, m.description, m.duration_min, m.status,
+    (SELECT file_name FROM movie_images WHERE movie_id = m.id ORDER BY display_order LIMIT 1) AS thumbnail_url
+  FROM movies m WHERE 1=1`
   const params: (string | number)[] = []
 
   if (status) {
-    sql += ' AND status = ?'
+    sql += ' AND m.status = ?'
     params.push(status)
   }
   if (date) {
-    sql += ` AND id IN (
+    sql += ` AND m.id IN (
       SELECT DISTINCT movie_id FROM schedules
       WHERE is_public = 1 AND DATE(CONVERT_TZ(starts_at, '+00:00', '+09:00')) = ?
     )`
     params.push(date)
   }
-  sql += ' ORDER BY created_at DESC'
+  sql += ' ORDER BY m.created_at DESC'
 
   const [rows] = await pool.execute<mysql.RowDataPacket[]>(sql, params)
   return rows as MovieRow[]

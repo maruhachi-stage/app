@@ -1,5 +1,7 @@
 node_modules/
 **/node_modules/
+image-server/images/
+image-server/node_modules/
 dist/
 **/dist/
 coverage/

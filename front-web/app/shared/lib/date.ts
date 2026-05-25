@@ -35,6 +35,15 @@ export function formatDateJst(isoOrDate: string | Date): string {
   })
 }
 
+export function formatTimeJst(isoOrDate: string | Date): string {
+  return new Date(isoOrDate).toLocaleTimeString("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+}
+
 export function todayJst(): string {
   return new Date().toLocaleDateString("sv", { timeZone: "Asia/Tokyo" })
 }

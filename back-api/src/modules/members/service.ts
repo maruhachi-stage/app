@@ -1,5 +1,6 @@
 import type mysql from 'mysql2/promise'
 import { pool } from '#db/client.js'
+import { imageUrl } from '#utils/format.js'
 
 export type MemberProfile = { id: number; email: string; name: string | null }
 
@@ -58,7 +59,7 @@ export async function getMemberReservations(memberId: number): Promise<Reservati
     totalPrice: r.total_price as number,
     createdAt: r.created_at,
     movieTitle: r.movie_title as string,
-    thumbnailUrl: r.thumbnail_url as string | null,
+    thumbnailUrl: imageUrl(r.thumbnail_url as string | null),
     startsAt: r.starts_at,
     endsAt: r.ends_at,
     screenName: r.screen_name as string,

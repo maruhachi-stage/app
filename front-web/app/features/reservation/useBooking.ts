@@ -6,61 +6,29 @@ export type { SeatData, SeatMapData }
 
 export function useBooking() {
   const {
-    movie,
-    days,
-    selectedDate,
-    setSelectedDate,
-    schedules,
-    selectedScheduleId,
-    setSelectedScheduleId,
-    loading,
-    error: selectionError,
-    retryLoadSchedules,
+    movie, days, selectedDate, setSelectedDate,
+    schedules, selectedScheduleId, setSelectedScheduleId,
+    loading, error: selectionError, retryLoadSchedules,
   } = useScheduleSelection()
 
   const {
-    mapData,
-    mapLoading,
-    selectedSeatIds,
-    toggleSeat,
-    error: mapError,
-    toastMsg,
-    showToast,
-    retryLoadSeatMap,
+    mapData, mapLoading, selectedSeatIds, toggleSeat,
+    error: mapError, toastMsg, showToast, retryLoadSeatMap,
   } = useSeatMap(selectedScheduleId)
 
-  const { handleNext } = useHoldSeat({
-    selectedScheduleId,
-    mapData,
-    selectedSeatIds,
-    showToast,
-  })
+  const { holdSeats } = useHoldSeat({ selectedScheduleId, mapData, selectedSeatIds, showToast })
 
   const error = selectionError || mapError
 
   function retryLoad() {
     retryLoadSchedules()
-    if (selectedScheduleId) {
-      retryLoadSeatMap()
-    }
+    if (selectedScheduleId) retryLoadSeatMap()
   }
 
   return {
-    movie,
-    days,
-    selectedDate,
-    setSelectedDate,
-    schedules,
-    selectedScheduleId,
-    setSelectedScheduleId,
-    mapData,
-    mapLoading,
-    selectedSeatIds,
-    toggleSeat,
-    loading,
-    error,
-    toastMsg,
-    handleNext,
-    retryLoad,
+    movie, days, selectedDate, setSelectedDate,
+    schedules, selectedScheduleId, setSelectedScheduleId,
+    mapData, mapLoading, selectedSeatIds, toggleSeat,
+    loading, error, toastMsg, holdSeats, retryLoad,
   }
 }

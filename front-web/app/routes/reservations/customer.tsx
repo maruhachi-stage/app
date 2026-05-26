@@ -38,21 +38,23 @@ export default function CustomerPage() {
   if (!isReady) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-red-600 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     )
   }
 
   return (
-    <div className="py-6">
-      <p className="mb-4 text-xs text-gray-400">日付・時間・座席 → お客様情報 → 券種選択 → 決済 → 確認</p>
-      <h1 className="mb-6 text-2xl font-bold">お客様情報の入力</h1>
+    <div className="py-12">
+      <div className="text-center mb-10">
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Step 2 / 5</p>
+        <h1 className="text-3xl font-black tracking-tight">お客様情報の入力</h1>
+        <p className="mt-2 text-sm text-muted-foreground">予約完了のご案内をお送りするメールアドレスを入力してください。</p>
+      </div>
       <form onSubmit={e => { e.preventDefault(); handleNext() }} className="flex flex-col gap-4">
         <Input id="email" type="email" label="メールアドレス" value={email}
           onChange={e => setEmail(e.target.value)}
           placeholder="example@email.com" required autoComplete="email" error={errors.email} />
-        <p className="text-xs text-gray-500">ご入力いただいたメールアドレスに予約完了のご案内をお送りします。</p>
-        <Button type="submit" size="lg">次へ（予約確認）</Button>
+        <Button type="submit" size="lg" className="h-14 text-base font-black">次へ（券種選択）</Button>
       </form>
     </div>
   )

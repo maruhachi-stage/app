@@ -13,7 +13,7 @@ type Props = {
 
 export function ReservationActionBar({
   seats,
-  maxSeats = 6,
+  maxSeats = 8,
   totalPrice,
   quoting = false,
   onNext,

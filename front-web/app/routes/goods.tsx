@@ -1,6 +1,7 @@
+import { useMemo, useState } from "react"
 import type { Route } from "./+types/goods"
-import { GoodsCard } from "~/widgets/GoodsCard"
-import type { GoodsItem } from "~/widgets/GoodsCard"
+import { goodsProducts } from "~/entities/product/sampleProducts"
+import { ProductCard } from "~/widgets/ProductCard"
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -9,56 +10,87 @@ export function meta(_: Route.MetaArgs) {
   ]
 }
 
-const SAMPLE_ITEMS: GoodsItem[] = Array.from({ length: 12 }, (_, i) => ({
-  title: "商品名",
-  movie: "作品名",
-  price: "2,000",
-  isSoldOut: i % 3 === 0,
-  isNew: i === 0,
-}))
-
 export default function Goods() {
+  const movieTitles = useMemo(
+    () => Array.from(new Set(goodsProducts.map((product) => product.movieTitle).filter(Boolean))),
+    [],
+  )
+  const [movieFilter, setMovieFilter] = useState("all")
+  const visibleProducts = goodsProducts.filter(
+    (product) => movieFilter === "all" || product.movieTitle === movieFilter,
+  )
+
   return (
     <div className="pb-16">
-      {/* カルーセルセクション (プレースホルダー) */}
       <div className="relative mb-12 pt-8">
-        <div className="flex items-center justify-center gap-4 px-4 overflow-hidden">
-          <button className="h-12 w-8 shrink-0 rounded bg-foreground/10 flex items-center justify-center hover:bg-foreground/20 transition-colors">
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-          </button>
+        <div className="flex items-center justify-center gap-4 overflow-hidden px-4">
           <div className="flex gap-4 overflow-hidden">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className={`h-40 w-80 shrink-0 rounded-lg bg-muted ${i !== 2 ? "opacity-50 scale-90" : ""}`} />
+            {goodsProducts.slice(0, 3).map((product, index) => (
+              <div
+                key={product.id}
+                className={`relative h-40 w-80 shrink-0 overflow-hidden rounded-lg border border-border bg-muted ${
+                  index === 1 ? "" : "scale-90 opacity-60"
+                }`}
+              >
+                <img src={product.imageUrl} alt="" className="h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
+                <div className="absolute bottom-4 left-4">
+                  <p className="text-[10px] font-bold text-white/70">{product.movieTitle}</p>
+                  <p className="text-sm font-black text-white">{product.name}</p>
+                </div>
+              </div>
             ))}
           </div>
-          <button className="h-12 w-8 shrink-0 rounded bg-foreground/10 flex items-center justify-center hover:bg-foreground/20 transition-colors">
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-          </button>
-        </div>
-        <div className="mt-6 flex justify-center gap-2">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className={`h-2 w-2 rounded-full ${i === 1 ? "bg-foreground" : "bg-muted-foreground/30"}`} />
-          ))}
         </div>
       </div>
 
       <div className="container-center">
-        <div className="mb-12 flex items-center justify-between rounded-xl bg-muted/50 p-4 border border-border">
-          <div className="flex-1" />
-          <button className="flex items-center gap-2 text-sm font-bold hover:text-primary transition-colors">
-            <span>映画ごとに絞り込む</span>
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-muted/50 p-4">
+          <p className="text-sm text-muted-foreground">
+            作品ごとに絞り込み、商品カードからそのままカートへ追加できます。
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <FilterButton active={movieFilter === "all"} onClick={() => setMovieFilter("all")}>
+              すべて
+            </FilterButton>
+            {movieTitles.map((title) => (
+              <FilterButton key={title} active={movieFilter === title} onClick={() => setMovieFilter(title!)}>
+                {title}
+              </FilterButton>
+            ))}
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-10">
-          {SAMPLE_ITEMS.map((item, i) => (
-            <GoodsCard key={i} item={item} showNew={i === 0} />
+        <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4">
+          {visibleProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </div>
     </div>
+  )
+}
+
+function FilterButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded border px-3 py-1.5 text-xs font-bold transition ${
+        active
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border text-muted-foreground hover:bg-background"
+      }`}
+    >
+      {children}
+    </button>
   )
 }

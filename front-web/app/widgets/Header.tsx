@@ -4,10 +4,12 @@ import { AppConfig } from "~/shared/config/app"
 import { useAuth } from "~/shared/api/auth"
 import { apiFetch } from "~/shared/api/client"
 import { Button } from "~/shared/ui/Button"
+import { useCart } from "~/features/cart/useCart"
 import { HoldTimer } from "./HoldTimer"
 
 export function Header() {
   const { auth, setAuth } = useAuth()
+  const { totalCount } = useCart()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
@@ -98,8 +100,13 @@ export function Header() {
           {/* デスクトップ nav */}
           <nav className="hidden md:flex items-center gap-6">
             {NAV_LINKS.map(({ to, label }) => (
-              <Link key={to} to={to} className="text-sm font-bold text-muted-foreground hover:text-foreground transition-colors">
+              <Link key={to} to={to} className="relative text-sm font-bold text-muted-foreground hover:text-foreground transition-colors">
                 {label}
+                {to === "/cart" && totalCount > 0 && (
+                  <span className="absolute -right-4 -top-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] text-primary-foreground">
+                    {totalCount}
+                  </span>
+                )}
               </Link>
             ))}
 
@@ -170,6 +177,11 @@ export function Header() {
                 className="rounded-xl px-4 py-4 text-2xl font-black text-foreground hover:bg-muted hover:text-primary transition-colors"
               >
                 {label}
+                {to === "/cart" && totalCount > 0 && (
+                  <span className="ml-3 inline-flex min-w-7 items-center justify-center rounded-full bg-primary px-2 py-1 text-sm text-primary-foreground">
+                    {totalCount}
+                  </span>
+                )}
               </Link>
             ))}
 

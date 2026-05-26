@@ -19,9 +19,8 @@ export function OtpForm() {
           maxLength={6}
           required
           autoComplete="one-time-code"
-          labelClassName="text-white"
         />
-        <p className="mb-6 text-sm text-gray-500 text-white">
+        <p className="mb-6 text-sm text-gray-500">
           <span className="font-medium text-wite">{email}</span>{" "}
           に送信した6桁のコードを入力してください。
         </p>

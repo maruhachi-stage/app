@@ -19,7 +19,7 @@ export function LoginForm() {
           required
           autoComplete="email"
         />
-        <p className="mb-6 text-sm text-gray-500 text-left">
+        <p className="mb-6 text-sm text-left text-foreground">
           登録済みのメールアドレスに認証コードを送信します。
         </p>
         {error && <p className="text-sm text-red-600">{error}</p>}

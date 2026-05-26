@@ -28,7 +28,7 @@ export function RegisterForm() {
           required
           autoComplete="name"
         />
-        <p className="mb-6 text-sm text-gray-500">
+        <p className="mb-6 text-sm">
           メールアドレスとユーザー名を入力してください。認証コードを送信します。
         </p>
         {error && <p className="text-sm text-red-600">{error}</p>}

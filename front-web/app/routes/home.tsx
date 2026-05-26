@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Link } from "react-router"
 import { AppConfig } from "~/shared/config/app"
 import { apiFetch, ApiError } from "~/shared/api/client"
+import { proxyImageUrl } from "~/shared/lib/image"
 import type { Movie, Schedule } from "~/entities/movie/types"
 import type { Route } from "./+types/home"
 
@@ -12,12 +13,8 @@ export function meta(_: Route.MetaArgs) {
   ]
 }
 
-const IMAGE_BASE = import.meta.env.VITE_IMAGE_SERVER_URL ?? "http://localhost:4000"
-
 function movieImageUrl(thumbnailUrl: string | null): string | null {
-  if (!thumbnailUrl) return null
-  if (thumbnailUrl.startsWith("http")) return thumbnailUrl
-  return `${IMAGE_BASE}${thumbnailUrl.startsWith("/") ? "" : "/"}${thumbnailUrl}`
+  return proxyImageUrl(thumbnailUrl) ?? null
 }
 
 // ─── スケジュール表示用の型 ────────────────────────────────────────────────

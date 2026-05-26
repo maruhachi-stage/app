@@ -24,12 +24,12 @@ export async function findMemberByEmail(email: string): Promise<{ id: number; em
   return rows.length > 0 ? (rows[0] as { id: number; email: string }) : null
 }
 
-export async function createMember(email: string): Promise<{ id: number; email: string }> {
+export async function createMember(email: string, name: string | null): Promise<{ id: number; email: string; name: string | null }> {
   const [result] = await pool.execute<mysql.ResultSetHeader>(
-    'INSERT INTO members (email) VALUES (?)',
-    [email],
+    'INSERT INTO members (email, name) VALUES (?, ?)',
+    [email, name],
   )
-  return { id: result.insertId, email }
+  return { id: result.insertId, email, name }
 }
 
 export async function getMemberProfile(memberId: number): Promise<MemberProfile | null> {

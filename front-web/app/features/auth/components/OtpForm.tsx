@@ -20,7 +20,7 @@ export function OtpForm() {
           required
           autoComplete="one-time-code"
         />
-        <p className="mb-6 text-sm text-gray-500">
+        <p className="mb-6 text-sm">
           <span className="font-medium text-wite">{email}</span>{" "}
           に送信した6桁のコードを入力してください。
         </p>

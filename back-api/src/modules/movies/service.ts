@@ -21,8 +21,10 @@ export type ScheduleRow = {
 
 export type FullScheduleRow = {
   schedule_id: number
-  movie_id: number
-  movie_title: string
+  movie_id: number | null
+  movie_title: string | null
+  stage_id: number | null
+  stage_title: string | null
   thumbnail_url: string | null
   duration_min: number
   screen_name: string
@@ -78,8 +80,13 @@ export async function getFullScheduleById(scheduleId: number): Promise<FullSched
        sch.id as schedule_id,
        sch.movie_id,
        m.title as movie_title,
-       (SELECT file_name FROM movie_images WHERE movie_id = m.id ORDER BY display_order LIMIT 1) AS thumbnail_url,
-       m.duration_min,
+       sch.stage_id,
+       s.title as stage_title,
+       COALESCE(
+         (SELECT file_name FROM movie_images WHERE movie_id = m.id ORDER BY display_order LIMIT 1),
+         (SELECT file_name FROM stage_images WHERE stage_id = s.id ORDER BY display_order LIMIT 1)
+       ) AS thumbnail_url,
+       COALESCE(m.duration_min, s.duration_min) as duration_min,
        sc.name as screen_name,
        sc.id as screen_id,
        sch.starts_at,
@@ -92,7 +99,8 @@ export async function getFullScheduleById(scheduleId: number): Promise<FullSched
          AND (r.status = 'confirmed' OR (r.status = 'pending' AND r.expires_at > CURRENT_TIMESTAMP(3)))
        ), 0) as remaining_seats
      FROM schedules sch
-     JOIN movies m ON m.id = sch.movie_id
+     LEFT JOIN movies m ON m.id = sch.movie_id
+     LEFT JOIN stages s ON s.id = sch.stage_id
      JOIN screens sc ON sc.id = sch.screen_id
      WHERE sch.id = ? AND sch.is_public = 1`,
     [scheduleId],

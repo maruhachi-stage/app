@@ -3,7 +3,7 @@ import {DateSelector} from "~/widgets/DateSelector"
 import {MovieFilters} from "~/features/movie/components/MovieFilters"
 import {MovieGrid} from "~/features/movie/components/MovieGrid"
 
-export default function MoviesPage() {
+export default function StagesPage() {
     const {
         movies,
         loading,
@@ -18,7 +18,7 @@ export default function MoviesPage() {
         setSort,
         setView,
         clearAll,
-    } = useMovies({ category: "movie" })
+    } = useMovies({ category: "stage" })
 
     return (
         <div className="py-8">

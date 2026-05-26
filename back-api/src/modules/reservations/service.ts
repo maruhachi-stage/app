@@ -114,12 +114,15 @@ export async function getReservationDetail(code: string) {
   const [rows] = await pool.execute<mysql.RowDataPacket[]>(
     `SELECT r.id, r.reservation_code, r.status, r.member_id, r.booking_type,
             r.customer_name, r.customer_email, r.total_price,
-            m.title as movie_title, m.thumbnail_url,
+            m.title as movie_title,
+            s.title as stage_title,
+            COALESCE(m.thumbnail_url, (SELECT file_name FROM stage_images WHERE stage_id = s.id ORDER BY display_order LIMIT 1)) as thumbnail_url,
             sch.starts_at, sch.ends_at,
             sc.name as screen_name
      FROM reservations r
      JOIN schedules sch ON sch.id = r.schedule_id
-     JOIN movies m ON m.id = sch.movie_id
+     LEFT JOIN movies m ON m.id = sch.movie_id
+     LEFT JOIN stages s ON s.id = sch.stage_id
      JOIN screens sc ON sc.id = sch.screen_id
      WHERE r.reservation_code = ?`,
     [code],
@@ -144,7 +147,11 @@ export async function getReservationDetail(code: string) {
     status: r.status as string,
     bookingType: r.booking_type as 'member' | 'guest',
     canCancel,
-    movie: { title: r.movie_title as string, thumbnailUrl: imageUrl(r.thumbnail_url as string | null) },
+    movie: {
+      title: (r.movie_title ?? r.stage_title) as string,
+      thumbnailUrl: imageUrl(r.thumbnail_url as string | null),
+      type: r.movie_id ? 'movie' : 'stage',
+    },
     schedule: { startsAt: r.starts_at, endsAt: r.ends_at, screenName: r.screen_name as string },
     seats: seatRows.map(s => ({
       row: s.row_label as string,

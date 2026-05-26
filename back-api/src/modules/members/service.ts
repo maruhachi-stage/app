@@ -43,11 +43,14 @@ export async function getMemberProfile(memberId: number): Promise<MemberProfile 
 export async function getMemberReservations(memberId: number): Promise<ReservationListItem[]> {
   const [rows] = await pool.execute<mysql.RowDataPacket[]>(
     `SELECT r.reservation_code, r.status, r.total_price, r.created_at,
-            m.title as movie_title, m.thumbnail_url,
+            m.title as movie_title,
+            s.title as stage_title,
+            COALESCE(m.thumbnail_url, (SELECT file_name FROM stage_images WHERE stage_id = s.id ORDER BY display_order LIMIT 1)) as thumbnail_url,
             sch.starts_at, sch.ends_at, sc.name as screen_name
      FROM reservations r
      JOIN schedules sch ON sch.id = r.schedule_id
-     JOIN movies m ON m.id = sch.movie_id
+     LEFT JOIN movies m ON m.id = sch.movie_id
+     LEFT JOIN stages s ON s.id = sch.stage_id
      JOIN screens sc ON sc.id = sch.screen_id
      WHERE r.member_id = ?
      ORDER BY r.created_at DESC`,
@@ -58,7 +61,7 @@ export async function getMemberReservations(memberId: number): Promise<Reservati
     status: r.status as string,
     totalPrice: r.total_price as number,
     createdAt: r.created_at,
-    movieTitle: r.movie_title as string,
+    movieTitle: (r.movie_title ?? r.stage_title) as string,
     thumbnailUrl: imageUrl(r.thumbnail_url as string | null),
     startsAt: r.starts_at,
     endsAt: r.ends_at,

@@ -4,10 +4,18 @@ import { apiFetch, ApiError } from "~/shared/api/client"
 import { getNext7Days } from "~/shared/lib/date"
 import type { Movie, Schedule } from "~/entities/movie/types"
 
-export function useSchedules() {
-  const { movieId } = useParams<{ movieId: string }>()
+export interface UseSchedulesOptions {
+  category?: "movie" | "stage"
+  idParamName?: string
+}
+
+export function useSchedules(options?: UseSchedulesOptions) {
+  const params = useParams<Record<string, string>>()
+  const idParamName = options?.idParamName ?? "movieId"
+  const movieId = params[idParamName]
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedDate = searchParams.get("date") ?? ""
+  const category = options?.category ?? (searchParams.get("category") ?? "")
   const navigate = useNavigate()
 
   const [data, setData] = useState<{ movie: Movie; schedules: Schedule[] } | null>(null)
@@ -19,15 +27,30 @@ export function useSchedules() {
     if (!movieId) return
     setLoading(true)
     setError("")
+    
+    // カテゴリが stage の場合は /stages を叩く
+    const baseEndpoint = category === "stage" ? `/stages/${movieId}` : `/movies/${movieId}`
     const qs = selectedDate ? `?date=${selectedDate}` : ""
-    apiFetch<{ movie: Movie; schedules: Schedule[] }>(`/movies/${movieId}/schedules${qs}`)
-      .then(setData)
+    
+    apiFetch<{ movie: Movie; schedules: Schedule[] }>(`${baseEndpoint}/schedules${qs}`)
+      .then(d => {
+        setData({
+          ...d,
+          movie: {
+            ...d.movie,
+            type: category === "stage" ? "stage" : "movie"
+          }
+        })
+      })
       .catch(err => {
-        if (err instanceof ApiError && err.status === 404) navigate("/movies", { replace: true })
-        else setError("読み込みに失敗しました")
+        if (err instanceof ApiError && err.status === 404) {
+          navigate(category === "stage" ? "/stages" : "/movies", { replace: true })
+        } else {
+          setError("読み込みに失敗しました")
+        }
       })
       .finally(() => setLoading(false))
-  }, [movieId, selectedDate])
+  }, [movieId, selectedDate, category])
 
   function setDate(date: string) {
     setSearchParams(p => {
@@ -38,7 +61,8 @@ export function useSchedules() {
   }
 
   function selectSchedule(scheduleId: number) {
-    navigate(`/reservations/booking/${movieId}?date=${selectedDate}&scheduleId=${scheduleId}`)
+    const categoryQs = category === "stage" ? "&category=stage" : ""
+    navigate(`/reservations/booking/${movieId}?date=${selectedDate}&scheduleId=${scheduleId}${categoryQs}`)
   }
 
   return { data, loading, error, days, selectedDate, setDate, selectSchedule }

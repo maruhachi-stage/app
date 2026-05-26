@@ -11,13 +11,19 @@ type Props = {
 
 export function MovieGridCard({ movie, selectedDate }: Props) {
   const today = todayJst()
+  const categoryQs = movie.type === "stage" ? "category=stage" : ""
+  const dateQs = selectedDate ? `date=${selectedDate}` : ""
+  const detailUrl = movie.type === "stage"
+    ? `/stages/${movie.id}${dateQs ? `?${dateQs}` : ""}`
+    : `/movies/${movie.id}${dateQs ? `?${dateQs}` : ""}`
+  const bookingUrl = `/reservations/booking/${movie.id}?date=${today}${categoryQs ? `&${categoryQs}` : ""}`
 
   return (
     <div className="group flex flex-col gap-3">
       <div className="relative aspect-2/3 overflow-hidden rounded-app bg-muted shadow-lg transition-transform duration-300 group-hover:-translate-y-1">
         {/* ポスターリンク */}
         <Link
-          to={`/movies/${movie.id}${selectedDate ? `?date=${selectedDate}` : ""}`}
+          to={detailUrl}
           className="absolute inset-0"
         >
           {movie.thumbnailUrl ? (
@@ -34,7 +40,7 @@ export function MovieGridCard({ movie, selectedDate }: Props) {
         {/* 予約ボタン（ポスターリンクとは独立） */}
         <div className="pointer-events-none absolute inset-0 flex items-end justify-end p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
           <Link
-            to={`/reservations/booking/${movie.id}?date=${today}`}
+            to={bookingUrl}
             className="pointer-events-auto w-fit rounded-md bg-primary px-5 py-2 text-center text-sm font-bold text-primary-foreground shadow-xl transition-all duration-300 translate-y-2 group-hover:translate-y-0 hover:scale-110"
           >
             予約
@@ -44,7 +50,7 @@ export function MovieGridCard({ movie, selectedDate }: Props) {
 
       <div className="flex flex-col gap-1.5 px-0.5">
         <Link
-          to={`/movies/${movie.id}${selectedDate ? `?date=${selectedDate}` : ""}`}
+          to={detailUrl}
           className="line-clamp-2 text-sm font-bold leading-tight text-foreground transition-colors hover:text-primary"
         >
           {movie.title}
@@ -69,10 +75,15 @@ export function MovieGridCard({ movie, selectedDate }: Props) {
 }
 
 export function MovieListCard({ movie, selectedDate }: Props) {
+  const dateQs = selectedDate ? `date=${selectedDate}` : ""
+  const detailUrl = movie.type === "stage"
+    ? `/stages/${movie.id}${dateQs ? `?${dateQs}` : ""}`
+    : `/movies/${movie.id}${dateQs ? `?${dateQs}` : ""}`
+
   return (
     <div className="flex flex-col overflow-hidden rounded-app border border-border bg-secondary/50 shadow-sm sm:flex-row">
       <Link
-        to={`/movies/${movie.id}${selectedDate ? `?date=${selectedDate}` : ""}`}
+        to={detailUrl}
         className="block w-full shrink-0 sm:w-40 md:w-48"
       >
         <div className="aspect-2/3 sm:aspect-auto sm:h-full bg-secondary">
@@ -86,7 +97,7 @@ export function MovieListCard({ movie, selectedDate }: Props) {
       <div className="flex flex-1 flex-col p-5">
         <div className="mb-4">
           <Link
-            to={`/movies/${movie.id}${selectedDate ? `?date=${selectedDate}` : ""}`}
+            to={detailUrl}
             className="hover:text-primary transition-colors"
           >
             <h2 className="text-xl font-extrabold text-foreground">{movie.title}</h2>
@@ -110,7 +121,7 @@ export function MovieListCard({ movie, selectedDate }: Props) {
                 {formatDateJst(selectedDate)}
               </div>
             )}
-            <ScheduleGrid schedules={movie.schedules} movieId={movie.id} selectedDate={selectedDate} />
+            <ScheduleGrid schedules={movie.schedules} movieId={movie.id} selectedDate={selectedDate} movieType={movie.type} />
           </>
         ) : (
           <p className="mt-auto text-sm text-muted-foreground font-medium italic">

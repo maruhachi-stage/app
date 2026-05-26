@@ -4,12 +4,17 @@ import { apiFetch, ApiError } from "~/shared/api/client"
 import { getNext7Days } from "~/shared/lib/date"
 import type { Movie } from "~/entities/movie/types"
 
-export function useMovies() {
+export interface UseMoviesOptions {
+  category?: "movie" | "stage"
+}
+
+export function useMovies(options?: UseMoviesOptions) {
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedDate = searchParams.get("date") ?? ""
   const selectedStatus = (searchParams.get("status") ?? "") as "" | "now_showing" | "coming_soon"
   const sortBy = (searchParams.get("sort") ?? "newest") as "newest" | "title" | "duration"
   const view = (searchParams.get("view") ?? "grid") as "grid" | "list" | "timetable"
+  const category = options?.category ?? ((searchParams.get("category") ?? "movie") as "movie" | "stage")
 
   const [movies, setMovies] = useState<Movie[]>([])
   const [loading, setLoading] = useState(true)
@@ -23,9 +28,15 @@ export function useMovies() {
     if (selectedDate) params.set("date", selectedDate)
     if (selectedStatus) params.set("status", selectedStatus)
     const qs = params.toString()
-    apiFetch<{ items: Movie[] }>(`/movies${qs ? `?${qs}` : ""}`)
+    
+    const endpoint = category === "stage" ? "/stages" : "/movies"
+    
+    apiFetch<{ items: Movie[] }>(`${endpoint}${qs ? `?${qs}` : ""}`)
       .then(d => {
-        let sorted = [...d.items]
+        let sorted = d.items.map(item => ({
+          ...item,
+          type: category
+        }))
         if (sortBy === "title") {
           sorted.sort((a, b) => a.title.localeCompare(b.title, "ja"))
         } else if (sortBy === "duration") {
@@ -35,7 +46,7 @@ export function useMovies() {
       })
       .catch(err => setError(err instanceof ApiError ? err.message : "読み込みに失敗しました"))
       .finally(() => setLoading(false))
-  }, [selectedDate, selectedStatus, sortBy])
+  }, [selectedDate, selectedStatus, sortBy, category])
 
   function setDate(date: string) {
     setSearchParams(prev => {
@@ -70,6 +81,16 @@ export function useMovies() {
     }, { preventScrollReset: true })
   }
 
+  function setCategory(cat: "movie" | "stage") {
+    setSearchParams(prev => {
+      const p = new URLSearchParams(prev)
+      if (cat === "movie") p.delete("category")
+      else p.set("category", cat)
+      p.delete("status")
+      return p
+    }, { preventScrollReset: true })
+  }
+
   function clearAll() {
     setSearchParams(prev => {
       const p = new URLSearchParams(prev)
@@ -79,5 +100,21 @@ export function useMovies() {
     }, { preventScrollReset: true })
   }
 
-  return { movies, loading, error, days, selectedDate, selectedStatus, sortBy, view, setDate, setStatus, setSort, setView, clearAll }
+  return {
+    movies,
+    loading,
+    error,
+    days,
+    selectedDate,
+    selectedStatus,
+    sortBy,
+    view,
+    category,
+    setDate,
+    setStatus,
+    setSort,
+    setView,
+    setCategory,
+    clearAll
+  }
 }

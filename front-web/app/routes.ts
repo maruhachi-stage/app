@@ -8,6 +8,10 @@ export default [
     route("/movies", "routes/movies/index.tsx"),
     route("/movies/:movieId", "routes/movies/detail.tsx"),
 
+    // 舞台・演劇情報
+    route("/stages", "routes/stages/index.tsx"),
+    route("/stages/:stageId", "routes/stages/detail.tsx"),
+
     // 劇場情報
     route("/theater", "routes/theater/index.tsx"),
     route("/theater/:screenId", "routes/theater/screen.tsx"),

@@ -9,16 +9,10 @@ import { ScheduleGrid } from "~/widgets/ScheduleGrid"
 import { GoodsCard, type GoodsItem } from "~/widgets/GoodsCard"
 import { proxyImageUrl } from "~/shared/lib/image"
 
-const MOCK_META = {
-  director: '山田 太郎',
-  cast: ['田中 花子', '佐藤 次郎', '鈴木 三郎', '高橋 四郎'],
-  officialUrl: 'https://example.com',
-}
-
 const RELATED_GOODS: GoodsItem[] = [
-  { title: "アクリルスタンド", movie: "", price: "1,800", isNew: true },
-  { title: "クリアファイルセット", movie: "", price: "600" },
-  { title: "Tシャツ（M/L/XL）", movie: "", price: "3,200", isSoldOut: true },
+  { title: "公演パンフレット", movie: "", price: "2,000", isNew: true },
+  { title: "劇中歌サウンドトラックCD", movie: "", price: "3,000" },
+  { title: "記念オリジナルTシャツ（S/M/L）", movie: "", price: "3,500", isSoldOut: false },
 ]
 
 function extractColor(img: HTMLImageElement): { r: number; g: number; b: number } | null {
@@ -45,18 +39,18 @@ function extractColor(img: HTMLImageElement): { r: number; g: number; b: number 
   }
 }
 
-export default function MovieDetailPage() {
-  const { movieId } = useParams<{ movieId: string }>()
-  const { data, loading, error, days, selectedDate, setDate, selectSchedule } = useSchedules({ category: "movie", idParamName: "movieId" })
+export default function StageDetailPage() {
+  const { stageId } = useParams<{ stageId: string }>()
+  const { data, loading, error, days, selectedDate, setDate, selectSchedule } = useSchedules({ category: "stage", idParamName: "stageId" })
   const imgRef = useRef<HTMLImageElement>(null)
   const [rgb, setRgb] = useState({ r: 15, g: 15, b: 30 })
-  const [relatedMovies, setRelatedMovies] = useState<Movie[]>([])
+  const [relatedStages, setRelatedStages] = useState<Movie[]>([])
 
   useEffect(() => {
-    apiFetch<{ items: Movie[] }>('/movies')
-      .then(res => setRelatedMovies(res.items.filter(m => m.id !== Number(movieId))))
+    apiFetch<{ items: Movie[] }>('/stages')
+      .then(res => setRelatedStages(res.items.filter(m => m.id !== Number(stageId))))
       .catch(() => {})
-  }, [movieId])
+  }, [stageId])
 
   function handleImageLoad() {
     const img = imgRef.current
@@ -81,10 +75,10 @@ export default function MovieDetailPage() {
         <div className="container-center pt-8 pb-16">
           <nav className="mb-8 text-sm text-white/60">
             <Link
-              to={`/movies${selectedDate ? `?date=${selectedDate}` : ""}`}
+              to={`/stages${selectedDate ? `?date=${selectedDate}` : ""}`}
               className="hover:text-white transition-colors"
             >
-              映画一覧
+              演劇一覧
             </Link>
             <span className="mx-2 opacity-40">/</span>
             <span className="text-white">{data?.movie.title ?? "…"}</span>
@@ -105,7 +99,7 @@ export default function MovieDetailPage() {
                   />
                 ) : (
                   <div className="flex aspect-[2/3] w-full items-center justify-center rounded-app bg-white/10 text-6xl shadow-2xl">
-                    🎬
+                    🎭
                   </div>
                 )}
               </div>
@@ -117,7 +111,7 @@ export default function MovieDetailPage() {
                     ? "border-emerald-500/30 bg-emerald-500/20 text-emerald-300"
                     : "border-orange-500/30 bg-orange-500/20 text-orange-300"
                 }`}>
-                  {data.movie.status === "now_showing" ? "上映中" : "上映予定"}
+                  {data.movie.status === "now_showing" ? "公演中" : "公演予定"}
                 </span>
 
                 <h1 className="mt-4 text-4xl font-black tracking-tighter text-white md:text-5xl lg:text-6xl">
@@ -125,31 +119,16 @@ export default function MovieDetailPage() {
                 </h1>
 
                 <div className="mt-4 flex items-center gap-3 text-sm font-medium text-white/60">
-                  <span>{data.movie.durationMin}分</span>
+                  <span>上演時間: {data.movie.durationMin}分</span>
                   <span className="h-1 w-1 rounded-full bg-white/30" />
-                  <span>2D / 字幕・吹替</span>
+                  <span>特別公演</span>
                 </div>
 
                 <div className="mt-8 grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm leading-relaxed">
-                  <span className="font-bold uppercase tracking-wider text-white/40">監督</span>
-                  <span className="text-white/80">{MOCK_META.director}</span>
-                  <span className="font-bold uppercase tracking-wider text-white/40">出演</span>
-                  <span className="text-white/80">{MOCK_META.cast.join("、")}</span>
-                </div>
-
-                <div className="mt-8">
-                  <a
-                    href={MOCK_META.officialUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-2 text-sm font-bold text-white hover:bg-white/10 transition-colors"
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                    公式サイト
-                  </a>
+                  <span className="font-bold uppercase tracking-wider text-white/40">作</span>
+                  <span className="text-white/80">{data.movie.playwright ?? "—"}</span>
+                  <span className="font-bold uppercase tracking-wider text-white/40">演出</span>
+                  <span className="text-white/80">{data.movie.director ?? "—"}</span>
                 </div>
               </div>
             </div>
@@ -161,7 +140,7 @@ export default function MovieDetailPage() {
       {data && (
         <section className="mt-12">
           <h2 className="mb-4 border-l-4 border-primary pl-4 text-lg font-bold uppercase tracking-widest text-foreground">
-            作品紹介
+            公演紹介
           </h2>
           <p className="max-w-3xl leading-relaxed text-muted-foreground whitespace-pre-wrap">
             {data.movie.description}
@@ -169,9 +148,9 @@ export default function MovieDetailPage() {
         </section>
       )}
 
-      {/* 上映スケジュール */}
+      {/* 公演スケジュール */}
       <section className="mt-16 border-t border-border pt-10">
-        <h2 className="mb-6 text-2xl font-bold text-foreground">上映スケジュール</h2>
+        <h2 className="mb-6 text-2xl font-bold text-foreground">公演スケジュール</h2>
 
         <div className="mb-6">
           <button
@@ -190,10 +169,10 @@ export default function MovieDetailPage() {
         {loading && <p className="text-muted-foreground">読み込み中…</p>}
         {error && <p className="text-primary">{error}</p>}
         {!loading && !error && data?.schedules.length === 0 && (
-          <p className="text-muted-foreground">選択した日の上映回はありません。</p>
+          <p className="text-muted-foreground">選択した日の公演はありません。</p>
         )}
         {data && (
-          <ScheduleGrid schedules={data.schedules} movieId={data.movie.id} selectedDate={selectedDate} />
+          <ScheduleGrid schedules={data.schedules} movieId={data.movie.id} selectedDate={selectedDate} movieType="stage" />
         )}
       </section>
 
@@ -219,15 +198,15 @@ export default function MovieDetailPage() {
         </div>
       </section>
 
-      {/* 関連映画 */}
-      {relatedMovies.length > 0 && (
+      {/* 関連公演 */}
+      {relatedStages.length > 0 && (
         <section className="mt-16 border-t border-border pt-10">
-          <h2 className="mb-6 text-2xl font-bold text-foreground">関連映画</h2>
+          <h2 className="mb-6 text-2xl font-bold text-foreground">関連公演</h2>
           <div className="-mx-4 overflow-x-auto px-4">
             <div className="flex gap-4 pb-4">
-              {relatedMovies.map(movie => (
-                <div key={movie.id} className="w-36 shrink-0 md:w-44">
-                  <MovieGridCard movie={movie} selectedDate={selectedDate} />
+              {relatedStages.map(stage => (
+                <div key={stage.id} className="w-36 shrink-0 md:w-44">
+                  <MovieGridCard movie={stage} selectedDate={selectedDate} />
                 </div>
               ))}
             </div>

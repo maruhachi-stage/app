@@ -8,6 +8,7 @@ type Props = {
   selectedDate: string
   selectedScheduleId?: number
   onSelect?: (scheduleId: number) => void
+  movieType?: "movie" | "stage"
 }
 
 type Status = "available" | "few" | "full"
@@ -51,6 +52,7 @@ export function ScheduleGrid({
   selectedDate,
   selectedScheduleId,
   onSelect,
+  movieType = "movie"
 }: Props) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
@@ -114,7 +116,7 @@ export function ScheduleGrid({
         return (
           <Link
             key={sch.scheduleId}
-            to={`/reservations/booking/${movieId}?date=${selectedDate}&scheduleId=${sch.scheduleId}`}
+            to={`/reservations/booking/${movieId}?date=${selectedDate}&scheduleId=${sch.scheduleId}${movieType === "stage" ? "&category=stage" : ""}`}
             className={className}
             aria-label={ariaLabel}
             aria-disabled={isFull}

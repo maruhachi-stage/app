@@ -6,6 +6,9 @@ export type Movie = {
   thumbnailUrl: string | null
   status: "now_showing" | "coming_soon"
   schedules?: Schedule[]
+  playwright?: string | null
+  director?: string | null
+  type?: "movie" | "stage"
 }
 
 export type Schedule = {

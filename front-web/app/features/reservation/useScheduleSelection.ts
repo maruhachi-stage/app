@@ -46,16 +46,17 @@ export function useScheduleSelection() {
     }
   }, [selectedDate, selectedScheduleId, setSearchParams, reloadKey])
 
-  // 日付が選択されたらスケジュールを取得
+  // スケジュールを取得（日付未選択時は全件）
   useEffect(() => {
-    if (!movieId || !selectedDate) {
+    if (!movieId) {
       setSchedules([])
       setError("")
       return
     }
     setSchedules([])
     setError("")
-    apiFetch<{ schedules: Schedule[] }>(`/movies/${movieId}/schedules?date=${selectedDate}`)
+    const qs = selectedDate ? `?date=${selectedDate}` : ""
+    apiFetch<{ schedules: Schedule[] }>(`/movies/${movieId}/schedules${qs}`)
       .then(d => {
         setSchedules(d.schedules)
       })

@@ -58,29 +58,39 @@ export default function BookingPage() {
 
       <div className="mt-6">
         <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">1. 日付を選択</h2>
+        <div className="mb-3 mt-2">
+          <button
+            onClick={() => setSelectedDate("")}
+            className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition ${
+              !selectedDate
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+          >
+            すべて
+          </button>
+        </div>
         <DateSelector days={days} selectedDate={selectedDate} onSelect={setSelectedDate} />
       </div>
 
-      {selectedDate && (
-        <div className="mt-8">
-          <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">2. 時間を選択</h2>
-          <div className="mt-3">
-            {schedules.length > 0 ? (
-              movie && (
-                <ScheduleGrid
-                  schedules={schedules}
-                  movieId={movie.id}
-                  selectedDate={selectedDate}
-                  selectedScheduleId={selectedScheduleId ?? undefined}
-                  onSelect={setSelectedScheduleId}
-                />
-              )
-            ) : (
-              <p className="text-sm text-muted-foreground italic">この日の上映予定はありません。</p>
-            )}
-          </div>
+      <div className="mt-8">
+        <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">2. 時間を選択</h2>
+        <div className="mt-3">
+          {schedules.length > 0 ? (
+            movie && (
+              <ScheduleGrid
+                schedules={schedules}
+                movieId={movie.id}
+                selectedDate={selectedDate}
+                selectedScheduleId={selectedScheduleId ?? undefined}
+                onSelect={setSelectedScheduleId}
+              />
+            )
+          ) : (
+            <p className="text-sm text-muted-foreground italic">この日の上映予定はありません。</p>
+          )}
         </div>
-      )}
+      </div>
 
       {selectedScheduleId && (
         <div className="mt-10 border-t border-border pt-10">

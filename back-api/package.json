@@ -5,7 +5,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "db:up": "docker compose -f docker-compose.yml up -d",
+    "db:up": "docker compose -f docker-compose.yml up -d --no-recreate",
     "db:down": "docker compose -f docker-compose.yml down",
     "db:logs": "docker compose -f docker-compose.yml logs -f mysql",
     "db:reset": "docker compose -f docker-compose.yml down -v",

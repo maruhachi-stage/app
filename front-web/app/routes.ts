@@ -22,8 +22,12 @@ export default [
     // その他
     route("/contact", "routes/contact.tsx"),
     route("/shop", "routes/shop.tsx"),
+    route("/shop/:productId", "routes/shop.$productId.tsx"),
     route("/goods", "routes/goods.tsx"),
+    route("/goods/:productId", "routes/goods.$productId.tsx"),
     route("/cart", "routes/cart.tsx"),
+    route("/cart/added", "routes/cart.added.tsx"),
+    route("/cart/checkout", "routes/cart.checkout.tsx"),
 
     // 予約詳細
     route("/reservations/lookup", "routes/reservations/lookup.tsx"),

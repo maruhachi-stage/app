@@ -2,14 +2,18 @@ import type { InputHTMLAttributes } from "react"
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: string
+  labelClassName?: string
   error?: string
 }
 
-export function Input({ label, error, id, className = "", ...props }: InputProps) {
+export function Input({ label, labelClassName = "", error, id, className = "", ...props }: InputProps) {
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-gray-700">
+        <label
+          htmlFor={id}
+          className={`text-sm font-medium text-foreground ${labelClassName}`}
+        >
           {label}
           {props.required && <span className="ml-1 text-red-500">*</span>}
         </label>

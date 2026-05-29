@@ -14,6 +14,7 @@ import stagesRouter from '#modules/stages/index.js'
 import reservationsRouter from '#modules/reservations/index.js'
 import screensRouter from '#modules/screens/index.js'
 import configRouter from '#modules/config/index.js'
+import { seedSchedules } from '#db/seedSchedules.js'
 
 const app = new Hono<AppEnv>()
 
@@ -42,6 +43,9 @@ app.onError(errorHandler)
 app.get('/health', (c) => c.json({ status: 'ok' }))
 
 const port = Number(process.env.PORT ?? 3000)
+
+await seedSchedules()
+
 serve({ fetch: app.fetch, port }, (info) => {
   console.log(`Server is running on http://localhost:${info.port}`)
 })

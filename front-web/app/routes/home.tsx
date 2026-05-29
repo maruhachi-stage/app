@@ -17,6 +17,17 @@ function movieImageUrl(thumbnailUrl: string | null): string | null {
   return proxyImageUrl(thumbnailUrl) ?? null
 }
 
+function movieDetailPath(movieId: number): string {
+  return `/screenings/${movieId}?type=movie`
+}
+
+function moviesListPath(params?: { status?: string; date?: string }): string {
+  const qs = new URLSearchParams({ type: "movie" })
+  if (params?.status) qs.set("status", params.status)
+  if (params?.date) qs.set("date", params.date)
+  return `/screenings?${qs.toString()}`
+}
+
 // ─── スケジュール表示用の型 ────────────────────────────────────────────────
 
 type DisplaySchedule = {
@@ -138,8 +149,8 @@ function ScheduleTimeline({ schedules }: { schedules: DisplaySchedule[] }) {
                   const isFull = s.remainingSeats === 0
                   const dateStr = s.startsAt.slice(0, 10)
                   const linkTo = isFull
-                    ? `/movies/${s.movieId}`
-                    : `/reservations/booking/${s.movieId}?date=${dateStr}&scheduleId=${s.scheduleId}`
+                    ? movieDetailPath(s.movieId)
+                    : `/reservations/booking/${s.movieId}?date=${dateStr}&scheduleId=${s.scheduleId}&type=movie`
 
                   return (
                     <Link
@@ -176,7 +187,7 @@ function HeroMain({ movie }: { movie: Movie }) {
   const imgUrl = movieImageUrl(movie.thumbnailUrl)
   return (
     <Link
-      to={`/movies/${movie.id}`}
+      to={movieDetailPath(movie.id)}
       className="relative block overflow-hidden rounded-lg col-span-1 row-span-2 group"
     >
       {imgUrl ? (
@@ -200,7 +211,7 @@ function HeroMain({ movie }: { movie: Movie }) {
 function HeroSub({ movie }: { movie: Movie }) {
   const imgUrl = movieImageUrl(movie.thumbnailUrl)
   return (
-    <Link to={`/movies/${movie.id}`} className="relative block overflow-hidden rounded-lg group">
+    <Link to={movieDetailPath(movie.id)} className="relative block overflow-hidden rounded-lg group">
       {imgUrl ? (
         <img src={imgUrl} alt={movie.title} className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105" />
       ) : (
@@ -295,7 +306,7 @@ export default function Home() {
         <div className="flex items-center gap-3 mb-6">
           <span className="w-1 h-5 bg-primary rounded-full" />
           <h2 className="text-sm font-bold tracking-[0.2em] text-foreground uppercase">Now Showing</h2>
-          <Link to="/movies?status=now_showing" className="ml-auto text-xs text-primary hover:underline">
+          <Link to={moviesListPath({ status: "now_showing" })} className="ml-auto text-xs text-primary hover:underline">
             すべての作品を見る →
           </Link>
         </div>
@@ -310,7 +321,7 @@ export default function Home() {
           <div className="py-16 text-center space-y-4">
             <h1 className="text-4xl font-bold">{AppConfig.name}へようこそ</h1>
             <p className="text-lg text-muted-foreground">上映中の映画をチェックして、座席を予約しましょう。</p>
-            <Link to="/movies" className="inline-flex items-center justify-center rounded-lg bg-primary px-8 py-3 text-lg font-bold text-primary-foreground hover:opacity-90 transition-all shadow-lg shadow-primary/20 hover:-translate-y-0.5">
+            <Link to={moviesListPath()} className="inline-flex items-center justify-center rounded-lg bg-primary px-8 py-3 text-lg font-bold text-primary-foreground hover:opacity-90 transition-all shadow-lg shadow-primary/20 hover:-translate-y-0.5">
               映画一覧を見る
             </Link>
           </div>
@@ -329,7 +340,7 @@ export default function Home() {
           <span className="w-1 h-5 bg-muted-foreground/50 rounded-full" />
           <h2 className="text-sm font-bold tracking-[0.2em] text-foreground uppercase">Today's Schedule</h2>
           <span className="text-xs text-muted-foreground ml-1">{todayLabel}</span>
-          <Link to={`/movies?date=${todayStr}`} className="ml-auto text-xs text-primary hover:underline">
+          <Link to={moviesListPath({ date: todayStr })} className="ml-auto text-xs text-primary hover:underline">
             スケジュール一覧 →
           </Link>
         </div>

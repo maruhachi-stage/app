@@ -105,7 +105,7 @@ export default function ReservationDetailPage() {
                     <Button size="md" variant="secondary"
                             onClick={() => setShowCancelModal(true)}>予約をキャンセルする</Button>
                 )}
-                <Link to="/movies">
+                <Link to="/screenings?type=movie">
                     <Button size="md" variant="ghost" className="w-full">映画一覧へ</Button>
                 </Link>
             </div>

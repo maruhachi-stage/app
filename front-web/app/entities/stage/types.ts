@@ -1,4 +1,4 @@
-import type { Schedule } from "~/entities/movie/types"
+import type { Schedule } from "~/entities/screening/types"
 
 export type Stage = {
   id: number

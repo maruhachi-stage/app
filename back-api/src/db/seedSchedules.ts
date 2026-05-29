@@ -31,15 +31,15 @@ function makeRand(seed: number) {
 
 export async function seedSchedules(): Promise<void> {
   try {
-    // now_showing の映画を取得
+    // now_showing の上映アイテム（映画・舞台・イベント）を取得
     const [movieRows] = await pool.execute<mysql.RowDataPacket[]>(
       `SELECT m.id, m.duration_min
-       FROM movies m
+       FROM screenings m
        WHERE m.status = 'now_showing'
        ORDER BY m.id`,
     )
     if (movieRows.length === 0) {
-      console.log('[seedSchedules] now_showingの映画がないためスキップ')
+      console.log('[seedSchedules] now_showingの上映アイテムがないためスキップ')
       return
     }
 
@@ -125,7 +125,7 @@ export async function seedSchedules(): Promise<void> {
           const endsAt = `${endDateStr} ${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}:00`
 
           await pool.execute(
-            `INSERT INTO schedules (movie_id, screen_id, starts_at, ends_at, is_public)
+            `INSERT INTO schedules (screening_id, screen_id, starts_at, ends_at, is_public)
              VALUES (?, ?, ?, ?, 1)`,
             [movie.id, screen.id, startsAt, endsAt],
           )

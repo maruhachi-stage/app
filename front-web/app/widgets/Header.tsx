@@ -8,9 +8,7 @@ import { useCart } from "~/features/cart/useCart"
 import { HoldTimer } from "./HoldTimer"
 
 const NAV_LINKS = [
-  { to: "/screenings?type=movie", label: "映画上映" },
-  { to: "/screenings?type=stage", label: "舞台上映" },
-  { to: "/screenings?type=event", label: "イベント上映" },
+  { to: "/screenings", label: "上映スケジュール" },
   { to: "/theater", label: "劇場案内" },
   { to: "/shop", label: "ショップ" },
   { to: "/goods", label: "グッズ" },

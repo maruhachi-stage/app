@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useParams, useSearchParams } from "react-router"
 import { apiFetch } from "~/shared/api/client"
 import { getNext7Days } from "~/shared/lib/date"
-import type { Movie, Schedule, ScreeningType } from "~/entities/movie/types"
+import type { Screening, Schedule, ScreeningType } from "~/entities/screening/types"
 
 type ScheduleInfo = {
   scheduleId: number
@@ -14,7 +14,7 @@ export function useScheduleSelection() {
   const { movieId } = useParams<{ movieId: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [movie, setMovie] = useState<Movie | null>(null)
+  const [screening, setScreening] = useState<Screening | null>(null)
   const [schedules, setSchedules] = useState<Schedule[]>([])
 
   const selectedDate = searchParams.get("date") ?? ""
@@ -31,7 +31,7 @@ export function useScheduleSelection() {
     if (!movieId) return
 
     if (selectedType === "event") {
-      setMovie(null)
+      setScreening(null)
       setSchedules([])
       setLoading(false)
       setError("イベント上映は準備中です。")
@@ -41,8 +41,8 @@ export function useScheduleSelection() {
     setLoading(true)
     const endpoint = selectedType === "stage" ? `/stages/${movieId}` : `/movies/${movieId}`
 
-    apiFetch<Movie>(endpoint)
-      .then((m) => setMovie({ ...m, type: selectedType }))
+    apiFetch<Screening>(endpoint)
+      .then((m) => setScreening({ ...m, type: selectedType }))
       .catch(() => setError("作品情報が見つかりません"))
       .finally(() => setLoading(false))
   }, [movieId, selectedType, reloadKey])
@@ -112,7 +112,7 @@ export function useScheduleSelection() {
   }
 
   return {
-    movie,
+    movie: screening,  // booking.tsx との後方互換のため movie として公開
     days,
     selectedDate,
     setSelectedDate,

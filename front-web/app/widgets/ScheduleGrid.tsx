@@ -1,14 +1,14 @@
 import { Link } from "react-router"
-import type { Schedule, ScreeningType } from "~/entities/movie/types"
+import type { Schedule, ScreeningType } from "~/entities/screening/types"
 import { formatTimeJst } from "~/shared/lib/date"
 
 type Props = {
   schedules: Schedule[]
-  movieId: number
+  itemId: number
   selectedDate: string
   selectedScheduleId?: number
   onSelect?: (scheduleId: number) => void
-  movieType?: ScreeningType
+  screeningType?: ScreeningType
 }
 
 type Status = "available" | "few" | "full"
@@ -42,11 +42,11 @@ const statusConfig: Record<Status, { label: string; cardClass: string; badgeClas
 
 export function ScheduleGrid({
   schedules,
-  movieId,
+  itemId,
   selectedDate,
   selectedScheduleId,
   onSelect,
-  movieType = "movie",
+  screeningType = "movie",
 }: Props) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
@@ -98,7 +98,7 @@ export function ScheduleGrid({
         return (
           <Link
             key={sch.scheduleId}
-            to={`/reservations/booking/${movieId}?date=${selectedDate}&scheduleId=${sch.scheduleId}&type=${movieType}`}
+            to={`/reservations/booking/${itemId}?date=${selectedDate}&scheduleId=${sch.scheduleId}&type=${screeningType}`}
             className={className}
             aria-label={ariaLabel}
             aria-disabled={isFull}

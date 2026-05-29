@@ -2,29 +2,29 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from "react-router"
 import { apiFetch, ApiError } from "~/shared/api/client"
 import { getNext7Days } from "~/shared/lib/date"
-import type { Movie, ScreeningType } from "~/entities/movie/types"
+import type { Screening, ScreeningType } from "~/entities/screening/types"
 
-export interface UseMoviesOptions {
-  type?: ScreeningType
+export interface UseScreeningsOptions {
+  type?: ScreeningType | "all"
   category?: "movie" | "stage"
 }
 
-export function useMovies(options?: UseMoviesOptions) {
+export function useScreenings(options?: UseScreeningsOptions) {
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedDate = searchParams.get("date") ?? ""
   const selectedStatus = (searchParams.get("status") ?? "") as "" | "now_showing" | "coming_soon"
   const sortBy = (searchParams.get("sort") ?? "newest") as "newest" | "title" | "duration"
   const view = (searchParams.get("view") ?? "grid") as "grid" | "list" | "timetable"
-  const selectedType = options?.type ?? options?.category ?? ((searchParams.get("type") ?? "movie") as ScreeningType)
+  const selectedType = options?.type ?? options?.category ?? ((searchParams.get("type") ?? "all") as ScreeningType | "all")
 
-  const [movies, setMovies] = useState<Movie[]>([])
+  const [screenings, setScreenings] = useState<Screening[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const days = getNext7Days()
 
   useEffect(() => {
     if (selectedType === "event") {
-      setMovies([])
+      setScreenings([])
       setLoading(false)
       setError("")
       return
@@ -37,14 +37,27 @@ export function useMovies(options?: UseMoviesOptions) {
     if (selectedStatus) params.set("status", selectedStatus)
     const qs = params.toString()
 
-    const endpoint = selectedType === "stage" ? "/stages" : "/movies"
-
-    apiFetch<{ items: Movie[] }>(`${endpoint}${qs ? `?${qs}` : ""}`)
-      .then((d) => {
-        let sorted = d.items.map((item) => ({
-          ...item,
-          type: selectedType,
+    let fetchPromise: Promise<{ items: Screening[] }>
+    if (selectedType === "all") {
+      fetchPromise = Promise.all([
+        apiFetch<{ items: Screening[] }>(`/movies${qs ? `?${qs}` : ""}`)
+          .then((d) => d.items.map((item) => ({ ...item, type: "movie" as const }))),
+        apiFetch<{ items: Screening[] }>(`/stages${qs ? `?${qs}` : ""}`)
+          .then((d) => d.items.map((item) => ({ ...item, type: "stage" as const })))
+      ]).then(([movies, stages]) => ({
+        items: [...movies, ...stages]
+      }))
+    } else {
+      const endpoint = selectedType === "stage" ? "/stages" : "/movies"
+      fetchPromise = apiFetch<{ items: Screening[] }>(`${endpoint}${qs ? `?${qs}` : ""}`)
+        .then((d) => ({
+          items: d.items.map((item) => ({ ...item, type: selectedType }))
         }))
+    }
+
+    fetchPromise
+      .then((d) => {
+        let sorted = [...d.items]
 
         if (sortBy === "title") {
           sorted.sort((a, b) => a.title.localeCompare(b.title, "ja"))
@@ -52,7 +65,7 @@ export function useMovies(options?: UseMoviesOptions) {
           sorted.sort((a, b) => b.durationMin - a.durationMin)
         }
 
-        setMovies(sorted)
+        setScreenings(sorted)
       })
       .catch((err) => setError(err instanceof ApiError ? err.message : "読み込みに失敗しました"))
       .finally(() => setLoading(false))
@@ -94,10 +107,14 @@ export function useMovies(options?: UseMoviesOptions) {
     }, { preventScrollReset: true })
   }
 
-  function setType(type: ScreeningType) {
+  function setType(type: ScreeningType | "all") {
     setSearchParams((prev) => {
       const p = new URLSearchParams(prev)
-      p.set("type", type)
+      if (type === "all") {
+        p.delete("type")
+      } else {
+        p.set("type", type)
+      }
       p.delete("status")
       return p
     }, { preventScrollReset: true })
@@ -113,7 +130,7 @@ export function useMovies(options?: UseMoviesOptions) {
   }
 
   return {
-    movies,
+    screenings,
     loading,
     error,
     days,

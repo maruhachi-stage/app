@@ -3,7 +3,7 @@ import { Link } from "react-router"
 import { AppConfig } from "~/shared/config/app"
 import { apiFetch, ApiError } from "~/shared/api/client"
 import { proxyImageUrl } from "~/shared/lib/image"
-import type { Movie, Schedule } from "~/entities/movie/types"
+import type { Screening as Movie, Schedule } from "~/entities/screening/types"
 import type { Route } from "./+types/home"
 
 export function meta(_: Route.MetaArgs) {

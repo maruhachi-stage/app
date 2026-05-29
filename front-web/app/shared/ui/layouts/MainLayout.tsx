@@ -3,7 +3,7 @@ import { Header } from "~/widgets/Header"
 import { Footer } from "~/widgets/Footer"
 
 const PAGE_TITLES: Record<string, { title: string; subtitle?: string }> = {
-  "/screenings": { title: "上映一覧", subtitle: "Movies, Stage, and Events" },
+  "/screenings": { title: "上映一覧", subtitle: "映画・舞台・イベント" },
   "/member/reservations": { title: "予約履歴", subtitle: "My Reservations" },
   "/reservations/lookup": { title: "予約確認", subtitle: "Reservation Lookup" },
   "/shop": { title: "ショップ", subtitle: "Shop" },

@@ -24,8 +24,8 @@ export type ScheduleRow = {
 export async function getStageById(stageId: number): Promise<StageRow | null> {
   const [rows] = await pool.execute<mysql.RowDataPacket[]>(
     `SELECT s.id, s.title, s.description, s.duration_min, s.status, s.playwright, s.director,
-      (SELECT file_name FROM stage_images WHERE stage_id = s.id ORDER BY display_order LIMIT 1) AS thumbnail_url
-     FROM stages s WHERE s.id = ?`,
+      (SELECT file_name FROM images WHERE entity_type = 'screening' AND entity_id = s.id ORDER BY display_order LIMIT 1) AS thumbnail_url
+     FROM screenings s WHERE s.id = ? AND s.type <> 'movie'`,
     [stageId],
   )
   return (rows[0] as StageRow) || null
@@ -47,7 +47,7 @@ export async function getSchedulesByStageId(stageId: number, date?: string): Pro
       ), 0) as remaining_seats
     FROM schedules sch
     JOIN screens sc ON sc.id = sch.screen_id
-    WHERE sch.stage_id = ? AND sch.is_public = 1`
+    WHERE sch.screening_id = ? AND sch.is_public = 1`
 
   const params: (string | number)[] = [stageId]
   if (date) {
@@ -62,8 +62,8 @@ export async function getSchedulesByStageId(stageId: number, date?: string): Pro
 
 export async function getStages(status?: string, date?: string): Promise<StageRow[]> {
   let sql = `SELECT s.id, s.title, s.description, s.duration_min, s.status, s.playwright, s.director,
-    (SELECT file_name FROM stage_images WHERE stage_id = s.id ORDER BY display_order LIMIT 1) AS thumbnail_url
-  FROM stages s WHERE 1=1`
+    (SELECT file_name FROM images WHERE entity_type = 'screening' AND entity_id = s.id ORDER BY display_order LIMIT 1) AS thumbnail_url
+  FROM screenings s WHERE s.type <> 'movie'`
   const params: (string | number)[] = []
 
   if (status) {
@@ -72,7 +72,7 @@ export async function getStages(status?: string, date?: string): Promise<StageRo
   }
   if (date) {
     sql += ` AND s.id IN (
-      SELECT DISTINCT stage_id FROM schedules
+      SELECT DISTINCT screening_id FROM schedules
       WHERE is_public = 1 AND DATE(CONVERT_TZ(starts_at, '+00:00', '+09:00')) = ?
     )`
     params.push(date)

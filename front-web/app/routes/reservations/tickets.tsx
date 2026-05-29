@@ -5,7 +5,7 @@ import { useTicketSelection } from "~/features/reservation/useTicketSelection"
 import { useReservationFlow } from "~/processes/reservation-flow/context"
 import { apiFetch } from "~/shared/api/client"
 import { useAppConfig } from "~/shared/config"
-import { MovieHeroBanner } from "~/widgets/MovieHeroBanner"
+import { ScreeningHeroBanner } from "~/widgets/ScreeningHeroBanner"
 import { ReservationActionBar } from "~/widgets/ReservationActionBar"
 
 type ScheduleInfo = {
@@ -61,7 +61,7 @@ export default function TicketsPage() {
       </div>
 
       {info && (
-        <MovieHeroBanner
+        <ScreeningHeroBanner
           title={info.movieTitle}
           posterUrl={info.thumbnailUrl}
           meta={<>{formatJst(info.startsAt)} / {info.screenName}</>}

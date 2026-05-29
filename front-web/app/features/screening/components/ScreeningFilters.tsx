@@ -1,19 +1,19 @@
-import type { ScreeningType } from "~/entities/movie/types"
+import type { ScreeningType } from "~/entities/screening/types"
 
 type Props = {
-  selectedType: ScreeningType
+  selectedType: "all" | ScreeningType
   selectedStatus: string
   selectedDate: string
   sortBy: "newest" | "title" | "duration"
   view: "grid" | "list" | "timetable"
-  onTypeChange: (type: ScreeningType) => void
+  onTypeChange: (type: "all" | ScreeningType) => void
   onStatusChange: (status: string) => void
   onSortChange: (sort: "newest" | "title" | "duration") => void
   onViewChange: (v: "grid" | "list" | "timetable") => void
   onClearAll: () => void
 }
 
-export function MovieFilters({
+export function ScreeningFilters({
   selectedType,
   selectedStatus,
   selectedDate,
@@ -30,6 +30,16 @@ export function MovieFilters({
   return (
     <div className="mb-8 flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
+        <button
+          onClick={() => onTypeChange("all")}
+          className={`rounded-full px-4 py-1.5 text-sm font-bold transition border ${
+            selectedType === "all"
+              ? "bg-primary text-primary-foreground border-primary"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted border-transparent"
+          }`}
+        >
+          すべて
+        </button>
         <button
           onClick={() => onTypeChange("movie")}
           className={`rounded-full px-4 py-1.5 text-sm font-bold transition border ${

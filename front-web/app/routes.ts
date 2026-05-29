@@ -6,10 +6,6 @@ export default [
 
     route("/screenings", "routes/screenings/index.tsx"),
     route("/screenings/:movieId", "routes/screenings/detail.tsx"),
-    route("/movies", "routes/movies/index.tsx"),
-    route("/movies/:movieId", "routes/movies/detail.tsx"),
-    route("/stages", "routes/stages/index.tsx"),
-    route("/stages/:stageId", "routes/stages/detail.tsx"),
 
     route("/theater", "routes/theater/index.tsx"),
     route("/theater/:screenId", "routes/theater/screen.tsx"),

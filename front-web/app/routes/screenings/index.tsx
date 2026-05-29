@@ -1,11 +1,11 @@
-import { useMovies } from "~/features/movie/useMovies"
+import { useScreenings } from "~/features/screening/useScreenings"
 import { DateSelector } from "~/widgets/DateSelector"
-import { MovieFilters } from "~/features/movie/components/MovieFilters"
-import { MovieGrid } from "~/features/movie/components/MovieGrid"
+import { ScreeningFilters } from "~/features/screening/components/ScreeningFilters"
+import { ScreeningGrid } from "~/features/screening/components/ScreeningGrid"
 
 export default function ScreeningsPage() {
   const {
-    movies,
+    screenings,
     loading,
     error,
     days,
@@ -20,13 +20,13 @@ export default function ScreeningsPage() {
     setView,
     setType,
     clearAll,
-  } = useMovies()
+  } = useScreenings()
 
   return (
     <div className="py-8">
       <DateSelector days={days} selectedDate={selectedDate} onSelect={setDate} />
 
-      <MovieFilters
+      <ScreeningFilters
         selectedType={selectedType}
         selectedStatus={selectedStatus}
         selectedDate={selectedDate}
@@ -44,7 +44,7 @@ export default function ScreeningsPage() {
           イベント上映は準備中です。
         </div>
       ) : (
-        <MovieGrid movies={movies} selectedDate={selectedDate} loading={loading} view={view} error={error} />
+        <ScreeningGrid screenings={screenings} selectedDate={selectedDate} loading={loading} view={view} error={error} />
       )}
     </div>
   )

@@ -1,6 +1,6 @@
 export type ScreeningType = "movie" | "stage" | "event"
 
-export type Movie = {
+export type Screening = {
   id: number
   title: string
   description: string

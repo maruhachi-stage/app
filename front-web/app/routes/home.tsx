@@ -299,7 +299,7 @@ export default function Home() {
   const heroSubs = heroRest.slice(0, 2)
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10 space-y-14">
+    <div className="container-center py-10 space-y-14">
 
       {/* ── NOW SHOWING ──────────────────────────────── */}
       <section>

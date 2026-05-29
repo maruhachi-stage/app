@@ -133,7 +133,7 @@ export function ScreeningFilters({
 
       <div className="flex items-center gap-3 rounded-app bg-muted/60 p-3 sm:p-4 border border-border">
         <div className="relative flex-1 flex items-center">
-          <div className="flex items-center rounded-lg border border-border bg-background px-4 py-2 w-full focus-within:ring-1 focus-within:ring-primary transition-all">
+          <div className="flex w-full items-center rounded-app border border-border bg-background px-4 py-2 focus-within:ring-1 focus-within:ring-primary transition-all">
             <svg className="mr-2 h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -146,14 +146,14 @@ export function ScreeningFilters({
           </div>
         </div>
 
-        <div className="flex items-center gap-1 rounded-lg bg-background p-1 border border-border">
-          <button onClick={() => onViewChange("grid")} className={`rounded-md p-1.5 transition ${view === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+        <div className="flex items-center gap-1 rounded-app border border-border bg-background p-1">
+          <button onClick={() => onViewChange("grid")} className={`rounded-app p-1.5 transition ${view === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 0h7v7h-7z" /></svg>
           </button>
-          <button onClick={() => onViewChange("list")} className={`rounded-md p-1.5 transition ${view === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+          <button onClick={() => onViewChange("list")} className={`rounded-app p-1.5 transition ${view === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12h18M3 6h18M3 18h18" /></svg>
           </button>
-          <button onClick={() => onViewChange("timetable")} className={`rounded-md p-1.5 transition ${view === "timetable" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
+          <button onClick={() => onViewChange("timetable")} className={`rounded-app p-1.5 transition ${view === "timetable" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"}`}>
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 6h10 M3 11h16 M3 16h8" /></svg>
           </button>
         </div>

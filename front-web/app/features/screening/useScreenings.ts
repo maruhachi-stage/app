@@ -23,13 +23,6 @@ export function useScreenings(options?: UseScreeningsOptions) {
   const days = getNext7Days()
 
   useEffect(() => {
-    if (selectedType === "event") {
-      setScreenings([])
-      setLoading(false)
-      setError("")
-      return
-    }
-
     setLoading(true)
     setError("")
     const params = new URLSearchParams()
@@ -43,13 +36,15 @@ export function useScreenings(options?: UseScreeningsOptions) {
         apiFetch<{ items: Screening[] }>(`/movies${qs ? `?${qs}` : ""}`)
           .then((d) => d.items.map((item) => ({ ...item, type: "movie" as const }))),
         apiFetch<{ items: Screening[] }>(`/stages${qs ? `?${qs}` : ""}`)
-          .then((d) => d.items.map((item) => ({ ...item, type: "stage" as const })))
+          .then((d) => d.items.map((item) => ({ ...item, type: item.type ?? ("stage" as const) })))
       ]).then(([movies, stages]) => ({
         items: [...movies, ...stages]
       }))
     } else {
-      const endpoint = selectedType === "stage" ? "/stages" : "/movies"
-      fetchPromise = apiFetch<{ items: Screening[] }>(`${endpoint}${qs ? `?${qs}` : ""}`)
+      const endpoint = selectedType === "stage" || selectedType === "event" ? "/stages" : "/movies"
+      const typeQs = selectedType === "stage" || selectedType === "event" ? `type=${selectedType}` : ""
+      const fullQs = [qs, typeQs].filter(Boolean).join("&")
+      fetchPromise = apiFetch<{ items: Screening[] }>(`${endpoint}${fullQs ? `?${fullQs}` : ""}`)
         .then((d) => ({
           items: d.items.map((item) => ({ ...item, type: selectedType }))
         }))

@@ -30,16 +30,8 @@ export function useScheduleSelection() {
   useEffect(() => {
     if (!movieId) return
 
-    if (selectedType === "event") {
-      setScreening(null)
-      setSchedules([])
-      setLoading(false)
-      setError("イベント上映は準備中です。")
-      return
-    }
-
     setLoading(true)
-    const endpoint = selectedType === "stage" ? `/stages/${movieId}` : `/movies/${movieId}`
+    const endpoint = selectedType === "stage" || selectedType === "event" ? `/stages/${movieId}` : `/movies/${movieId}`
 
     apiFetch<Screening>(endpoint)
       .then((m) => setScreening({ ...m, type: selectedType }))
@@ -68,15 +60,9 @@ export function useScheduleSelection() {
       return
     }
 
-    if (selectedType === "event") {
-      setSchedules([])
-      setError("イベント上映は準備中です。")
-      return
-    }
-
     setSchedules([])
     setError("")
-    const endpoint = selectedType === "stage" ? `/stages/${movieId}/schedules?date=${selectedDate}` : `/movies/${movieId}/schedules?date=${selectedDate}`
+    const endpoint = selectedType === "stage" || selectedType === "event" ? `/stages/${movieId}/schedules?date=${selectedDate}` : `/movies/${movieId}/schedules?date=${selectedDate}`
 
     apiFetch<{ schedules: Schedule[] }>(endpoint)
       .then((d) => {

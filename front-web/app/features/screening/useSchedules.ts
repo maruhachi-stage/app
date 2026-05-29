@@ -36,17 +36,10 @@ export function useSchedules(options?: UseSchedulesOptions) {
   useEffect(() => {
     if (!itemId) return
 
-    if (selectedType === "event") {
-      setData(null)
-      setLoading(false)
-      setError("イベント上映は準備中です。")
-      return
-    }
-
     setLoading(true)
     setError("")
 
-    const baseEndpoint = selectedType === "stage" ? `/stages/${itemId}` : `/movies/${itemId}`
+    const baseEndpoint = selectedType === "stage" || selectedType === "event" ? `/stages/${itemId}` : `/movies/${itemId}`
     const qs = selectedDate ? `?date=${selectedDate}` : ""
 
     apiFetch<ScheduleResponse>(`${baseEndpoint}/schedules${qs}`)

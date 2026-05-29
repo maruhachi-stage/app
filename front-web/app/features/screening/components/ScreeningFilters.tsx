@@ -25,8 +25,6 @@ export function ScreeningFilters({
   onViewChange,
   onClearAll,
 }: Props) {
-  const isEvent = selectedType === "event"
-
   return (
     <div className="mb-8 flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -81,7 +79,6 @@ export function ScreeningFilters({
                 ? "bg-primary text-primary-foreground border-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted border-transparent"
             }`}
-            disabled={isEvent}
           >
             すべて
           </button>
@@ -92,7 +89,6 @@ export function ScreeningFilters({
                 ? "bg-primary text-primary-foreground border-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted border-transparent"
             }`}
-            disabled={isEvent}
           >
             上映中
           </button>
@@ -103,7 +99,6 @@ export function ScreeningFilters({
                 ? "bg-primary text-primary-foreground border-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted border-transparent"
             }`}
-            disabled={isEvent}
           >
             上映予定
           </button>
@@ -117,21 +112,18 @@ export function ScreeningFilters({
             <button
               onClick={() => onSortChange("newest")}
               className={`transition ${sortBy === "newest" ? "text-primary font-bold underline underline-offset-4" : "text-muted-foreground hover:text-foreground"}`}
-              disabled={isEvent}
             >
               新着順
             </button>
             <button
               onClick={() => onSortChange("title")}
               className={`transition ${sortBy === "title" ? "text-primary font-bold underline underline-offset-4" : "text-muted-foreground hover:text-foreground"}`}
-              disabled={isEvent}
             >
               タイトル順
             </button>
             <button
               onClick={() => onSortChange("duration")}
               className={`transition ${sortBy === "duration" ? "text-primary font-bold underline underline-offset-4" : "text-muted-foreground hover:text-foreground"}`}
-              disabled={isEvent}
             >
               上映時間順
             </button>

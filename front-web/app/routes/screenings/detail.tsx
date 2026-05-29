@@ -13,9 +13,9 @@ export default function ScreeningDetailPage() {
   const [relatedItems, setRelatedItems] = useState<Screening[]>([])
 
   useEffect(() => {
-    if (!movieId || selectedType === "event") return
+    if (!movieId) return
 
-    const endpoint = selectedType === "stage" ? "/stages" : "/movies"
+    const endpoint = selectedType === "stage" || selectedType === "event" ? `/stages?type=${selectedType}` : "/movies"
     apiFetch<{ items: Screening[] }>(endpoint)
       .then((res) => {
         setRelatedItems(

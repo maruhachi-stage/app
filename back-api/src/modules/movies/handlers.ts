@@ -116,7 +116,7 @@ export const getSchedule = async (c: Context<AppEnv>) => {
     stageId: r.stage_id,
     stageTitle: r.stage_title,
     title: r.movie_title ?? r.stage_title,
-    type: r.movie_id ? 'movie' : 'stage',
+    type: r.type,
     thumbnailUrl: imageUrl(r.thumbnail_url),
     durationMin: r.duration_min,
     screenName: r.screen_name,

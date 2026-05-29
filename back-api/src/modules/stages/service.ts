@@ -3,6 +3,7 @@ import { pool } from '#db/client.js'
 
 export type StageRow = {
   id: number
+  type: 'stage' | 'event'
   title: string
   description: string
   duration_min: number
@@ -23,7 +24,7 @@ export type ScheduleRow = {
 
 export async function getStageById(stageId: number): Promise<StageRow | null> {
   const [rows] = await pool.execute<mysql.RowDataPacket[]>(
-    `SELECT s.id, s.title, s.description, s.duration_min, s.status, s.playwright, s.director,
+    `SELECT s.id, s.type, s.title, s.description, s.duration_min, s.status, s.playwright, s.director,
       (SELECT file_name FROM images WHERE entity_type = 'screening' AND entity_id = s.id ORDER BY display_order LIMIT 1) AS thumbnail_url
      FROM screenings s WHERE s.id = ? AND s.type <> 'movie'`,
     [stageId],
@@ -60,11 +61,18 @@ export async function getSchedulesByStageId(stageId: number, date?: string): Pro
   return rows as ScheduleRow[]
 }
 
-export async function getStages(status?: string, date?: string): Promise<StageRow[]> {
-  let sql = `SELECT s.id, s.title, s.description, s.duration_min, s.status, s.playwright, s.director,
+export async function getStages(status?: string, date?: string, type?: 'stage' | 'event'): Promise<StageRow[]> {
+  let sql = `SELECT s.id, s.type, s.title, s.description, s.duration_min, s.status, s.playwright, s.director,
     (SELECT file_name FROM images WHERE entity_type = 'screening' AND entity_id = s.id ORDER BY display_order LIMIT 1) AS thumbnail_url
-  FROM screenings s WHERE s.type <> 'movie'`
+  FROM screenings s WHERE `
   const params: (string | number)[] = []
+
+  if (type) {
+    sql += 's.type = ?'
+    params.push(type)
+  } else {
+    sql += "s.type <> 'movie'"
+  }
 
   if (status) {
     sql += ' AND s.status = ?'

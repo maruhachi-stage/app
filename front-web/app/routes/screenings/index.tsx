@@ -39,13 +39,7 @@ export default function ScreeningsPage() {
         onClearAll={clearAll}
       />
 
-      {selectedType === "event" ? (
-        <div className="rounded-app border border-border bg-card p-8 text-center text-muted-foreground">
-          イベント上映は準備中です。
-        </div>
-      ) : (
-        <ScreeningGrid screenings={screenings} selectedDate={selectedDate} loading={loading} view={view} error={error} />
-      )}
+      <ScreeningGrid screenings={screenings} selectedDate={selectedDate} loading={loading} view={view} error={error} />
     </div>
   )
 }

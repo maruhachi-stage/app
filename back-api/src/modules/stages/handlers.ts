@@ -11,17 +11,22 @@ export const listStages = async (c: Context<AppEnv>) => {
   const requestId = c.get('requestId')
   const date = c.req.query('date')
   const status = c.req.query('status')
+  const type = c.req.query('type') as 'stage' | 'event' | undefined
 
   if (date && !DATE_RE.test(date)) throw new AppError('VALIDATION_ERROR', 'date must be YYYY-MM-DD')
   if (status && !['now_showing', 'coming_soon'].includes(status)) {
     throw new AppError('VALIDATION_ERROR', 'Invalid status value')
   }
+  if (type && !['stage', 'event'].includes(type)) {
+    throw new AppError('VALIDATION_ERROR', 'Invalid type value')
+  }
 
-  const stageRows = await StageService.getStages(status, date)
+  const stageRows = await StageService.getStages(status, date, type)
   const items = await Promise.all(stageRows.map(async (r) => {
     const schedules = date ? await StageService.getSchedulesByStageId(r.id, date) : []
     return {
       id: r.id,
+      type: r.type,
       title: r.title,
       description: r.description,
       durationMin: r.duration_min,
@@ -54,6 +59,7 @@ export const getStage = async (c: Context<AppEnv>) => {
 
   return c.json(successResponse({
     id: stage.id,
+    type: stage.type,
     title: stage.title,
     description: stage.description,
     durationMin: stage.duration_min,
@@ -80,6 +86,7 @@ export const getStageSchedules = async (c: Context<AppEnv>) => {
   return c.json(successResponse({
     stage: {
       id: stage.id,
+      type: stage.type,
       title: stage.title,
       description: stage.description,
       durationMin: stage.duration_min,

@@ -21,6 +21,7 @@ export type ScheduleRow = {
 
 export type FullScheduleRow = {
   schedule_id: number
+  type: 'movie' | 'stage' | 'event'
   movie_id: number | null
   movie_title: string | null
   stage_id: number | null
@@ -78,6 +79,7 @@ export async function getFullScheduleById(scheduleId: number): Promise<FullSched
   const [rows] = await pool.execute<mysql.RowDataPacket[]>(
     `SELECT
        sch.id as schedule_id,
+       item.type,
        IF(item.type = 'movie', sch.screening_id, NULL) as movie_id,
        IF(item.type = 'movie', item.title, NULL) as movie_title,
        IF(item.type <> 'movie', sch.screening_id, NULL) as stage_id,

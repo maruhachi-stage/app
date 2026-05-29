@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate } from "react-router"
 import { AppConfig } from "~/shared/config/app"
 import { useAuth } from "~/shared/api/auth"
@@ -6,6 +6,17 @@ import { apiFetch } from "~/shared/api/client"
 import { Button } from "~/shared/ui/Button"
 import { useCart } from "~/features/cart/useCart"
 import { HoldTimer } from "./HoldTimer"
+
+const NAV_LINKS = [
+  { to: "/screenings?type=movie", label: "映画上映" },
+  { to: "/screenings?type=stage", label: "舞台上映" },
+  { to: "/screenings?type=event", label: "イベント上映" },
+  { to: "/theater", label: "劇場案内" },
+  { to: "/shop", label: "ショップ" },
+  { to: "/goods", label: "グッズ" },
+  { to: "/cart", label: "カート" },
+  { to: "/reservations/lookup", label: "予約確認" },
+]
 
 export function Header() {
   const { auth, setAuth } = useAuth()
@@ -16,13 +27,13 @@ export function Header() {
   const offsetRef = useRef(0)
   const lastYRef = useRef(0)
 
-  // メニュー展開中はbodyスクロール禁止
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : ""
-    return () => { document.body.style.overflow = "" }
+    return () => {
+      document.body.style.overflow = ""
+    }
   }, [menuOpen])
 
-  // スクロール追従 (モバイルのみ・直接DOM操作でRAFなしでも滑らか)
   useEffect(() => {
     const header = headerRef.current
     if (!header) return
@@ -71,34 +82,20 @@ export function Header() {
     } catch {
       // ignore
     }
+
     setAuth({ authenticated: false })
     navigate("/")
     setMenuOpen(false)
   }
 
-  const NAV_LINKS = [
-    { to: "/movies", label: "映画一覧" },
-    { to: "/stages", label: "舞台・演劇" },
-    { to: "/theater", label: "劇場案内" },
-    { to: "/shop", label: "ショップ" },
-    { to: "/goods", label: "グッズ" },
-    { to: "/cart", label: "カート" },
-    { to: "/reservations/lookup", label: "予約確認" },
-  ]
-
   return (
     <>
-      <header
-        ref={headerRef}
-        className="bg-background/80 backdrop-blur-md border-b border-border relative z-50"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
+      <header ref={headerRef} className="bg-background/80 backdrop-blur-md border-b border-border relative z-50" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <div className="container-center flex items-center justify-between py-4">
           <Link to="/" className="text-2xl font-black tracking-tighter text-primary" onClick={() => setMenuOpen(false)}>
             {AppConfig.name}
           </Link>
 
-          {/* デスクトップ nav */}
           <nav className="hidden md:flex items-center gap-6">
             {NAV_LINKS.map(({ to, label }) => (
               <Link key={to} to={to} className="relative text-sm font-bold text-muted-foreground hover:text-foreground transition-colors">
@@ -132,12 +129,7 @@ export function Header() {
             )}
           </nav>
 
-          {/* モバイル: ハンバーガーボタン */}
-          <button
-            className="md:hidden text-foreground p-1"
-            onClick={() => setMenuOpen(v => !v)}
-            aria-label="メニュー"
-          >
+          <button className="md:hidden text-foreground p-1" onClick={() => setMenuOpen((v) => !v)} aria-label="メニュー">
             {menuOpen ? (
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -152,12 +144,8 @@ export function Header() {
         <HoldTimer />
       </header>
 
-      {/* フルスクリーンメニュー（モバイル） */}
       {menuOpen && (
-        <div
-          className="fixed inset-0 z-40 flex flex-col bg-background md:hidden overflow-y-auto"
-          style={{ paddingTop: "env(safe-area-inset-top)" }}
-        >
+        <div className="fixed inset-0 z-40 flex flex-col bg-background md:hidden overflow-y-auto" style={{ paddingTop: "env(safe-area-inset-top)" }}>
           <div className="flex items-center justify-between border-b border-border px-4 py-4">
             <Link to="/" className="text-2xl font-black tracking-tighter text-primary" onClick={() => setMenuOpen(false)}>
               {AppConfig.name}

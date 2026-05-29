@@ -1,12 +1,19 @@
-import { useState, useEffect } from "react"
+﻿import { useState, useEffect } from "react"
 import { useParams, useSearchParams, useNavigate } from "react-router"
 import { apiFetch, ApiError } from "~/shared/api/client"
 import { getNext7Days } from "~/shared/lib/date"
-import type { Movie, Schedule } from "~/entities/movie/types"
+import type { Movie, Schedule, ScreeningType } from "~/entities/movie/types"
 
 export interface UseSchedulesOptions {
+  type?: ScreeningType
   category?: "movie" | "stage"
   idParamName?: string
+}
+
+type ScheduleResponse = {
+  movie?: Movie
+  stage?: Movie
+  schedules: Schedule[]
 }
 
 export function useSchedules(options?: UseSchedulesOptions) {
@@ -15,7 +22,10 @@ export function useSchedules(options?: UseSchedulesOptions) {
   const movieId = params[idParamName]
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedDate = searchParams.get("date") ?? ""
-  const category = options?.category ?? (searchParams.get("category") ?? "")
+  const selectedType =
+    options?.type ??
+    options?.category ??
+    ((searchParams.get("type") ?? searchParams.get("category") ?? "movie") as ScreeningType)
   const navigate = useNavigate()
 
   const [data, setData] = useState<{ movie: Movie; schedules: Schedule[] } | null>(null)
@@ -25,45 +35,61 @@ export function useSchedules(options?: UseSchedulesOptions) {
 
   useEffect(() => {
     if (!movieId) return
+
+    if (selectedType === "event") {
+      setData(null)
+      setLoading(false)
+      setError("イベント上映は準備中です。")
+      return
+    }
+
     setLoading(true)
     setError("")
-    
-    // カテゴリが stage の場合は /stages を叩く
-    const baseEndpoint = category === "stage" ? `/stages/${movieId}` : `/movies/${movieId}`
+
+    const baseEndpoint = selectedType === "stage" ? `/stages/${movieId}` : `/movies/${movieId}`
     const qs = selectedDate ? `?date=${selectedDate}` : ""
-    
-    apiFetch<{ movie: Movie; schedules: Schedule[] }>(`${baseEndpoint}/schedules${qs}`)
-      .then(d => {
+
+    apiFetch<ScheduleResponse>(`${baseEndpoint}/schedules${qs}`)
+      .then((d) => {
+        const baseMovie = (d.movie ?? d.stage) as Movie | undefined
+        if (!baseMovie) {
+          setError("データ形式が不正です。")
+          return
+        }
+
         setData({
-          ...d,
           movie: {
-            ...d.movie,
-            type: category === "stage" ? "stage" : "movie"
-          }
+            ...baseMovie,
+            type: selectedType,
+          },
+          schedules: d.schedules,
         })
       })
-      .catch(err => {
+      .catch((err) => {
         if (err instanceof ApiError && err.status === 404) {
-          navigate(category === "stage" ? "/stages" : "/movies", { replace: true })
+          navigate(`/screenings?type=${selectedType}`, { replace: true })
         } else {
-          setError("読み込みに失敗しました")
+          setError("隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆")
         }
       })
       .finally(() => setLoading(false))
-  }, [movieId, selectedDate, category])
+  }, [movieId, selectedDate, selectedType, navigate])
 
   function setDate(date: string) {
-    setSearchParams(p => {
-      const n = new URLSearchParams(p)
-      if (date) n.set("date", date); else n.delete("date")
-      return n
-    }, { preventScrollReset: true })
+    setSearchParams(
+      (p) => {
+        const n = new URLSearchParams(p)
+        if (date) n.set("date", date)
+        else n.delete("date")
+        return n
+      },
+      { preventScrollReset: true },
+    )
   }
 
   function selectSchedule(scheduleId: number) {
-    const categoryQs = category === "stage" ? "&category=stage" : ""
-    navigate(`/reservations/booking/${movieId}?date=${selectedDate}&scheduleId=${scheduleId}${categoryQs}`)
+    navigate(`/reservations/booking/${movieId}?date=${selectedDate}&scheduleId=${scheduleId}&type=${selectedType}`)
   }
 
-  return { data, loading, error, days, selectedDate, setDate, selectSchedule }
+  return { data, loading, error, days, selectedDate, setDate, selectSchedule, selectedType }
 }

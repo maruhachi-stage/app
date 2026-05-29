@@ -76,7 +76,7 @@ export default function TimetableView({ movies, selectedDate }: Props) {
                 return (
                   <Link
                     key={sch.scheduleId}
-                    to={`/reservations/booking/${movie.id}?date=${selectedDate}&scheduleId=${sch.scheduleId}`}
+                    to={`/reservations/booking/${movie.id}?date=${selectedDate}&scheduleId=${sch.scheduleId}&type=${movie.type ?? "movie"}`}
                     className="absolute rounded-md bg-primary/80 text-primary-foreground px-1.5 py-1 overflow-hidden cursor-pointer hover:bg-primary transition-colors flex flex-col justify-between"
                     style={{
                       left: `${left}%`,

@@ -1,3 +1,5 @@
+export type ScreeningType = "movie" | "stage" | "event"
+
 export type Movie = {
   id: number
   title: string
@@ -8,7 +10,7 @@ export type Movie = {
   schedules?: Schedule[]
   playwright?: string | null
   director?: string | null
-  type?: "movie" | "stage"
+  type?: ScreeningType
 }
 
 export type Schedule = {

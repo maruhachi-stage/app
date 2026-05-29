@@ -10,15 +10,17 @@ export default function StagesPage() {
         error,
         days,
         selectedDate,
+        selectedType,
         selectedStatus,
         sortBy,
         view,
+        setType,
         setDate,
         setStatus,
         setSort,
         setView,
         clearAll,
-    } = useMovies({ category: "stage" })
+    } = useMovies({ type: "stage" })
 
     return (
         <div className="py-8">
@@ -29,10 +31,12 @@ export default function StagesPage() {
             />
 
             <MovieFilters 
+                selectedType={selectedType}
                 selectedStatus={selectedStatus} 
                 selectedDate={selectedDate}
                 sortBy={sortBy}
                 view={view}
+                onTypeChange={setType}
                 onStatusChange={setStatus} 
                 onSortChange={setSort}
                 onViewChange={setView}

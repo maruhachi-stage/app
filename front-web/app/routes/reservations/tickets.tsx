@@ -75,7 +75,7 @@ export default function TicketsPage() {
           <div key={seat.seatId}
             className="flex flex-col gap-4 rounded-app border border-border bg-card shadow-sm p-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-foreground text-xs font-black text-background">
+              <div className="flex h-12 w-12 rounded-app items-center justify-center bg-foreground text-xs font-black text-background">
                 {seat.row}-{seat.col}
               </div>
               <div>

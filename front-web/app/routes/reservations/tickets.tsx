@@ -88,13 +88,14 @@ export default function TicketsPage() {
                 <button
                   key={t.type}
                   onClick={() => updateSeatTicketType(seat.seatId, t.type as any)}
-                  className={`flex-1 rounded-lg border-2 py-2 text-[10px] font-black transition-all ${
+                  className={`flex-1 rounded-lg border-2 py-4 text-xs font-black transition-all touch-manipulation ${
                     seat.ticketType === t.type
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-secondary text-muted-foreground hover:border-primary/30"
                   }`}
                 >
-                  {t.label}<br />{t.price.toLocaleString()}円
+                  <span className="block text-sm">{t.label}</span>
+                  <span className="block mt-1">{t.price.toLocaleString()}円</span>
                 </button>
               ))}
             </div>

@@ -14,6 +14,7 @@ import {DebugTools} from "~/widgets/DebugTools";
 import { AuthContext, getAuthState, type AuthState } from "~/shared/api/auth";
 import { useTheme } from "~/shared/lib/theme";
 import { ConfigProvider } from "~/shared/config";
+import { CartProvider } from "~/features/cart/useCart";
 
 export const links: Route.LinksFunction = () => [
     {rel: "preconnect", href: "https://fonts.googleapis.com"},
@@ -38,6 +39,7 @@ export function Layout({children}: { children: React.ReactNode }) {
 
     return (
         <AuthContext.Provider value={{ auth, setAuth }}>
+        <CartProvider>
         <ConfigProvider>
         <html lang="ja" data-theme={theme} suppressHydrationWarning>
         <head>
@@ -55,6 +57,7 @@ export function Layout({children}: { children: React.ReactNode }) {
         </body>
         </html>
         </ConfigProvider>
+        </CartProvider>
         </AuthContext.Provider>
     );
 }

@@ -38,7 +38,7 @@ export default function CompletePage() {
         <Link to="/reservations/lookup">
           <Button size="md" variant="secondary" className="w-full">予約を照会する</Button>
         </Link>
-        <Link to="/movies">
+        <Link to="/screenings?type=movie">
           <Button size="md" variant="ghost" className="w-full">映画一覧へ戻る</Button>
         </Link>
       </div>

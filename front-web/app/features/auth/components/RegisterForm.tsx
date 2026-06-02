@@ -4,7 +4,7 @@ import { Input } from "~/shared/ui/Input"
 import { useRegister } from "~/features/auth/useRegister"
 
 export function RegisterForm() {
-  const { email, setEmail, error, loading, redirect, handleSubmit } = useRegister()
+  const { email, setEmail, name, setName, error, loading, redirect, handleSubmit } = useRegister()
 
   return (
     <div className="w-full">
@@ -19,6 +19,18 @@ export function RegisterForm() {
           required
           autoComplete="email"
         />
+        <Input
+          id="name"
+          label="ユーザー名"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="例: hal_user"
+          required
+          autoComplete="name"
+        />
+        <p className="mb-6 text-sm">
+          メールアドレスとユーザー名を入力してください。認証コードを送信します。
+        </p>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <Button type="submit" size="lg" disabled={loading} className="w-full">
           {loading ? "送信中..." : "認証コードを送信"}

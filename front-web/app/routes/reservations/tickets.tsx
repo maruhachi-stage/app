@@ -5,7 +5,7 @@ import { useTicketSelection } from "~/features/reservation/useTicketSelection"
 import { useReservationFlow } from "~/processes/reservation-flow/context"
 import { apiFetch } from "~/shared/api/client"
 import { useAppConfig } from "~/shared/config"
-import { MovieHeroBanner } from "~/widgets/MovieHeroBanner"
+import { ScreeningHeroBanner } from "~/widgets/ScreeningHeroBanner"
 import { ReservationActionBar } from "~/widgets/ReservationActionBar"
 
 type ScheduleInfo = {
@@ -61,7 +61,7 @@ export default function TicketsPage() {
       </div>
 
       {info && (
-        <MovieHeroBanner
+        <ScreeningHeroBanner
           title={info.movieTitle}
           posterUrl={info.thumbnailUrl}
           meta={<>{formatJst(info.startsAt)} / {info.screenName}</>}
@@ -75,7 +75,7 @@ export default function TicketsPage() {
           <div key={seat.seatId}
             className="flex flex-col gap-4 rounded-app border border-border bg-card shadow-sm p-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 rounded-app items-center justify-center bg-foreground text-xs font-black text-background">
+              <div className="flex h-12 w-12 items-center justify-center rounded-app bg-foreground text-xs font-black text-background">
                 {seat.row}-{seat.col}
               </div>
               <div>
@@ -88,7 +88,7 @@ export default function TicketsPage() {
                 <button
                   key={t.type}
                   onClick={() => updateSeatTicketType(seat.seatId, t.type as any)}
-                  className={`flex-1 rounded-lg border-2 py-2 text-[10px] font-black transition-all ${
+                  className={`flex-1 rounded-app border-2 py-2 text-[10px] font-black transition-all ${
                     seat.ticketType === t.type
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-secondary text-muted-foreground hover:border-primary/30"

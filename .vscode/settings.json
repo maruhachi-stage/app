@@ -1,0 +1,28 @@
+{
+    "files.encoding": "utf8",
+    "files.autoGuessEncoding": false,
+
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+
+    "editorconfig.generateAuto": false,
+
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "database": "hal_cinema",
+            "username": "hal_user",
+            "password": "hal_pass",
+            "name": "aa"
+        }
+    ]
+}

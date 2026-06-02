@@ -6,11 +6,11 @@ export function canProceed(state: ReservationFlowState, to: FlowStep): GuardResu
   switch (to) {
     case "entry":
     case "customer":
-      if (!hasSeats) return fail("/movies", "座席情報が不足しています。上映回選択からやり直してください。")
+      if (!hasSeats) return fail("/screenings?type=movie", "座席情報が不足しています。上映回選択からやり直してください。")
       return ok()
 
     case "tickets":
-      if (!hasSeats) return fail("/movies", "座席情報が不足しています。上映回選択からやり直してください。")
+      if (!hasSeats) return fail("/screenings?type=movie", "座席情報が不足しています。上映回選択からやり直してください。")
       if (!state.bookingType) return fail("/reservations/entry", "予約方法を選択してください。")
       return ok()
 
@@ -18,7 +18,7 @@ export function canProceed(state: ReservationFlowState, to: FlowStep): GuardResu
       const ticketsCheck = canProceed(state, "tickets")
       if (!ticketsCheck.ok) return ticketsCheck
       if (!state.customer?.email) return fail("/reservations/customer", "お客様情報が不足しています。")
-      if (!state.reservationCode || !state.layoutVersion) return fail("/movies", "座席の仮押さえ情報が不足しています。")
+      if (!state.reservationCode || !state.layoutVersion) return fail("/screenings?type=movie", "座席の仮押さえ情報が不足しています。")
       return ok()
     }
 

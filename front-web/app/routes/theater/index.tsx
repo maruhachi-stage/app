@@ -30,7 +30,7 @@ export default function TheaterIndexPage() {
           <Link
             key={screen.id}
             to={`/theater/${screen.id}`}
-            className="group flex flex-col rounded-xl border border-border bg-card hover:border-primary hover:bg-primary/5 transition-all p-6"
+            className="group flex flex-col rounded-app border border-border bg-card hover:border-primary hover:bg-primary/5 transition-all p-6"
           >
             <div className="flex items-start justify-between mb-4">
               <h2 className="text-xl font-black text-foreground group-hover:text-primary transition-colors">

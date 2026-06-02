@@ -7,10 +7,6 @@ export function OtpForm() {
 
   return (
     <div className="w-full">
-      <p className="mb-6 text-sm text-gray-500">
-        <span className="font-medium text-gray-700">{email}</span>{" "}
-        に送信した6桁のコードを入力してください。
-      </p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <Input
           id="code"
@@ -24,6 +20,10 @@ export function OtpForm() {
           required
           autoComplete="one-time-code"
         />
+        <p className="mb-6 text-sm">
+          <span className="font-medium text-wite">{email}</span>{" "}
+          に送信した6桁のコードを入力してください。
+        </p>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <Button type="submit" size="lg" disabled={loading || code.length !== 6} className="w-full">
           {loading ? "確認中..." : "確認する"}

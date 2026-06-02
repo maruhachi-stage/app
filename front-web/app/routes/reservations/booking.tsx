@@ -4,7 +4,7 @@ import { useBooking } from "~/features/reservation/useBooking"
 import { SeatMap } from "~/widgets/SeatMap"
 import { DateSelector } from "~/widgets/DateSelector"
 import { ScheduleGrid } from "~/widgets/ScheduleGrid"
-import { MovieHeroBanner } from "~/widgets/MovieHeroBanner"
+import { ScreeningHeroBanner } from "~/widgets/ScreeningHeroBanner"
 import { getAuthState } from "~/shared/api/auth"
 import { apiFetch } from "~/shared/api/client"
 import { useReservationFlow } from "~/processes/reservation-flow/context"
@@ -49,7 +49,7 @@ export default function BookingPage() {
   return (
     <div className="py-6">
       {movie && (
-        <MovieHeroBanner
+        <ScreeningHeroBanner
           title={movie.title}
           posterUrl={movie.thumbnailUrl}
           meta={<>{movie.durationMin}分</>}
@@ -73,22 +73,24 @@ export default function BookingPage() {
         <DateSelector days={days} selectedDate={selectedDate} onSelect={setSelectedDate} />
       </div>
 
-      <div className="mt-8">
-        <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">2. 時間を選択</h2>
-        <div className="mt-3">
-          {schedules.length > 0 ? (
-            movie && (
-              <ScheduleGrid
-                schedules={schedules}
-                movieId={movie.id}
-                selectedDate={selectedDate}
-                selectedScheduleId={selectedScheduleId ?? undefined}
-                onSelect={setSelectedScheduleId}
-              />
-            )
-          ) : (
-            <p className="text-sm text-muted-foreground italic">この日の上映予定はありません。</p>
-          )}
+      {selectedDate && (
+        <div className="mt-8">
+          <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">2. 時間を選択</h2>
+          <div className="mt-3">
+            {schedules.length > 0 ? (
+              movie && (
+                <ScheduleGrid
+                  schedules={schedules}
+                  itemId={movie.id}
+                  selectedDate={selectedDate}
+                  selectedScheduleId={selectedScheduleId ?? undefined}
+                  onSelect={setSelectedScheduleId}
+                />
+              )
+            ) : (
+              <p className="text-sm text-muted-foreground italic">この日の上映予定はありません。</p>
+            )}
+          </div>
         </div>
       </div>
 

@@ -51,38 +51,55 @@ CREATE TABLE IF NOT EXISTS screens (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------------------------
--- 4. movies
+-- 4. screenings (映画・舞台・イベントマスタ統合)
 -- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS movies (
+CREATE TABLE IF NOT EXISTS screenings (
   id            BIGINT UNSIGNED                   NOT NULL AUTO_INCREMENT,
+  type          ENUM('movie', 'stage', 'event')   NOT NULL,
   title         VARCHAR(200)                      NOT NULL,
   description   TEXT                              NOT NULL,
   duration_min  SMALLINT UNSIGNED                 NOT NULL,
-  thumbnail_url VARCHAR(500)                      NULL,
   status        ENUM('now_showing','coming_soon') NOT NULL,
+  playwright    VARCHAR(100)                      NULL, -- 作 (演劇特有)
+  director      VARCHAR(100)                      NULL, -- 演出 (演劇特有)
   created_at    DATETIME(3)                       NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   updated_at    DATETIME(3)                       NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   PRIMARY KEY (id),
-  KEY idx_movies_title  (title),
-  KEY idx_movies_status (status)
+  KEY idx_screenings_title  (title),
+  KEY idx_screenings_type   (type),
+  KEY idx_screenings_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------------------------
--- 5. schedules
+-- 4.5. images (統合・多態的画像管理テーブル)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS images (
+  id            BIGINT UNSIGNED                    NOT NULL AUTO_INCREMENT,
+  entity_type   VARCHAR(50)                        NOT NULL, -- 'screening', 'goods', 'food' 等を識別
+  entity_id     BIGINT UNSIGNED                    NOT NULL, -- 各種マスタテーブルのIDに対応
+  file_name     VARCHAR(500)                       NOT NULL,
+  display_order INT UNSIGNED                       NOT NULL DEFAULT 1,
+  created_at    DATETIME(3)                        NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  KEY idx_images_entity (entity_type, entity_id, display_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------------------------------------------------------------------------
+-- 5. schedules (映画・舞台・イベント上映スケジュール統合)
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS schedules (
-  id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  movie_id   BIGINT UNSIGNED NOT NULL,
-  screen_id  BIGINT UNSIGNED NOT NULL,
-  starts_at  DATETIME(3)     NOT NULL,
-  ends_at    DATETIME(3)     NOT NULL,
-  is_public  TINYINT(1)      NOT NULL DEFAULT 1,
-  created_at DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  updated_at DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  screening_id BIGINT UNSIGNED NOT NULL,
+  screen_id    BIGINT UNSIGNED NOT NULL,
+  starts_at    DATETIME(3)     NOT NULL,
+  ends_at      DATETIME(3)     NOT NULL,
+  is_public    TINYINT(1)      NOT NULL DEFAULT 1,
+  created_at   DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at   DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   PRIMARY KEY (id),
   KEY idx_schedules_starts_at (starts_at),
-  CONSTRAINT fk_schedules_movie  FOREIGN KEY (movie_id)  REFERENCES movies  (id) ON DELETE RESTRICT,
-  CONSTRAINT fk_schedules_screen FOREIGN KEY (screen_id) REFERENCES screens (id) ON DELETE RESTRICT
+  CONSTRAINT fk_schedules_screening FOREIGN KEY (screening_id) REFERENCES screenings (id) ON DELETE RESTRICT,
+  CONSTRAINT fk_schedules_screen    FOREIGN KEY (screen_id)    REFERENCES screens    (id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------------------------

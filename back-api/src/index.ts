@@ -10,6 +10,7 @@ import { auditLogMiddleware } from '#middleware/auditLog.js'
 import membersRouter from '#modules/members/index.js'
 import authRouter from '#modules/auth/index.js'
 import moviesRouter from '#modules/movies/index.js'
+import stagesRouter from '#modules/stages/index.js'
 import reservationsRouter from '#modules/reservations/index.js'
 import screensRouter from '#modules/screens/index.js'
 import configRouter from '#modules/config/index.js'
@@ -33,6 +34,7 @@ app.use('/api/*', auditLogMiddleware)
 app.route('/api', membersRouter)
 app.route('/api', authRouter)
 app.route('/api', moviesRouter)
+app.route('/api', stagesRouter)
 app.route('/api', reservationsRouter)
 app.route('/api', screensRouter)
 app.route('/api', configRouter)

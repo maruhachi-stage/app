@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate } from "react-router"
 import { AppConfig } from "~/shared/config/app"
 import { useAuth } from "~/shared/api/auth"
@@ -6,6 +6,15 @@ import { apiFetch } from "~/shared/api/client"
 import { Button } from "~/shared/ui/Button"
 import { useCart } from "~/features/cart/useCart"
 import { HoldTimer } from "./HoldTimer"
+
+const NAV_LINKS = [
+  { to: "/screenings", label: "上映スケジュール" },
+  { to: "/theater", label: "劇場案内" },
+  { to: "/shop", label: "ショップ" },
+  { to: "/goods", label: "グッズ" },
+  { to: "/cart", label: "カート" },
+  { to: "/reservations/lookup", label: "予約確認" },
+]
 
 export function Header() {
   const { auth, setAuth } = useAuth()
@@ -16,13 +25,13 @@ export function Header() {
   const offsetRef = useRef(0)
   const lastYRef = useRef(0)
 
-  // メニュー展開中はbodyスクロール禁止
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : ""
-    return () => { document.body.style.overflow = "" }
+    return () => {
+      document.body.style.overflow = ""
+    }
   }, [menuOpen])
 
-  // スクロール追従 (モバイルのみ・直接DOM操作でRAFなしでも滑らか)
   useEffect(() => {
     const header = headerRef.current
     if (!header) return
@@ -71,33 +80,20 @@ export function Header() {
     } catch {
       // ignore
     }
+
     setAuth({ authenticated: false })
     navigate("/")
     setMenuOpen(false)
   }
 
-  const NAV_LINKS = [
-    { to: "/movies", label: "映画一覧" },
-    { to: "/theater", label: "劇場案内" },
-    { to: "/shop", label: "ショップ" },
-    { to: "/goods", label: "グッズ" },
-    { to: "/cart", label: "カート" },
-    { to: "/reservations/lookup", label: "予約確認" },
-  ]
-
   return (
     <>
-      <header
-        ref={headerRef}
-        className="bg-background/80 backdrop-blur-md border-b border-border relative z-50"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
+      <header ref={headerRef} className="bg-background/80 backdrop-blur-md border-b border-border relative z-50" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <div className="container-center flex items-center justify-between py-4">
           <Link to="/" className="text-2xl font-black tracking-tighter text-primary" onClick={() => setMenuOpen(false)}>
             {AppConfig.name}
           </Link>
 
-          {/* デスクトップ nav */}
           <nav className="hidden md:flex items-center gap-6">
             {NAV_LINKS.map(({ to, label }) => (
               <Link key={to} to={to} className="relative text-sm font-bold text-muted-foreground hover:text-foreground transition-colors">
@@ -131,12 +127,7 @@ export function Header() {
             )}
           </nav>
 
-          {/* モバイル: ハンバーガーボタン */}
-          <button
-            className="md:hidden text-foreground p-1"
-            onClick={() => setMenuOpen(v => !v)}
-            aria-label="メニュー"
-          >
+          <button className="md:hidden text-foreground p-1" onClick={() => setMenuOpen((v) => !v)} aria-label="メニュー">
             {menuOpen ? (
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -151,12 +142,8 @@ export function Header() {
         <HoldTimer />
       </header>
 
-      {/* フルスクリーンメニュー（モバイル） */}
       {menuOpen && (
-        <div
-          className="fixed inset-0 z-40 flex flex-col bg-background md:hidden overflow-y-auto"
-          style={{ paddingTop: "env(safe-area-inset-top)" }}
-        >
+        <div className="fixed inset-0 z-40 flex flex-col bg-background md:hidden overflow-y-auto" style={{ paddingTop: "env(safe-area-inset-top)" }}>
           <div className="flex items-center justify-between border-b border-border px-4 py-4">
             <Link to="/" className="text-2xl font-black tracking-tighter text-primary" onClick={() => setMenuOpen(false)}>
               {AppConfig.name}
@@ -174,7 +161,7 @@ export function Header() {
                 key={to}
                 to={to}
                 onClick={() => setMenuOpen(false)}
-                className="rounded-xl px-4 py-4 text-2xl font-black text-foreground hover:bg-muted hover:text-primary transition-colors"
+                className="rounded-app px-4 py-4 text-2xl font-black text-foreground hover:bg-muted hover:text-primary transition-colors"
               >
                 {label}
                 {to === "/cart" && totalCount > 0 && (
@@ -192,13 +179,13 @@ export function Header() {
                 <Link
                   to="/member/reservations"
                   onClick={() => setMenuOpen(false)}
-                  className="rounded-xl px-4 py-4 text-xl font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  className="rounded-app px-4 py-4 text-xl font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 >
                   予約履歴
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="rounded-xl px-4 py-4 text-left text-xl font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                  className="rounded-app px-4 py-4 text-left text-xl font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                 >
                   ログアウト
                 </button>
@@ -207,7 +194,7 @@ export function Header() {
               <Link
                 to="/login"
                 onClick={() => setMenuOpen(false)}
-                className="mt-2 rounded-xl bg-primary px-4 py-4 text-center text-xl font-bold text-primary-foreground hover:opacity-90 transition-opacity"
+                className="mt-2 rounded-app bg-primary px-4 py-4 text-center text-xl font-bold text-primary-foreground hover:opacity-90 transition-opacity"
               >
                 ログイン
               </Link>

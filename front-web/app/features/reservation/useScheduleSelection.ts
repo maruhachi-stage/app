@@ -2,92 +2,103 @@ import { useState, useEffect } from "react"
 import { useParams, useSearchParams } from "react-router"
 import { apiFetch } from "~/shared/api/client"
 import { getNext7Days } from "~/shared/lib/date"
-import type { Movie, Schedule } from "~/entities/movie/types"
+import type { Screening, Schedule, ScreeningType } from "~/entities/screening/types"
+
+type ScheduleInfo = {
+  scheduleId: number
+  startsAt: string
+  type: ScreeningType
+}
 
 export function useScheduleSelection() {
   const { movieId } = useParams<{ movieId: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [movie, setMovie] = useState<Movie | null>(null)
+  const [screening, setScreening] = useState<Screening | null>(null)
   const [schedules, setSchedules] = useState<Schedule[]>([])
-  
+
   const selectedDate = searchParams.get("date") ?? ""
   const selectedScheduleId = searchParams.get("scheduleId") ? Number(searchParams.get("scheduleId")) : null
-  
+  const selectedType = (searchParams.get("type") ?? "movie") as ScreeningType
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [reloadKey, setReloadKey] = useState(0)
 
   const days = getNext7Days()
 
-  // 初期読み込み: 映画情報
   useEffect(() => {
     if (!movieId) return
-    setLoading(true)
-    apiFetch<Movie>(`/movies/${movieId}`)
-      .then(setMovie)
-      .catch(() => setError("映画情報が見つかりません"))
-      .finally(() => setLoading(false))
-  }, [movieId, reloadKey])
 
-  // 日付が空だがスケジュールIDがある場合、スケジュール情報から日付を補完する
+    setLoading(true)
+    const endpoint = selectedType === "stage" || selectedType === "event" ? `/stages/${movieId}` : `/movies/${movieId}`
+
+    apiFetch<Screening>(endpoint)
+      .then((m) => setScreening({ ...m, type: selectedType }))
+      .catch(() => setError("作品情報が見つかりません"))
+      .finally(() => setLoading(false))
+  }, [movieId, selectedType, reloadKey])
+
   useEffect(() => {
     if (!selectedDate && selectedScheduleId) {
-      apiFetch<Schedule & { startsAt: string }>(`/schedules/${selectedScheduleId}`)
-        .then(sch => {
-          // JSTでの日付文字列 (YYYY-MM-DD) を取得
-          const date = new Date(sch.startsAt).toLocaleDateString("sv", { timeZone: "Asia/Tokyo" })
-          setSearchParams(prev => {
-            const p = new URLSearchParams(prev)
-            p.set("date", date)
-            return p
-          }, { replace: true })
-        })
+      apiFetch<ScheduleInfo>(`/schedules/${selectedScheduleId}`).then((sch) => {
+        const date = new Date(sch.startsAt).toLocaleDateString("sv", { timeZone: "Asia/Tokyo" })
+        setSearchParams((prev) => {
+          const p = new URLSearchParams(prev)
+          p.set("date", date)
+          p.set("type", sch.type)
+          return p
+        }, { replace: true })
+      })
     }
   }, [selectedDate, selectedScheduleId, setSearchParams, reloadKey])
 
-  // 日付が選択されたらスケジュールを取得
   useEffect(() => {
     if (!movieId || !selectedDate) {
       setSchedules([])
       setError("")
       return
     }
+
     setSchedules([])
     setError("")
-    apiFetch<{ schedules: Schedule[] }>(`/movies/${movieId}/schedules?date=${selectedDate}`)
-      .then(d => {
+    const endpoint = selectedType === "stage" || selectedType === "event" ? `/stages/${movieId}/schedules?date=${selectedDate}` : `/movies/${movieId}/schedules?date=${selectedDate}`
+
+    apiFetch<{ schedules: Schedule[] }>(endpoint)
+      .then((d) => {
         setSchedules(d.schedules)
       })
       .catch(() => {
         setSchedules([])
         setError("上映スケジュールの取得に失敗しました")
       })
-  }, [movieId, selectedDate, reloadKey])
+  }, [movieId, selectedDate, selectedType, reloadKey])
 
   function retryLoadSchedules() {
-    setReloadKey(prev => prev + 1)
+    setReloadKey((prev) => prev + 1)
   }
 
   function setSelectedDate(date: string) {
-    setSearchParams(prev => {
+    setSearchParams((prev) => {
       const p = new URLSearchParams(prev)
-      if (date) p.set("date", date); else p.delete("date")
-      p.delete("scheduleId") // 日付が変わったらスケジュール選択もリセット
+      if (date) p.set("date", date)
+      else p.delete("date")
+      p.delete("scheduleId")
       return p
     })
   }
 
   function setSelectedScheduleId(id: number | null) {
-    setSearchParams(prev => {
+    setSearchParams((prev) => {
       const p = new URLSearchParams(prev)
-      if (id) p.set("scheduleId", String(id)); else p.delete("scheduleId")
+      if (id) p.set("scheduleId", String(id))
+      else p.delete("scheduleId")
       return p
     })
   }
 
   return {
-    movie,
+    movie: screening,  // booking.tsx との後方互換のため movie として公開
     days,
     selectedDate,
     setSelectedDate,

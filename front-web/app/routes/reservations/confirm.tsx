@@ -54,7 +54,7 @@ export default function ConfirmPage() {
                 return (
                   <div key={seat.seatId} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-3">
-                      <span className="flex h-8 w-8 rounded-app items-center justify-center bg-foreground text-[10px] font-black text-background">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground text-[10px] font-black text-background">
                         {seat.row}-{seat.col}
                       </span>
                       <span className="font-bold text-foreground">{info.label}</span>

@@ -1,0 +1,63 @@
+# EditorConfig — https://editorconfig.org
+# このファイルが存在するディレクトリがルートとして扱われる
+root = true
+
+# ────────────────────────────────────────────
+# デフォルト（全ファイル共通）
+# ────────────────────────────────────────────
+[*]
+charset             = utf-8
+end_of_line         = crlf
+insert_final_newline  = true
+trim_trailing_whitespace = true
+indent_style        = space
+indent_size         = 2
+
+# ────────────────────────────────────────────
+# TypeScript / TSX / JavaScript / JSX
+# ────────────────────────────────────────────
+# back-api: 2スペース（デフォルトのまま）
+[back-api/**/*.{ts,tsx,js,jsx}]
+indent_size = 2
+
+# front-web / admin-web: 4スペース
+[front-web/**/*.{ts,tsx,js,jsx}]
+indent_size = 4
+
+[admin-web/**/*.{ts,tsx,js,jsx}]
+indent_size = 4
+
+# ────────────────────────────────────────────
+# JSON / YAML / TOML
+# ────────────────────────────────────────────
+[*.{json,jsonc,yaml,yml,toml}]
+indent_size = 2
+
+# ────────────────────────────────────────────
+# CSS / SCSS
+# ────────────────────────────────────────────
+[*.{css,scss,sass}]
+indent_size = 4
+
+# ────────────────────────────────────────────
+# SQL
+# ────────────────────────────────────────────
+[*.sql]
+indent_size = 4
+
+# ────────────────────────────────────────────
+# Markdown
+# ────────────────────────────────────────────
+[*.md]
+trim_trailing_whitespace = false
+
+# ────────────────────────────────────────────
+# バイナリ・自動生成ファイルは除外
+# ────────────────────────────────────────────
+[*.{png,jpg,jpeg,gif,svg,ico,woff,woff2,ttf,eot}]
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+indent_style = unset
+indent_size = unset

@@ -7,10 +7,10 @@ type Props = {
   meta?: ReactNode
 }
 
-export function MovieHeroBanner({ title, posterUrl, meta }: Props) {
+export function ScreeningHeroBanner({ title, posterUrl, meta }: Props) {
   return (
     <div className="flex items-center gap-4 rounded-app border border-border bg-card shadow-sm p-4 mb-8">
-      <div className="shrink-0 w-16 aspect-[2/3] rounded-xl overflow-hidden bg-secondary">
+      <div className="shrink-0 w-16 aspect-[2/3] rounded-app overflow-hidden bg-secondary">
         {posterUrl ? (
           <img
             src={proxyImageUrl(posterUrl)}

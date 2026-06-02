@@ -12,7 +12,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    "inline-flex items-center justify-center rounded-app font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 
   const variants = {
     primary: "bg-primary text-primary-foreground hover:opacity-90 active:scale-95",

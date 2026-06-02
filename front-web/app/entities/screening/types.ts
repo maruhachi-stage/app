@@ -1,4 +1,6 @@
-export type Movie = {
+export type ScreeningType = "movie" | "stage" | "event"
+
+export type Screening = {
   id: number
   title: string
   description: string
@@ -6,6 +8,9 @@ export type Movie = {
   thumbnailUrl: string | null
   status: "now_showing" | "coming_soon"
   schedules?: Schedule[]
+  playwright?: string | null
+  director?: string | null
+  type?: ScreeningType
 }
 
 export type Schedule = {

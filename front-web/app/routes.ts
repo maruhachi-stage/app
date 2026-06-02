@@ -1,39 +1,36 @@
-import { type RouteConfig, index, route, layout } from "@react-router/dev/routes";
+import { type RouteConfig, index, route, layout } from "@react-router/dev/routes"
 
 export default [
   layout("shared/ui/layouts/MainLayout.tsx", [
     index("routes/home.tsx"),
 
-    // 映画情報
-    route("/movies", "routes/movies/index.tsx"),
-    route("/movies/:movieId", "routes/movies/detail.tsx"),
+    route("/screenings", "routes/screenings/index.tsx"),
+    route("/screenings/:movieId", "routes/screenings/detail.tsx"),
 
-    // 劇場情報
     route("/theater", "routes/theater/index.tsx"),
     route("/theater/:screenId", "routes/theater/screen.tsx"),
 
-    // 会員マイページ
     route("/member/reservations", "routes/member/reservations.tsx"),
 
-    // その他
     route("/contact", "routes/contact.tsx"),
     route("/shop", "routes/shop.tsx"),
+    route("/shop/:productId", "routes/shop.$productId.tsx"),
     route("/goods", "routes/goods.tsx"),
+    route("/goods/:productId", "routes/goods.$productId.tsx"),
     route("/cart", "routes/cart.tsx"),
+    route("/cart/added", "routes/cart.added.tsx"),
+    route("/cart/checkout", "routes/cart.checkout.tsx"),
 
-    // 予約詳細
     route("/reservations/lookup", "routes/reservations/lookup.tsx"),
     route("/reservations/r/:reservationCode", "routes/reservations/detail.tsx"),
   ]),
 
-  // 認証 (動的にレイアウトを切り替える)
   layout("shared/ui/layouts/AuthLayout.tsx", [
     route("/login", "routes/auth/login.tsx"),
     route("/register", "routes/auth/register.tsx"),
     route("/auth/otp", "routes/auth/otp.tsx"),
   ]),
 
-  // 予約フロー
   layout("shared/ui/layouts/ReservationLayout.tsx", [
     route("/reservations/booking/:movieId", "routes/reservations/booking.tsx"),
     route("/reservations/entry", "routes/reservations/entry.tsx"),
@@ -43,4 +40,4 @@ export default [
     route("/reservations/confirm", "routes/reservations/confirm.tsx"),
     route("/reservations/complete", "routes/reservations/complete.tsx"),
   ]),
-] satisfies RouteConfig;
+] satisfies RouteConfig

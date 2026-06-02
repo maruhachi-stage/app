@@ -24,7 +24,7 @@ export function useOtp() {
   useEffect(() => {
     const stored = sessionStorage.getItem("hal_cinema_pending_email") ?? ""
     if (!stored) {
-      navigate("/movies", { replace: true })
+      navigate("/screenings?type=movie", { replace: true })
       return
     }
     setEmail(stored)

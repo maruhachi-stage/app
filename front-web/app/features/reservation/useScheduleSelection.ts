@@ -53,8 +53,9 @@ export function useScheduleSelection() {
     }
   }, [selectedDate, selectedScheduleId, setSearchParams, reloadKey])
 
+  // スケジュールを取得（日付未選択時は全件）
   useEffect(() => {
-    if (!movieId || !selectedDate) {
+    if (!movieId) {
       setSchedules([])
       setError("")
       return

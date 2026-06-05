@@ -92,7 +92,7 @@ export default function BookingPage() {
             )}
           </div>
         </div>
-      </div>
+      )}
 
       {selectedScheduleId && (
         <div className="mt-10 border-t border-border pt-10">

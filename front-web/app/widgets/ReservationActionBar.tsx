@@ -13,22 +13,22 @@ type Props = {
 
 export function ReservationActionBar({
   seats,
-  maxSeats = 6,
+  maxSeats = 8,
   totalPrice,
   quoting = false,
   onNext,
   nextLabel = "次へ進む",
 }: Props) {
   return (
-    <div className="sticky bottom-6 mt-10 w-fit mx-auto flex items-center gap-4 rounded-app bg-secondary px-5 py-3 shadow-2xl border border-border">
+    <div className="sticky bottom-6 mt-10 mx-4 sm:mx-auto sm:w-fit flex items-center gap-4 rounded-app bg-secondary px-5 py-3 shadow-2xl border border-border">
       <div className="flex gap-1.5">
         {Array.from({ length: maxSeats }).map((_, i) => {
           const seat = seats[i]
           return (
             <div
               key={i}
-              className={`flex h-8 w-8 items-center justify-center rounded-app text-[9px] font-black ${
-                seat ? "bg-foreground text-background" : "bg-border/30 text-transparent"
+              className={`h-8 w-8 items-center justify-center rounded-app text-[9px] font-black ${
+                seat ? "flex bg-foreground text-background" : "hidden sm:flex bg-border/30 text-transparent"
               }`}
             >
               {seat ? `${seat.row}-${seat.col}` : ""}

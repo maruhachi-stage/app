@@ -26,7 +26,7 @@ export default function MemberReservationsPage() {
                             to={`/reservations/r/${res.reservationCode}`}
                             className="group flex gap-6 overflow-hidden rounded-app border border-border bg-card p-4 shadow-sm transition-all hover:border-red-200 hover:shadow-md"
                         >
-                            <div className="h-32 w-24 shrink-0 overflow-hidden rounded-lg bg-muted">
+                            <div className="h-32 w-24 shrink-0 overflow-hidden rounded-app bg-muted">
                                 {res.thumbnailUrl ? (
                                     <img src={res.thumbnailUrl} alt={res.movieTitle}
                                          className="h-full w-full object-cover group-hover:scale-105 transition-transform"/>

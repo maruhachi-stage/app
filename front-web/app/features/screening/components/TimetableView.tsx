@@ -1,38 +1,38 @@
-import { Link } from "react-router";
-import type { Movie } from "~/entities/movie/types";
-import { formatTimeJst } from "~/shared/lib/date";
+import { Link } from "react-router"
+import type { Screening } from "~/entities/screening/types"
+import { formatTimeJst } from "~/shared/lib/date"
 
 type Props = {
-  movies: Movie[];
-  selectedDate: string;
-};
+  screenings: Screening[]
+  selectedDate: string
+}
 
-export default function TimetableView({ movies, selectedDate }: Props) {
+export default function TimetableView({ screenings, selectedDate }: Props) {
   if (!selectedDate) {
     return (
       <div className="rounded-app border-2 border-dashed border-border py-20 text-center">
         <p className="text-muted-foreground font-medium">日付を選択してタイムテーブルを表示</p>
       </div>
-    );
+    )
   }
 
-  const moviesWithSchedules = movies.filter(
-    (m) => m.schedules && m.schedules.length > 0
-  );
+  const screeningsWithSchedules = screenings.filter(
+    (s) => s.schedules && s.schedules.length > 0
+  )
 
-  const HOUR_START = 7;
-  const HOUR_END = 24;
-  const TOTAL_MINUTES = (HOUR_END - HOUR_START) * 60;
+  const HOUR_START = 7
+  const HOUR_END = 24
+  const TOTAL_MINUTES = (HOUR_END - HOUR_START) * 60
 
   function toJstMinutes(isoStr: string): number {
-    const d = new Date(isoStr);
-    const jstOffset = 9 * 60;
-    const totalMin = Math.floor(d.getTime() / 60000) + jstOffset;
-    return totalMin % (24 * 60);
+    const d = new Date(isoStr)
+    const jstOffset = 9 * 60
+    const totalMin = Math.floor(d.getTime() / 60000) + jstOffset
+    return totalMin % (24 * 60)
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-background">
+    <div className="overflow-x-auto rounded-app border border-border bg-background">
       <div className="min-w-[1020px]">
         {/* ヘッダー行: 時刻 */}
         <div className="flex border-b border-border">
@@ -52,11 +52,11 @@ export default function TimetableView({ movies, selectedDate }: Props) {
         </div>
 
         {/* 作品行 */}
-        {moviesWithSchedules.map((movie) => (
-          <div key={movie.id} className="flex border-b border-border last:border-0">
+        {screeningsWithSchedules.map((screening) => (
+          <div key={screening.id} className="flex border-b border-border last:border-0">
             {/* 作品名 */}
             <div className="w-32 shrink-0 border-r border-border bg-muted/40 p-3">
-              <p className="text-xs font-bold text-foreground line-clamp-3">{movie.title}</p>
+              <p className="text-xs font-bold text-foreground line-clamp-3">{screening.title}</p>
             </div>
             {/* タイムライン */}
             <div className="relative flex-1 py-2" style={{ minHeight: "72px" }}>
@@ -67,16 +67,16 @@ export default function TimetableView({ movies, selectedDate }: Props) {
                 ))}
               </div>
               {/* 上映ブロック */}
-              {movie.schedules!.map((sch) => {
-                const startMin = toJstMinutes(sch.startsAt);
-                const endMin = toJstMinutes(sch.endsAt);
-                const left = ((startMin - HOUR_START * 60) / TOTAL_MINUTES) * 100;
-                const width = ((endMin - startMin) / TOTAL_MINUTES) * 100;
+              {screening.schedules!.map((sch) => {
+                const startMin = toJstMinutes(sch.startsAt)
+                const endMin = toJstMinutes(sch.endsAt)
+                const left = ((startMin - HOUR_START * 60) / TOTAL_MINUTES) * 100
+                const width = ((endMin - startMin) / TOTAL_MINUTES) * 100
 
                 return (
                   <Link
                     key={sch.scheduleId}
-                    to={`/reservations/booking/${movie.id}?date=${selectedDate}&scheduleId=${sch.scheduleId}`}
+                    to={`/reservations/booking/${screening.id}?date=${selectedDate}&scheduleId=${sch.scheduleId}&type=${screening.type ?? "movie"}`}
                     className="absolute rounded-md bg-primary/80 text-primary-foreground px-1.5 py-1 overflow-hidden cursor-pointer hover:bg-primary transition-colors flex flex-col justify-between"
                     style={{
                       left: `${left}%`,
@@ -90,12 +90,12 @@ export default function TimetableView({ movies, selectedDate }: Props) {
                       {formatTimeJst(sch.startsAt)}〜{formatTimeJst(sch.endsAt)}
                     </p>
                   </Link>
-                );
+                )
               })}
             </div>
           </div>
         ))}
       </div>
     </div>
-  );
+  )
 }

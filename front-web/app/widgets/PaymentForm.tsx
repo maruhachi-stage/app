@@ -170,7 +170,7 @@ export function PaymentForm({
               placeholder="0000000000000000"
               inputMode="numeric"
               autoComplete="cc-number"
-              className={`w-full rounded-lg border bg-background px-4 py-3.5 font-mono font-bold tracking-[0.25em] text-base outline-none transition focus:ring-2 focus:ring-ring placeholder:tracking-normal placeholder:font-sans placeholder:font-normal ${
+              className={`w-full rounded-app border bg-background px-4 py-3.5 font-mono font-bold tracking-[0.25em] text-base outline-none transition focus:ring-2 focus:ring-ring placeholder:tracking-normal placeholder:font-sans placeholder:font-normal ${
                 errors.cardNo ? "border-red-500 bg-red-500/10" : "border-input"
               }`}
             />
@@ -194,7 +194,7 @@ export function PaymentForm({
               placeholder="MM/YY"
               inputMode="numeric"
               autoComplete="cc-exp"
-              className={`rounded-lg border bg-background px-4 py-3.5 font-mono font-bold tracking-widest text-base outline-none transition focus:ring-2 focus:ring-ring placeholder:font-sans placeholder:font-normal placeholder:tracking-normal ${
+              className={`rounded-app border bg-background px-4 py-3.5 font-mono font-bold tracking-widest text-base outline-none transition focus:ring-2 focus:ring-ring placeholder:font-sans placeholder:font-normal placeholder:tracking-normal ${
                 errors.expiry ? "border-red-500 bg-red-500/10" : "border-input"
               }`}
             />
@@ -213,7 +213,7 @@ export function PaymentForm({
               placeholder="CVV"
               inputMode="numeric"
               autoComplete="cc-csc"
-              className={`rounded-lg border bg-background px-4 py-3.5 font-mono font-bold tracking-[0.3em] text-base outline-none transition focus:ring-2 focus:ring-ring placeholder:font-sans placeholder:font-normal placeholder:tracking-normal ${
+              className={`rounded-app border bg-background px-4 py-3.5 font-mono font-bold tracking-[0.3em] text-base outline-none transition focus:ring-2 focus:ring-ring placeholder:font-sans placeholder:font-normal placeholder:tracking-normal ${
                 errors.cvv ? "border-red-500 bg-red-500/10" : "border-input"
               }`}
             />

@@ -43,6 +43,72 @@ type DisplaySchedule = {
 	totalSeats: number
 }
 
+// ─── お知らせ ──────────────────────────────────────────────────────────────
+
+type NewsItem = {
+  id: number
+  category: "goods" | "food" | "event" | "info"
+  title: string
+  description: string
+  date: string
+  isNew?: boolean
+}
+
+const NEWS_ITEMS: NewsItem[] = [
+  {
+    id: 1,
+    category: "goods",
+    title: "ゴジラ-1.0 限定グッズ発売開始",
+    description: "アクリルスタンド・クリアファイル・Tシャツなど全12種類。劇場ショップにて販売中。",
+    date: "2025-06-01",
+    isNew: true,
+  },
+  {
+    id: 2,
+    category: "food",
+    title: "新フード「モンスターバーガー」登場",
+    description: "ゴジラとのコラボバーガーが期間限定で登場！ドリンクセットでお得にどうぞ。",
+    date: "2025-06-01",
+    isNew: true,
+  },
+  {
+    id: 3,
+    category: "goods",
+    title: "怪盗グルーのミニオン超変身 ぬいぐるみ販売",
+    description: "ミニオンキャラクターのぬいぐるみ全5種類をショップにて販売開始しました。",
+    date: "2025-05-28",
+  },
+  {
+    id: 4,
+    category: "event",
+    title: "ツイスターズ 舞台挨拶イベント開催決定",
+    description: "6月15日（日）13:00の回にて舞台挨拶を予定しています。詳細は近日公開。",
+    date: "2025-05-25",
+  },
+  {
+    id: 5,
+    category: "info",
+    title: "6月の営業時間変更のお知らせ",
+    description: "6月中は設備メンテナンスのため、毎週火曜日の最終上映を21:00終了に変更します。",
+    date: "2025-05-20",
+  },
+]
+
+const CATEGORY_LABEL: Record<NewsItem["category"], string> = {
+  goods: "グッズ",
+  food:  "フード",
+  event: "イベント",
+  info:  "お知らせ",
+}
+
+const CATEGORY_COLOR: Record<NewsItem["category"], string> = {
+  goods: "bg-purple-600/80",
+  food:  "bg-orange-500/80",
+  event: "bg-blue-600/80",
+  info:  "bg-zinc-500/80",
+}
+
+
 // ─── 時刻フォーマット ──────────────────────────────────────────────────────
 
 function formatTime(isoStr: string) {
@@ -258,6 +324,55 @@ function HeroSub({ movie }: { movie: Movie }) {
   )
 }
 
+// ─── News ──────────────────────────────────────────────────────────────────
+
+function NewsSection() {
+  return (
+    <section>
+      <div className="flex items-center gap-3 mb-6">
+        <span className="w-1 h-5 bg-primary/60 rounded-full" />
+        <h2 className="text-sm font-bold tracking-[0.2em] text-foreground uppercase">News</h2>
+        <span className="text-xs text-muted-foreground ml-1">最新情報</span>
+      </div>
+
+      <div className="divide-y divide-border rounded-lg border border-border overflow-hidden">
+        {NEWS_ITEMS.map(item => (
+          <div
+            key={item.id}
+            className="flex items-start gap-4 px-5 py-4 bg-card hover:bg-muted/30 transition-colors"
+          >
+            {/* カテゴリバッジ */}
+            <span className={`shrink-0 mt-0.5 text-[10px] font-bold text-white px-2 py-0.5 rounded-sm ${CATEGORY_COLOR[item.category]}`}>
+              {CATEGORY_LABEL[item.category]}
+            </span>
+
+            {/* 本文 */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-sm font-semibold text-foreground leading-snug">
+                  {item.title}
+                </p>
+                {item.isNew && (
+                  <span className="shrink-0 text-[10px] font-bold text-primary border border-primary px-1.5 py-0.5 rounded-sm leading-none">
+                    NEW
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                {item.description}
+              </p>
+            </div>
+
+            {/* 日付 */}
+            <time className="shrink-0 text-xs text-muted-foreground tabular-nums mt-0.5">
+              {item.date.replace(/-/g, ".")}
+            </time>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
 
 function HeroSkeleton() {
 	return (
@@ -403,6 +518,11 @@ export default function Home() {
 					</>
 				)}
 			</section>
+
+            {/* ── NEWS ─────────────────────────────────────── */}
+            <NewsSection />  {/* ✅ ここを追加 */}
+
+
 		</div>
 	)
 }

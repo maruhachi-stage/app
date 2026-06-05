@@ -58,6 +58,18 @@ export default function BookingPage() {
 
       <div className="mt-6">
         <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">1. 日付を選択</h2>
+        <div className="mb-3 mt-2">
+          <button
+            onClick={() => setSelectedDate("")}
+            className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition ${
+              !selectedDate
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+          >
+            すべて
+          </button>
+        </div>
         <DateSelector days={days} selectedDate={selectedDate} onSelect={setSelectedDate} />
       </div>
 

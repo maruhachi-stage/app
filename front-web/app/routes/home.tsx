@@ -190,13 +190,28 @@ function HeroMain({ movie }: { movie: Movie }) {
       to={movieDetailPath(movie.id)}
       className="relative block overflow-hidden rounded-lg col-span-1 row-span-2 group"
     >
+
       {imgUrl ? (
-        <img src={imgUrl} alt={movie.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+      <>
+          {/* ぼかし背景 */}
+          <img
+          src={imgUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover scale-110 blur-xl opacity-60"
+          />
+          {/* ポスター本体（見切れなし） */}
+          <img
+          src={imgUrl}
+          alt={movie.title}
+          className="relative h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+          />
+      </>
       ) : (
-        <div className="h-full w-full bg-muted flex items-center justify-center">
+      <div className="h-full w-full bg-muted flex items-center justify-center">
           <span className="text-muted-foreground text-sm">No Image</span>
-        </div>
+      </div>
       )}
+
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
       <div className="absolute bottom-0 left-0 right-0 p-6">
         <span className="inline-block bg-primary text-primary-foreground text-[11px] font-bold tracking-widest px-2.5 py-1 rounded-sm mb-3">上映中</span>
@@ -212,13 +227,28 @@ function HeroSub({ movie }: { movie: Movie }) {
   const imgUrl = movieImageUrl(movie.thumbnailUrl)
   return (
     <Link to={movieDetailPath(movie.id)} className="relative block overflow-hidden rounded-lg group">
+
       {imgUrl ? (
-        <img src={imgUrl} alt={movie.title} className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105" />
+      <>
+          {/* ぼかし背景 */}
+          <img
+          src={imgUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover scale-110 blur-xl opacity-60"
+          />
+          {/* 本体（見切れなし） */}
+          <img
+          src={imgUrl}
+          alt={movie.title}
+          className="relative h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+          />
+      </>
       ) : (
-        <div className="h-full w-full bg-muted flex items-center justify-center">
+      <div className="h-full w-full bg-muted flex items-center justify-center">
           <span className="text-muted-foreground text-sm">No Image</span>
-        </div>
+      </div>
       )}
+
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
       <div className="absolute bottom-0 left-0 right-0 p-5">
         <span className="inline-block text-[10px] font-bold tracking-widest px-2 py-0.5 rounded-sm mb-2 bg-primary/80 text-primary-foreground">上映中</span>
@@ -327,7 +357,7 @@ export default function Home() {
           </div>
         )}
         {!loading && !error && heroMain && (
-          <div className="grid grid-cols-2 grid-rows-2 gap-4 h-[520px]">
+          <div className="grid grid-cols-[3fr_2fr] grid-rows-2 gap-4 h-[520px]">
             <HeroMain movie={heroMain} />
             {heroSubs.map(m => <HeroSub key={m.id} movie={m} />)}
           </div>

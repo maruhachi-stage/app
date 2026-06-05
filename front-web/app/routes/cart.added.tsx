@@ -1,9 +1,12 @@
 import { Link, useSearchParams } from "react-router"
-import { allProducts, shopProducts } from "~/entities/product/sampleProducts"
-import { formatProductPrice } from "~/entities/product/types"
+import { formatProductPrice, type Product } from "~/entities/product/types"
 import { useCart } from "~/features/cart/useCart"
+import { useProducts } from "~/features/product/useProducts"
+import { proxyImageUrl } from "~/shared/lib/image"
 import { Button } from "~/shared/ui/Button"
 import { ProductCard } from "~/widgets/ProductCard"
+
+const PICKUP_LOCATION = "劇場内 ショップ受け取りカウンター"
 
 export function meta() {
   return [{ title: "カートに追加しました | HALシネマ" }]
@@ -12,10 +15,11 @@ export function meta() {
 export default function CartAddedPage() {
   const [searchParams] = useSearchParams()
   const { items, totalCount, totalPrice } = useCart()
+  const { products } = useProducts()
   const addedItemId = searchParams.get("item")
   const addedItem = items.find((item) => item.id === addedItemId) ?? items.at(-1)
-  const sourceProduct = allProducts.find((product) => product.id === addedItem?.productId)
-  const recommendations = getRecommendations(sourceProduct?.id, sourceProduct?.category)
+  const sourceProduct = products.find((product) => product.id === addedItem?.productId)
+  const recommendations = getRecommendations(products, sourceProduct?.id, sourceProduct?.category)
 
   return (
     <div className="container-center py-8 pb-20">
@@ -31,7 +35,7 @@ export default function CartAddedPage() {
                 <div className="mt-3 flex gap-3">
                   <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
                     {addedItem.imageUrl && (
-                      <img src={addedItem.imageUrl} alt="" className="h-full w-full object-cover" />
+                      <img src={proxyImageUrl(addedItem.imageUrl)} alt="" className="h-full w-full object-cover" />
                     )}
                   </div>
                   <div className="min-w-0">
@@ -57,6 +61,9 @@ export default function CartAddedPage() {
               カートの小計 ({totalCount} 点)
             </p>
             <p className="mt-1 text-2xl font-black">{formatProductPrice(totalPrice)}</p>
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              {PICKUP_LOCATION}で受け取る注文です。
+            </p>
             <div className="mt-4 grid gap-2">
               <Link to="/cart/checkout">
                 <Button type="button" className="w-full">
@@ -92,7 +99,8 @@ export default function CartAddedPage() {
   )
 }
 
-function getRecommendations(productId?: string, category?: string) {
+function getRecommendations(products: Product[], productId?: string, category?: string) {
+  const shopProducts = products.filter((product) => product.category !== "goods")
   const sameCategory = shopProducts.filter(
     (product) => product.id !== productId && product.category === category && !product.isSoldOut,
   )

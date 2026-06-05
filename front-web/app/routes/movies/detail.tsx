@@ -6,7 +6,7 @@ import type { Movie } from "~/entities/movie/types"
 import { MovieGridCard } from "~/widgets/MovieCard"
 import { DateSelector } from "~/widgets/DateSelector"
 import { ScheduleGrid } from "~/widgets/ScheduleGrid"
-import { movieRelatedProducts } from "~/entities/product/sampleProducts"
+import { useProducts } from "~/features/product/useProducts"
 import { ProductCard } from "~/widgets/ProductCard"
 import { proxyImageUrl } from "~/shared/lib/image"
 
@@ -43,6 +43,7 @@ function extractColor(img: HTMLImageElement): { r: number; g: number; b: number 
 export default function MovieDetailPage() {
   const { movieId } = useParams<{ movieId: string }>()
   const { data, loading, error, days, selectedDate, setDate, selectSchedule } = useSchedules()
+  const { products: relatedProducts } = useProducts("goods")
   const imgRef = useRef<HTMLImageElement>(null)
   const [rgb, setRgb] = useState({ r: 15, g: 15, b: 30 })
   const [relatedMovies, setRelatedMovies] = useState<Movie[]>([])
@@ -205,7 +206,7 @@ export default function MovieDetailPage() {
         </div>
         <div className="-mx-4 overflow-x-auto px-4">
           <div className="flex gap-4 pb-4">
-            {movieRelatedProducts.map((product) => (
+            {relatedProducts.slice(0, 3).map((product) => (
               <div key={product.id} className="w-36 shrink-0 md:w-44">
                 <ProductCard product={product} compact />
               </div>

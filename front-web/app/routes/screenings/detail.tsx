@@ -1,12 +1,12 @@
 import { Link, useParams } from "react-router"
 import { useEffect, useRef, useState } from "react"
 import { useSchedules } from "~/features/screening/useSchedules"
+import { useProducts } from "~/features/product/useProducts"
 import { apiFetch } from "~/shared/api/client"
 import type { Screening, ScreeningType } from "~/entities/screening/types"
 import { DateSelector } from "~/widgets/DateSelector"
 import { ScheduleGrid } from "~/widgets/ScheduleGrid"
 import { ScreeningGridCard } from "~/widgets/ScreeningCard"
-import { movieRelatedProducts } from "~/entities/product/sampleProducts"
 import { ProductCard } from "~/widgets/ProductCard"
 import { proxyImageUrl } from "~/shared/lib/image"
 
@@ -96,6 +96,7 @@ export default function ScreeningDetailPage() {
   const imgRef = useRef<HTMLImageElement>(null)
   const [rgb, setRgb] = useState({ r: 15, g: 15, b: 30 })
   const [relatedItems, setRelatedItems] = useState<Screening[]>([])
+  const { products } = useProducts("goods")
 
   useEffect(() => {
     if (!movieId) return
@@ -123,6 +124,9 @@ export default function ScreeningDetailPage() {
   }
 
   const item = data?.item
+  const relatedProducts = products
+    .filter((product) => !item?.title || !product.movieTitle || product.movieTitle === item.title)
+    .slice(0, 8)
 
   return (
     <div className="pb-16">
@@ -240,7 +244,7 @@ export default function ScreeningDetailPage() {
         )}
       </section>
 
-      {selectedType === "movie" && (
+      {selectedType === "movie" && relatedProducts.length > 0 && (
         <section className="mt-16 border-t border-border pt-10">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-foreground">関連グッズ</h2>
@@ -250,7 +254,7 @@ export default function ScreeningDetailPage() {
           </div>
           <div className="-mx-4 overflow-x-auto px-4">
             <div className="flex gap-4 pb-4">
-              {movieRelatedProducts.map((product) => (
+              {relatedProducts.map((product) => (
                 <div key={product.id} className="w-36 shrink-0 md:w-44">
                   <ProductCard product={product} compact />
                 </div>

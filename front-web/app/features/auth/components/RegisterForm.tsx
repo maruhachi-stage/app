@@ -28,7 +28,7 @@ export function RegisterForm() {
           required
           autoComplete="name"
         />
-        <p className="mb-6 text-sm text-gray-500">
+        <p className="mb-6 text-sm">
           メールアドレスとユーザー名を入力してください。認証コードを送信します。
         </p>
         {error && <p className="text-sm text-red-600">{error}</p>}
@@ -36,7 +36,7 @@ export function RegisterForm() {
           {loading ? "送信中..." : "認証コードを送信"}
         </Button>
       </form>
-      <p className="mt-6 text-center text-sm text-gray-500">
+      <p className="mt-6 text-center text-sm text-foreground">
         既にアカウントをお持ちの方は{" "}
         <Link to={`/login?redirect=${encodeURIComponent(redirect)}`} className="text-red-600 font-bold hover:underline">
           ログイン

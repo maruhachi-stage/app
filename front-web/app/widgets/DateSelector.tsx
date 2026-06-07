@@ -72,7 +72,7 @@ export function DateSelector({ days, selectedDate, onSelect }: Props) {
                 onPointerDown={(e) => e.preventDefault()}
                 onClick={() => onSelect(day.iso)}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") onSelect(day.iso) }}
-                className={`snap-start shrink-0 w-1/3 flex flex-col items-center rounded-lg py-3 cursor-pointer select-none transition-all ${
+                className={`snap-start shrink-0 w-1/3 flex flex-col items-center rounded-app py-3 cursor-pointer select-none transition-all ${
                   isActive ? "bg-primary text-primary-foreground" : "bg-muted/40 hover:bg-muted"
                 }`}
               >
@@ -111,7 +111,7 @@ export function DateSelector({ days, selectedDate, onSelect }: Props) {
             <button
               key={day.iso}
               onClick={() => onSelect(day.iso)}
-              className={`flex w-full flex-col items-center rounded-lg py-3 transition-all ${
+              className={`flex w-full flex-col items-center rounded-app py-3 transition-all ${
                 isActive ? "bg-primary text-primary-foreground" : "bg-muted/40 hover:bg-muted"
               }`}
             >

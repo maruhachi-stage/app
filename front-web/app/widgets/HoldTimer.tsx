@@ -52,7 +52,7 @@ export function HoldTimer() {
   function handleCancel() {
     if (!window.confirm("仮予約をキャンセルしますか？\n座席の仮押さえが解除されます。")) return
     draft.clear()
-    navigate("/movies")
+    navigate("/screenings?type=movie")
   }
 
   function handleExpire() {
@@ -60,7 +60,7 @@ export function HoldTimer() {
     if (!d.reservationCode) return
     draft.clear()
     alert("予約の有効期限が切れました。座席を選び直してください。")
-    navigate("/movies")
+    navigate("/screenings?type=movie")
   }
 
   if (timeLeft === null) return null

@@ -62,7 +62,7 @@ export default function ScreenDetailPage() {
         <span className="text-muted-foreground text-sm ml-auto">全 <span className="font-bold text-foreground">{screen.totalSeats}</span> 席</span>
       </div>
 
-      <div className="rounded-xl border border-border overflow-hidden">
+      <div className="rounded-app border border-border overflow-hidden">
         {screen.backgroundImageUrl ? (
           <div
             className="w-full bg-muted"

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router"
-import { AppConfig } from "~/shared/config/app"
 import { apiFetch, ApiError } from "~/shared/api/client"
-import { proxyImageUrl } from "~/shared/lib/image"
-import type { Screening as Movie, Schedule } from "~/entities/screening/types"
+import { jstDateLabel, todayJst } from "~/shared/lib/date"
+import TimetableView from "~/features/screening/components/TimetableView"
+import { HomeNowShowingSection } from "~/widgets/HomeNowShowingSection"
+import type { Screening as Movie } from "~/entities/screening/types"
 import type { Route } from "./+types/home"
 
 export function meta(_: Route.MetaArgs) {
@@ -11,14 +12,6 @@ export function meta(_: Route.MetaArgs) {
 		{ title: "HALシネマ" },
 		{ name: "description", content: "HALシネマのWeb座席予約システム" },
 	]
-}
-
-function movieImageUrl(thumbnailUrl: string | null): string | null {
-	return proxyImageUrl(thumbnailUrl) ?? null
-}
-
-function movieDetailPath(movieId: number): string {
-	return `/screenings/${movieId}?type=movie`
 }
 
 function moviesListPath(params?: { status?: string; date?: string }): string {
@@ -390,46 +383,23 @@ function TimelineSkeleton() {
 	)
 }
 
-// ─── Page ──────────────────────────────────────────────────────────────────
-
 export default function Home() {
 	const [movies, setMovies] = useState<Movie[]>([])
-	const [schedules, setSchedules] = useState<DisplaySchedule[]>([])
+	const [todayScreenings, setTodayScreenings] = useState<Movie[]>([])
 	const [loading, setLoading] = useState(true)
 	const [error, setError] = useState("")
 
-	const today = new Date()
-	const todayStr = today.toISOString().slice(0, 10)
-	const todayLabel = `${today.getMonth() + 1}月${today.getDate()}日（${"日月火水木金土"[today.getDay()]}）`
+	const todayStr = todayJst()
+	const todayLabel = jstDateLabel(todayStr)
 
 	useEffect(() => {
 		const fetchAll = async () => {
 			try {
-				// 映画一覧（NOW SHOWING用）
 				const moviesData = await apiFetch<{ items: Movie[] }>("/movies")
 				setMovies(moviesData.items)
 
-				// 今日のスケジュール付き映画一覧
 				const todayData = await apiFetch<{ items: Movie[] }>(`/movies?date=${todayStr}`)
-				const displaySchedules: DisplaySchedule[] = []
-				for (const movie of todayData.items) {
-					if (!movie.schedules) continue
-					for (const s of movie.schedules) {
-						displaySchedules.push({
-							scheduleId: s.scheduleId,
-							movieId: movie.id,
-							title: movie.title,
-							thumbnailUrl: movie.thumbnailUrl,
-							screen: s.screenName,
-							startsAt: String(s.startsAt),
-							endsAt: String(s.endsAt),
-							durationMin: movie.durationMin,
-							remainingSeats: s.remainingSeats,
-							totalSeats: s.totalSeats,
-						})
-					}
-				}
-				setSchedules(displaySchedules)
+				setTodayScreenings(todayData.items.map((movie) => ({ ...movie, type: "movie" as const })))
 			} catch (err) {
 				setError(err instanceof ApiError ? err.message : "読み込みに失敗しました")
 			} finally {
@@ -439,47 +409,12 @@ export default function Home() {
 		fetchAll()
 	}, [todayStr])
 
-	const nowShowing = movies.filter(m => m.status === "now_showing")
-	const [heroMain, ...heroRest] = nowShowing
-	const heroSubs = heroRest.slice(0, 2)
+	const hasTodaySchedules = todayScreenings.some((screening) => screening.schedules && screening.schedules.length > 0)
 
 	return (
 		<div className="container-center py-10 space-y-14">
+			<HomeNowShowingSection movies={movies} loading={loading} error={error} />
 
-			{/* ── NOW SHOWING ──────────────────────────────── */}
-			<section>
-				<div className="flex items-center gap-3 mb-6">
-					<span className="w-1 h-5 bg-primary rounded-full" />
-					<h2 className="text-sm font-bold tracking-[0.2em] text-foreground uppercase">Now Showing</h2>
-					<Link to={moviesListPath({ status: "now_showing" })} className="ml-auto text-xs text-primary hover:underline">
-						すべての作品を見る →
-					</Link>
-				</div>
-
-				{loading && <HeroSkeleton />}
-				{error && (
-					<div className="h-[200px] flex items-center justify-center rounded-lg bg-muted border border-border">
-						<p className="text-muted-foreground text-sm">{error}</p>
-					</div>
-				)}
-				{!loading && !error && nowShowing.length === 0 && (
-					<div className="py-16 text-center space-y-4">
-						<h1 className="text-4xl font-bold">{AppConfig.name}へようこそ</h1>
-						<p className="text-lg text-muted-foreground">上映中の映画をチェックして、座席を予約しましょう。</p>
-						<Link to={moviesListPath()} className="inline-flex items-center justify-center rounded-lg bg-primary px-8 py-3 text-lg font-bold text-primary-foreground hover:opacity-90 transition-all shadow-lg shadow-primary/20 hover:-translate-y-0.5">
-							映画一覧を見る
-						</Link>
-					</div>
-				)}
-				{!loading && !error && heroMain && (
-					<div className="grid grid-cols-[3fr_2fr] gap-4 sm:grid-rows-2 sm:h-[520px]">
-						<HeroMain movie={heroMain} />
-						{heroSubs.map(m => <HeroSub key={m.id} movie={m} />)}
-					</div>
-				)}
-			</section>
-
-			{/* ── TODAY'S SCHEDULE ─────────────────────────── */}
 			<section>
 				<div className="flex items-center gap-3 mb-6">
 					<span className="w-1 h-5 bg-muted-foreground/50 rounded-full" />
@@ -491,31 +426,13 @@ export default function Home() {
 				</div>
 
 				{loading && <TimelineSkeleton />}
-
-				{!loading && schedules.length === 0 && (
+				{!loading && !hasTodaySchedules && (
 					<div className="h-[120px] flex items-center justify-center rounded-lg bg-muted/30 border border-dashed border-border">
 						<p className="text-muted-foreground text-sm">本日の上映スケジュールはありません</p>
 					</div>
 				)}
-
-				{!loading && schedules.length > 0 && (
-					<>
-						<div className="flex items-center gap-4 mb-3 text-xs text-muted-foreground">
-							<span className="flex items-center gap-1.5">
-								<svg width="12" height="12" viewBox="0 0 12 12"><rect width="12" height="12" rx="2" className="fill-primary" /></svg>
-								上映あり
-							</span>
-							<span className="flex items-center gap-1.5">
-								<span className="inline-block w-3 h-3 rounded-sm bg-zinc-600 border border-zinc-500" />
-								満席
-							</span>
-							<span className="flex items-center gap-1.5">
-								<svg width="2" height="12" viewBox="0 0 2 12"><rect width="2" height="12" className="fill-primary" /></svg>
-								現在時刻
-							</span>
-						</div>
-						<ScheduleTimeline schedules={schedules} />
-					</>
+				{!loading && hasTodaySchedules && (
+					<TimetableView screenings={todayScreenings} selectedDate={todayStr} />
 				)}
 			</section>
 

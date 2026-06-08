@@ -1,6 +1,7 @@
 import { Link } from "react-router"
 import type { Screening } from "~/entities/screening/types"
 import { formatTimeJst } from "~/shared/lib/date"
+import { proxyImageUrl } from "~/shared/lib/image"
 
 type Props = {
   screenings: Screening[]
@@ -14,127 +15,232 @@ type PositionedSchedule = {
   lane: number
 }
 
+const HOUR_START = 7
+const HOUR_END = 24
+const TOTAL_MINUTES = (HOUR_END - HOUR_START) * 60
+const HOURS = Array.from({ length: HOUR_END - HOUR_START }, (_, i) => i + HOUR_START)
+
+function toJstMinutes(isoStr: string): number {
+  const d = new Date(isoStr)
+  const jstOffset = 9 * 60
+  const totalMin = Math.floor(d.getTime() / 60000) + jstOffset
+  return totalMin % (24 * 60)
+}
+
+function layoutSchedules(schedules: ScheduledBlock[]): {
+  positionedSchedules: PositionedSchedule[]
+  laneCount: number
+} {
+  const laneEndMins: number[] = []
+  const sortedSchedules = [...schedules].sort(
+    (a, b) => toJstMinutes(a.startsAt) - toJstMinutes(b.startsAt),
+  )
+
+  const positionedSchedules = sortedSchedules.map((schedule) => {
+    const startMin = toJstMinutes(schedule.startsAt)
+    const endMin = toJstMinutes(schedule.endsAt)
+    let lane = laneEndMins.findIndex((laneEndMin) => laneEndMin <= startMin)
+
+    if (lane === -1) {
+      lane = laneEndMins.length
+      laneEndMins.push(endMin)
+    } else {
+      laneEndMins[lane] = endMin
+    }
+
+    return { schedule, lane }
+  })
+
+  return {
+    positionedSchedules,
+    laneCount: Math.max(1, laneEndMins.length),
+  }
+}
+
+function buildDetailUrl(screening: Screening, selectedDate: string): string {
+  const qs = new URLSearchParams({ type: screening.type ?? "movie" })
+  if (selectedDate) qs.set("date", selectedDate)
+  return `/screenings/${screening.id}?${qs.toString()}`
+}
+
+function ScreeningLabel({
+  screening,
+  selectedDate,
+  compact = false,
+}: {
+  screening: Screening
+  selectedDate: string
+  compact?: boolean
+}) {
+  const detailUrl = buildDetailUrl(screening, selectedDate)
+  const image = screening.thumbnailUrl ? (
+    <img
+      src={proxyImageUrl(screening.thumbnailUrl)}
+      alt={compact ? screening.title : ""}
+      className="h-full w-full object-cover"
+      loading="lazy"
+    />
+  ) : (
+    <div className="flex h-full w-full items-center justify-center text-[9px] font-bold text-muted-foreground">
+      NO
+    </div>
+  )
+
+  if (compact) {
+    return (
+      <div className="flex h-full items-end justify-center bg-muted/40 p-1.5" aria-label={screening.title}>
+        <Link
+          to={detailUrl}
+          className="h-40 w-27 overflow-hidden rounded-app bg-secondary shadow-sm transition-opacity hover:opacity-80"
+        >
+          {image}
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex h-full flex-col justify-end gap-1.5 bg-muted/40 p-2">
+      <Link
+        to={detailUrl}
+        className="h-40 w-27 overflow-hidden rounded-app bg-secondary shadow-sm transition-opacity hover:opacity-80"
+      >
+        {image}
+      </Link>
+      <p className="line-clamp-2 text-xs font-bold leading-tight text-foreground">{screening.title}</p>
+    </div>
+  )
+}
+
 export default function TimetableView({ screenings, selectedDate }: Props) {
   if (!selectedDate) {
     return (
       <div className="rounded-app border-2 border-dashed border-border py-20 text-center">
-        <p className="text-muted-foreground font-medium">日付を選択してタイムテーブルを表示</p>
+        <p className="font-medium text-muted-foreground">日付を選択してタイムテーブルを表示</p>
       </div>
     )
   }
 
   const screeningsWithSchedules = screenings.filter(
-    (s) => s.schedules && s.schedules.length > 0
+    (screening) => screening.schedules && screening.schedules.length > 0,
   )
 
-  const HOUR_START = 7
-  const HOUR_END = 24
-  const TOTAL_MINUTES = (HOUR_END - HOUR_START) * 60
+  return (
+    <>
+      <TimetableTable screenings={screeningsWithSchedules} selectedDate={selectedDate} compact />
+      <TimetableTable screenings={screeningsWithSchedules} selectedDate={selectedDate} />
+    </>
+  )
+}
 
-  function toJstMinutes(isoStr: string): number {
-    const d = new Date(isoStr)
-    const jstOffset = 9 * 60
-    const totalMin = Math.floor(d.getTime() / 60000) + jstOffset
-    return totalMin % (24 * 60)
-  }
-
-  function layoutSchedules(schedules: ScheduledBlock[]): {
-    positionedSchedules: PositionedSchedule[]
-    laneCount: number
-  } {
-    const laneEndMins: number[] = []
-    const sortedSchedules = [...schedules].sort(
-      (a, b) => toJstMinutes(a.startsAt) - toJstMinutes(b.startsAt),
-    )
-
-    const positionedSchedules = sortedSchedules.map((schedule) => {
-      const startMin = toJstMinutes(schedule.startsAt)
-      const endMin = toJstMinutes(schedule.endsAt)
-      let lane = laneEndMins.findIndex((laneEndMin) => laneEndMin <= startMin)
-
-      if (lane === -1) {
-        lane = laneEndMins.length
-        laneEndMins.push(endMin)
-      } else {
-        laneEndMins[lane] = endMin
-      }
-
-      return { schedule, lane }
-    })
-
-    return {
-      positionedSchedules,
-      laneCount: Math.max(1, laneEndMins.length),
-    }
-  }
+function TimetableTable({
+  screenings,
+  selectedDate,
+  compact = false,
+}: {
+  screenings: Screening[]
+  selectedDate: string
+  compact?: boolean
+}) {
+  const labelWidth = compact ? 124 : 144
+  const blockHeight = compact ? 32 : 44
+  const laneGap = compact ? 38 : 52
+  const rowBaseHeight = compact ? 176 : 200
+  const rowPadding = compact ? 8 : 12
+  const minWidth = compact ? labelWidth + HOURS.length * 28 : undefined
+  const now = new Date()
+  const nowMin = now.getHours() * 60 + now.getMinutes()
+  const nowLeft = ((nowMin - HOUR_START * 60) / TOTAL_MINUTES) * 100
+  const showNowLine = nowLeft >= 0 && nowLeft <= 100
 
   return (
-    <div className="overflow-x-auto rounded-app border border-border bg-background">
-      <div className="min-w-[1020px]">
-        {/* ヘッダー行: 時刻 */}
+    <div
+      className={`overflow-x-auto rounded-app border border-border bg-background ${
+        compact ? "md:hidden" : "hidden md:block"
+      }`}
+    >
+      <div style={minWidth ? { minWidth } : undefined}>
         <div className="flex border-b border-border">
-          <div className="w-32 shrink-0 border-r border-border bg-muted/60 p-2" />
+          <div
+            className="sticky left-0 z-20 shrink-0 border-r border-border bg-muted/60"
+            style={{ width: labelWidth }}
+          />
           <div className="relative flex-1">
             <div className="flex">
-              {Array.from({ length: 17 }, (_, i) => i + 7).map((h) => (
+              {HOURS.map((hour) => (
                 <div
-                  key={h}
-                  className="flex-1 border-r border-border/50 px-1 py-2 text-center text-xs font-bold text-muted-foreground"
+                  key={hour}
+                  className={`${compact ? "shrink-0" : "flex-1"} border-r border-border/50 px-1 py-2 text-center text-xs font-bold text-muted-foreground`}
+                  style={compact ? { width: 28 } : undefined}
                 >
-                  {h}
+                  {hour}
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* 作品行 */}
-        {screeningsWithSchedules.map((screening) => {
+        {screenings.map((screening) => {
           const { positionedSchedules, laneCount } = layoutSchedules(screening.schedules!)
-          const rowHeight = Math.max(72, laneCount * 52 + 16)
+          const rowHeight = Math.max(rowBaseHeight, laneCount * laneGap + rowPadding)
 
           return (
-          <div key={screening.id} className="flex border-b border-border last:border-0">
-            {/* 作品名 */}
-            <div className="w-32 shrink-0 border-r border-border bg-muted/40 p-3">
-              <p className="text-xs font-bold text-foreground line-clamp-3">{screening.title}</p>
-            </div>
-            {/* タイムライン */}
-            <div className="relative flex-1 py-2" style={{ minHeight: `${rowHeight}px` }}>
-              {/* グリッド線（1時間ごと） */}
-              <div className="absolute inset-0 flex pointer-events-none">
-                {Array.from({ length: 17 }).map((_, i) => (
-                  <div key={i} className="flex-1 border-r border-border/30" />
-                ))}
+            <div key={screening.id} className="flex border-b border-border last:border-0">
+              <div
+                className="sticky left-0 z-20 shrink-0 border-r border-border bg-background"
+                style={{ width: labelWidth, height: rowHeight }}
+              >
+                <ScreeningLabel screening={screening} selectedDate={selectedDate} compact={compact} />
               </div>
-              {/* 上映ブロック */}
-              {positionedSchedules.map(({ schedule: sch, lane }) => {
-                const startMin = toJstMinutes(sch.startsAt)
-                const endMin = toJstMinutes(sch.endsAt)
-                const left = ((startMin - HOUR_START * 60) / TOTAL_MINUTES) * 100
-                const width = ((endMin - startMin) / TOTAL_MINUTES) * 100
 
-                return (
-                  <Link
-                    key={sch.scheduleId}
-                    to={`/reservations/booking/${screening.id}?date=${selectedDate}&scheduleId=${sch.scheduleId}&type=${screening.type ?? "movie"}`}
-                    className="absolute rounded-app bg-primary/80 text-primary-foreground px-1.5 py-1 overflow-hidden cursor-pointer hover:bg-primary transition-colors flex flex-col justify-between"
-                    style={{
-                      left: `${left}%`,
-                      width: `${width}%`,
-                      top: `${8 + lane * 52}px`,
-                      height: "44px",
-                    }}
-                  >
-                    <p className="text-[10px] font-bold truncate leading-tight">{sch.screenName}</p>
-                    <p className="text-[10px] opacity-70 leading-tight">
-                      {formatTimeJst(sch.startsAt)}〜{formatTimeJst(sch.endsAt)}
-                    </p>
-                  </Link>
-                )
-              })}
+              <div className="relative flex-1 py-2" style={{ height: rowHeight }}>
+                <div className="absolute inset-0 flex pointer-events-none">
+                  {HOURS.map((hour) => (
+                    <div
+                      key={hour}
+                      className={`${compact ? "shrink-0" : "flex-1"} border-r border-border/30`}
+                      style={compact ? { width: 28 } : undefined}
+                    />
+                  ))}
+                </div>
+
+                {showNowLine && (
+                  <div
+                    className="pointer-events-none absolute bottom-0 top-0 z-10 w-px bg-primary/80 shadow-[0_0_12px_rgba(225,29,72,0.7)]"
+                    style={{ left: `${nowLeft}%` }}
+                  />
+                )}
+
+                {positionedSchedules.map(({ schedule, lane }) => {
+                  const startMin = toJstMinutes(schedule.startsAt)
+                  const endMin = toJstMinutes(schedule.endsAt)
+                  const left = ((startMin - HOUR_START * 60) / TOTAL_MINUTES) * 100
+                  const width = ((endMin - startMin) / TOTAL_MINUTES) * 100
+
+                  return (
+                    <Link
+                      key={schedule.scheduleId}
+                      to={`/reservations/booking/${screening.id}?date=${selectedDate}&scheduleId=${schedule.scheduleId}&type=${screening.type ?? "movie"}`}
+                      className="absolute flex flex-col justify-between overflow-hidden rounded-app bg-primary/80 px-1.5 py-1 text-primary-foreground transition-colors hover:bg-primary"
+                      style={{
+                        left: `${left}%`,
+                        width: `${width}%`,
+                        minWidth: compact ? "72px" : undefined,
+                        top: `${8 + lane * laneGap}px`,
+                        height: `${blockHeight}px`,
+                      }}
+                    >
+                      <p className="truncate text-[10px] font-bold leading-tight">
+                        {compact ? schedule.screenName.replace("スクリーン", "SC") : schedule.screenName}
+                      </p>
+                      <p className={`${compact ? "text-[9px]" : "text-[10px]"} whitespace-nowrap leading-tight opacity-80`}>
+                        {formatTimeJst(schedule.startsAt)}〜{formatTimeJst(schedule.endsAt)}
+                      </p>
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
-          </div>
           )
         })}
       </div>

@@ -421,7 +421,7 @@ export default function Home() {
 	const hasTodaySchedules = todayScreenings.some((screening) => screening.schedules && screening.schedules.length > 0)
 
 	return (
-		<div className="container-center py-10 space-y-14">
+		<div className=" py-10 space-y-14">
 			<HomeNowShowingSection movies={movies} loading={loading} error={error} />
 
 			<section>

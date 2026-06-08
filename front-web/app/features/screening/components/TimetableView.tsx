@@ -1,3 +1,4 @@
+import { useRef } from "react"
 import { Link } from "react-router"
 import type { Screening } from "~/entities/screening/types"
 import { formatTimeJst } from "~/shared/lib/date"
@@ -91,7 +92,7 @@ function ScreeningLabel({
       <div className="flex h-full items-end justify-center bg-muted/40 p-1.5" aria-label={screening.title}>
         <Link
           to={detailUrl}
-          className="h-40 w-27 overflow-hidden rounded-app bg-secondary shadow-sm transition-opacity hover:opacity-80"
+          className="aspect-[2/3] w-[min(100%,6.75rem)] overflow-hidden rounded-app bg-secondary shadow-sm transition-opacity hover:opacity-80"
         >
           {image}
         </Link>
@@ -100,10 +101,10 @@ function ScreeningLabel({
   }
 
   return (
-    <div className="flex h-full flex-col justify-end gap-1.5 bg-muted/40 p-2">
+    <div className="flex h-full flex-col gap-2 bg-muted/40 p-3">
       <Link
         to={detailUrl}
-        className="h-40 w-27 overflow-hidden rounded-app bg-secondary shadow-sm transition-opacity hover:opacity-80"
+        className="aspect-[2/3] w-[min(100%,11rem)] overflow-hidden rounded-app bg-secondary shadow-sm transition-opacity hover:opacity-80"
       >
         {image}
       </Link>
@@ -142,27 +143,35 @@ function TimetableTable({
   selectedDate: string
   compact?: boolean
 }) {
-  const labelWidth = compact ? 124 : 144
-  const blockHeight = compact ? 32 : 44
-  const laneGap = compact ? 38 : 52
-  const rowBaseHeight = compact ? 176 : 200
-  const rowPadding = compact ? 8 : 12
-  const minWidth = compact ? labelWidth + HOURS.length * 28 : undefined
+  const labelWidth = compact ? "clamp(6.75rem, 30vw, 7.75rem)" : "clamp(10rem, 14vw, 13rem)"
+  const rowBaseHeight = compact ? "clamp(11rem, 38vw, 13rem)" : "clamp(14rem, 24vw, 18rem)"
+  const minWidth = compact ? `calc(${labelWidth} + ${HOURS.length * 28}px)` : undefined
   const now = new Date()
   const nowMin = now.getHours() * 60 + now.getMinutes()
   const nowLeft = ((nowMin - HOUR_START * 60) / TOTAL_MINUTES) * 100
   const showNowLine = nowLeft >= 0 && nowLeft <= 100
+  const headerScrollRef = useRef<HTMLDivElement>(null)
+  const tableWidthStyle = minWidth ? { minWidth } : { minWidth: "100%" }
+
+  function handleBodyScroll(event: React.UIEvent<HTMLDivElement>) {
+    if (headerScrollRef.current) {
+      headerScrollRef.current.scrollLeft = event.currentTarget.scrollLeft
+    }
+  }
 
   return (
     <div
-      className={`overflow-x-auto rounded-app border border-border bg-background ${
+      className={`overflow-clip rounded-app border border-border bg-background ${
         compact ? "md:hidden" : "hidden md:block"
       }`}
     >
-      <div style={minWidth ? { minWidth } : undefined}>
-        <div className="flex border-b border-border">
+      <div
+        ref={headerScrollRef}
+        className="sticky top-[calc(4rem+var(--header-scroll-offset,0px))] z-30 -mx-px overflow-hidden border-x border-b border-border bg-background shadow-sm md:top-16"
+      >
+        <div className="flex" style={tableWidthStyle}>
           <div
-            className="sticky left-0 z-20 shrink-0 border-r border-border bg-muted/60"
+            className="sticky left-0 z-40 shrink-0 border-r border-border bg-muted/90 backdrop-blur"
             style={{ width: labelWidth }}
           />
           <div className="relative flex-1">
@@ -170,7 +179,7 @@ function TimetableTable({
               {HOURS.map((hour) => (
                 <div
                   key={hour}
-                  className={`${compact ? "shrink-0" : "flex-1"} border-r border-border/50 px-1 py-2 text-center text-xs font-bold text-muted-foreground`}
+                  className={`${compact ? "shrink-0" : "flex-1"} border-r border-border/50 bg-background/95 px-1 py-2 text-center text-xs font-bold text-muted-foreground backdrop-blur`}
                   style={compact ? { width: 28 } : undefined}
                 >
                   {hour}
@@ -179,10 +188,22 @@ function TimetableTable({
             </div>
           </div>
         </div>
+      </div>
 
+      <div className="overflow-x-auto" onScroll={handleBodyScroll}>
+        <div style={tableWidthStyle}>
         {screenings.map((screening) => {
           const { positionedSchedules, laneCount } = layoutSchedules(screening.schedules!)
-          const rowHeight = Math.max(rowBaseHeight, laneCount * laneGap + rowPadding)
+          const rowHeight = rowBaseHeight
+          const laneGap = compact ? 6 : 8
+          const laneInset = 8
+          const minimumBlockHeight = compact ? 32 : 44
+          const maximumBlockHeight = compact ? 56 : 72
+          const availableLaneHeight = `calc((100% - ${laneInset * 2 + laneGap * (laneCount - 1)}px) / ${laneCount})`
+          const blockHeight =
+            laneCount >= 5
+              ? availableLaneHeight
+              : `clamp(${minimumBlockHeight}px, ${availableLaneHeight}, ${maximumBlockHeight}px)`
 
           return (
             <div key={screening.id} className="flex border-b border-border last:border-0">
@@ -216,6 +237,12 @@ function TimetableTable({
                   const endMin = toJstMinutes(schedule.endsAt)
                   const left = ((startMin - HOUR_START * 60) / TOTAL_MINUTES) * 100
                   const width = ((endMin - startMin) / TOTAL_MINUTES) * 100
+                  const laneRatio = lane / laneCount
+                  const laneTopPercent = laneRatio * 100
+                  const laneTopOffset =
+                    laneInset -
+                    laneRatio * (laneInset * 2 + laneGap * (laneCount - 1)) +
+                    lane * laneGap
 
                   return (
                     <Link
@@ -226,8 +253,8 @@ function TimetableTable({
                         left: `${left}%`,
                         width: `${width}%`,
                         minWidth: compact ? "72px" : undefined,
-                        top: `${8 + lane * laneGap}px`,
-                        height: `${blockHeight}px`,
+                        top: `calc(${laneTopPercent}% + ${laneTopOffset}px)`,
+                        height: blockHeight,
                       }}
                     >
                       <p className="truncate text-[10px] font-bold leading-tight">
@@ -243,6 +270,7 @@ function TimetableTable({
             </div>
           )
         })}
+        </div>
       </div>
     </div>
   )

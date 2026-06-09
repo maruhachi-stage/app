@@ -72,7 +72,7 @@ export function useSchedules(options?: UseSchedulesOptions) {
     setSearchParams(
       (p) => {
         const n = new URLSearchParams(p)
-        if (date) n.set("date", date)
+        if (date && date !== selectedDate) n.set("date", date)
         else n.delete("date")
         return n
       },

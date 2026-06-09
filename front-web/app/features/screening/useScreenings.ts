@@ -69,7 +69,7 @@ export function useScreenings(options?: UseScreeningsOptions) {
   function setDate(date: string) {
     setSearchParams((prev) => {
       const p = new URLSearchParams(prev)
-      if (date) p.set("date", date)
+      if (date && date !== selectedDate) p.set("date", date)
       else p.delete("date")
       return p
     }, { preventScrollReset: true })
@@ -80,6 +80,7 @@ export function useScreenings(options?: UseScreeningsOptions) {
       const p = new URLSearchParams(prev)
       if (status) p.set("status", status)
       else p.delete("status")
+      if (status === "coming_soon") p.delete("date")
       return p
     }, { preventScrollReset: true })
   }
@@ -115,15 +116,6 @@ export function useScreenings(options?: UseScreeningsOptions) {
     }, { preventScrollReset: true })
   }
 
-  function clearAll() {
-    setSearchParams((prev) => {
-      const p = new URLSearchParams(prev)
-      p.delete("date")
-      p.delete("status")
-      return p
-    }, { preventScrollReset: true })
-  }
-
   return {
     screenings,
     loading,
@@ -139,6 +131,5 @@ export function useScreenings(options?: UseScreeningsOptions) {
     setSort,
     setView,
     setType,
-    clearAll,
   }
 }

@@ -214,14 +214,6 @@ export default function ScreeningDetailPage() {
         <h2 className="mb-6 text-2xl font-bold text-foreground">上映スケジュール</h2>
 
         <div className="mb-6">
-          <button
-            onClick={() => setDate("")}
-            className={`mb-3 shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition ${
-              !selectedDate ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
-          >
-            すべて
-          </button>
           <DateSelector days={days} selectedDate={selectedDate} onSelect={setDate} />
         </div>
 

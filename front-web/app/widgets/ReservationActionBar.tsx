@@ -20,7 +20,7 @@ export function ReservationActionBar({
   nextLabel = "次へ進む",
 }: Props) {
   return (
-    <div className="sticky bottom-6 mt-10 mx-4 sm:mx-auto sm:w-fit flex items-center gap-4 rounded-app bg-secondary px-5 py-3 shadow-2xl border border-border">
+    <div className="sticky bottom-6 mt-10 mx-4 sm:mx-auto sm:w-fit flex items-center gap-2 sm:gap-4 rounded-app bg-secondary px-4 sm:px-5 py-3 shadow-2xl border border-border">
       <div className="flex gap-1.5">
         {Array.from({ length: maxSeats }).map((_, i) => {
           const seat = seats[i]
@@ -39,15 +39,15 @@ export function ReservationActionBar({
       {totalPrice !== undefined && (
         <>
           <div className="h-8 border-l border-border/50" />
-          <div>
-            <p className="text-[10px] font-bold text-muted-foreground uppercase leading-none mb-1">合計金額</p>
-            <p className="text-xl font-black text-foreground leading-none">
+          <div className="shrink-0">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase leading-none mb-1 whitespace-nowrap">合計金額</p>
+            <p className="text-xl font-black text-foreground leading-none whitespace-nowrap">
               {quoting ? "..." : `${totalPrice.toLocaleString()}円`}
             </p>
           </div>
         </>
       )}
-      <Button size="lg" className="px-10 h-10 text-base font-black" onClick={onNext}>
+      <Button size="lg" className="px-4 sm:px-10 h-10 text-base font-black shrink-0 whitespace-nowrap" onClick={onNext}>
         {nextLabel}
       </Button>
     </div>

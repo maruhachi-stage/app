@@ -16,9 +16,19 @@ const NAV_LINKS = [
   { to: "/reservations/lookup", label: "予約確認" },
 ]
 
+function getLogoSrc(theme: "dark" | "light") {
+  if (theme === "dark") {
+    return AppConfig.logoDarkUrl
+  }
+  return AppConfig.logoLightUrl
+}
+
 export function Header() {
   const { auth, setAuth } = useAuth()
   const { totalCount } = useCart()
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark"
+  })
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
@@ -31,6 +41,26 @@ export function Header() {
       document.body.style.overflow = ""
     }
   }, [menuOpen])
+
+  useEffect(() => {
+    const updateTheme = () => {
+      const currentTheme = document.documentElement.getAttribute("data-theme")
+      setTheme(currentTheme === "light" ? "light" : "dark")
+    }
+
+    updateTheme()
+
+    const observer = new MutationObserver(() => {
+      updateTheme()
+    })
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    })
+
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const header = headerRef.current
@@ -91,7 +121,11 @@ export function Header() {
       <header ref={headerRef} className="bg-background/80 backdrop-blur-md border-b border-border relative z-50" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <div className="container-center flex items-center justify-between py-4">
           <Link to="/" className="text-2xl font-black tracking-tighter text-primary" onClick={() => setMenuOpen(false)}>
-            {AppConfig.name}
+            <img
+              src={getLogoSrc(theme)}
+              alt={AppConfig.name}
+              className="h-10 w-auto md:h-14"
+            />
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
@@ -146,7 +180,11 @@ export function Header() {
         <div className="fixed inset-0 z-40 flex flex-col bg-background md:hidden overflow-y-auto" style={{ paddingTop: "env(safe-area-inset-top)" }}>
           <div className="flex items-center justify-between border-b border-border px-4 py-4">
             <Link to="/" className="text-2xl font-black tracking-tighter text-primary" onClick={() => setMenuOpen(false)}>
-              {AppConfig.name}
+              <img
+                src={getLogoSrc(theme)}
+                alt={AppConfig.name}
+                className="h-10 w-auto"
+              />
             </Link>
             <button className="text-foreground p-1" onClick={() => setMenuOpen(false)} aria-label="閉じる">
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

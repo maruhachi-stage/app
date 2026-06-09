@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate } from "react-router"
+import { FiMoon, FiSun } from "react-icons/fi"
 import { AppConfig } from "~/shared/config/app"
 import { useAuth } from "~/shared/api/auth"
 import { apiFetch } from "~/shared/api/client"
 import { Button } from "~/shared/ui/Button"
 import { useCart } from "~/features/cart/useCart"
+import { useThemeContext } from "~/shared/lib/theme"
 import { HoldTimer } from "./HoldTimer"
 
 const NAV_LINKS = [
@@ -19,6 +21,7 @@ const NAV_LINKS = [
 export function Header() {
   const { auth, setAuth } = useAuth()
   const { totalCount } = useCart()
+  const { theme, setTheme } = useThemeContext()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
@@ -125,6 +128,7 @@ export function Header() {
                 </Button>
               </Link>
             )}
+
           </nav>
 
           <button className="md:hidden text-foreground p-1" onClick={() => setMenuOpen((v) => !v)} aria-label="メニュー">
@@ -199,6 +203,22 @@ export function Header() {
                 ログイン
               </Link>
             )}
+
+            <div className="mt-auto flex justify-end border-t border-border pb-6 pt-5">
+              <button
+                type="button"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className={`flex h-12 w-12 items-center justify-center rounded-full border shadow-lg transition-all active:scale-95 ${
+                  theme === "dark"
+                    ? "border-zinc-600 bg-zinc-100 text-zinc-900 shadow-black/20 hover:bg-white"
+                    : "border-zinc-300 bg-zinc-700 text-white shadow-black/15 hover:bg-zinc-800"
+                }`}
+                aria-label={theme === "dark" ? "ライトテーマに切り替える" : "ダークテーマに切り替える"}
+                title={theme === "dark" ? "ライトテーマに切り替える" : "ダークテーマに切り替える"}
+              >
+                {theme === "dark" ? <FiSun className="h-5 w-5" /> : <FiMoon className="h-5 w-5" />}
+              </button>
+            </div>
           </nav>
         </div>
       )}

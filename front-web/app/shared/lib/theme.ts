@@ -1,6 +1,13 @@
-import { useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 export type Theme = "dark" | "light";
+
+type ThemeContextValue = {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+};
+
+export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>("dark");
@@ -12,11 +19,18 @@ export function useTheme() {
     }
   }, []);
 
-  const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
+  const updateTheme = (newTheme: Theme) => {
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
   };
 
-  return { theme, toggleTheme };
+  return { theme, setTheme: updateTheme };
+}
+
+export function useThemeContext() {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error("useThemeContext must be used within ThemeContext.Provider");
+  }
+  return context;
 }

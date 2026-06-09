@@ -89,10 +89,10 @@
   }
 
   .container-center {
-    @apply mx-auto w-full max-w-370 px-4;
+    @apply mx-auto w-full max-w-370 px-3 sm:px-4;
   }
 
   .reservation-container {
-    @apply mx-auto w-full max-w-4xl px-4;
+    @apply mx-auto w-full max-w-4xl px-3 sm:px-4;
   }
 }

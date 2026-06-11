@@ -1,6 +1,5 @@
 import { Link, useNavigate, useParams } from "react-router"
 import { useEffect, useMemo, useState } from "react"
-import { allProducts } from "~/entities/product/sampleProducts"
 import {
   PRODUCT_CATEGORY_LABELS,
   buildConfiguredProductId,
@@ -12,6 +11,8 @@ import {
   type SelectedProductOption,
 } from "~/entities/product/types"
 import { useCart } from "~/features/cart/useCart"
+import { useProduct } from "~/features/product/useProducts"
+import { proxyImageUrl } from "~/shared/lib/image"
 import { Button } from "~/shared/ui/Button"
 
 type Props = {
@@ -22,14 +23,14 @@ export function ProductDetailPage({ scope }: Props) {
   const { productId } = useParams()
   const navigate = useNavigate()
   const { addItem } = useCart()
-  const product = allProducts.find((item) => item.id === productId)
+  const { product, loading, error } = useProduct(productId)
   const [selected, setSelected] = useState<Record<string, ProductOption>>(() =>
-    getInitialSelections(product),
+    getInitialSelections(undefined),
   )
   const [quantity, setQuantity] = useState(1)
 
   useEffect(() => {
-    setSelected(getInitialSelections(product))
+    setSelected(getInitialSelections(product ?? undefined))
     setQuantity(1)
   }, [productId, product])
 
@@ -48,6 +49,14 @@ export function ProductDetailPage({ scope }: Props) {
     })
   }, [product, selected])
 
+  if (loading) {
+    return (
+      <div className="container-center py-16 text-center text-sm text-muted-foreground">
+        商品情報を読み込み中です
+      </div>
+    )
+  }
+
   if (
     !product ||
     (scope === "shop" && product.category === "goods") ||
@@ -55,7 +64,9 @@ export function ProductDetailPage({ scope }: Props) {
   ) {
     return (
       <div className="container-center py-16">
-        <p className="mb-4 text-sm text-muted-foreground">商品が見つかりませんでした。</p>
+        <p className="mb-4 text-sm text-muted-foreground">
+          {error || "商品が見つかりませんでした。"}
+        </p>
         <Link to={scope === "shop" ? "/shop" : "/goods"}>
           <Button variant="secondary">一覧へ戻る</Button>
         </Link>
@@ -86,7 +97,7 @@ export function ProductDetailPage({ scope }: Props) {
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
         <div className="overflow-hidden rounded-lg border border-border bg-muted">
           {product.imageUrl ? (
-            <img src={product.imageUrl} alt={product.name} className="aspect-square w-full object-cover" />
+            <img src={proxyImageUrl(product.imageUrl)} alt={product.name} className="aspect-square w-full object-cover" />
           ) : (
             <div className="flex aspect-square items-center justify-center text-muted-foreground">
               {PRODUCT_CATEGORY_LABELS[product.category]}

@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from "react"
 import { Link, useNavigate } from "react-router"
 import { formatProductPrice } from "~/entities/product/types"
 import { useCart } from "~/features/cart/useCart"
+import { proxyImageUrl } from "~/shared/lib/image"
 import { Button } from "~/shared/ui/Button"
 
 type FormErrors = {
@@ -13,6 +14,7 @@ type FormErrors = {
 }
 
 const PICKUP_TIMES = ["すぐ受け取り", "上映10分前", "上映20分前", "上映後"]
+const PICKUP_LOCATION = "劇場内 ショップ受け取りカウンター"
 
 export function meta() {
   return [{ title: "ショップ決済 | HALシネマ" }]
@@ -42,7 +44,7 @@ export default function CartCheckoutPage() {
           <p className="text-4xl font-black tracking-[0.2em]">{completedOrderCode}</p>
         </div>
         <p className="mb-8 text-sm leading-7 text-muted-foreground">
-          劇場内ショップの受け取りカウンターで、この番号を提示してください。
+          {PICKUP_LOCATION}で、この番号を提示してください。
           デモ実装のため実際の決済通信は行っていません。
         </p>
         <Button type="button" onClick={() => navigate("/shop")}>
@@ -85,6 +87,13 @@ export default function CartCheckoutPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <section className="rounded-lg border border-border bg-card p-5">
             <h2 className="mb-4 text-lg font-bold">受け取り情報</h2>
+            <div className="mb-4 rounded-lg border border-border bg-background p-4">
+              <p className="text-xs font-bold text-muted-foreground">受け取り場所</p>
+              <p className="mt-1 text-sm font-bold">{PICKUP_LOCATION}</p>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                フード・ドリンクとグッズをまとめて注文し、劇場内のショップカウンターで受け取ります。
+              </p>
+            </div>
             <label className="mb-4 block">
               <span className="mb-1.5 block text-xs font-bold text-muted-foreground">受取名</span>
               <input
@@ -198,12 +207,20 @@ export default function CartCheckoutPage() {
         </form>
 
         <aside className="h-fit rounded-lg border border-border bg-card p-5">
-          <h2 className="mb-4 text-lg font-bold">注文内容</h2>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold">注文内容</h2>
+              <p className="mt-1 text-xs text-muted-foreground">{PICKUP_LOCATION}</p>
+            </div>
+            <span className="rounded bg-secondary px-2 py-1 text-xs font-black">
+              {totalCount}点
+            </span>
+          </div>
           <div className="space-y-4">
             {items.map((item) => (
               <div key={item.id} className="flex gap-3 border-b border-border pb-4 last:border-b-0">
                 <div className="h-16 w-16 shrink-0 overflow-hidden rounded bg-muted">
-                  {item.imageUrl && <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />}
+                  {item.imageUrl && <img src={proxyImageUrl(item.imageUrl)} alt="" className="h-full w-full object-cover" />}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold leading-tight">{item.name}</p>

@@ -3,12 +3,18 @@ import { useEffect, useRef, useState } from "react"
 import { useSchedules } from "~/features/screening/useSchedules"
 import { useProducts } from "~/features/product/useProducts"
 import { apiFetch } from "~/shared/api/client"
-import type { Screening, ScreeningType } from "~/entities/screening/types"
+import type { Screening } from "~/entities/screening/types"
+import { ScreeningGridCard } from "~/widgets/ScreeningCard"
 import { DateSelector } from "~/widgets/DateSelector"
 import { ScheduleGrid } from "~/widgets/ScheduleGrid"
-import { ScreeningGridCard } from "~/widgets/ScreeningCard"
 import { ProductCard } from "~/widgets/ProductCard"
 import { proxyImageUrl } from "~/shared/lib/image"
+
+const MOCK_META = {
+  director: "山田 太郎",
+  cast: ["田中 花子", "佐藤 次郎", "鈴木 三郎", "高橋 四郎"],
+  officialUrl: "https://example.com",
+}
 
 function extractColor(img: HTMLImageElement): { r: number; g: number; b: number } | null {
   try {
@@ -42,78 +48,41 @@ function extractColor(img: HTMLImageElement): { r: number; g: number; b: number 
   }
 }
 
-function getBackLabel(type: ScreeningType): string {
-  switch (type) {
-    case "stage":
-      return "演劇一覧"
-    case "event":
-      return "イベント一覧"
-    default:
-      return "映画一覧"
-  }
+function statusLabel(status: Screening["status"]): string {
+  return status === "now_showing" ? "上映中" : "上映予定"
 }
 
-function getRelatedLabel(type: ScreeningType): string {
-  switch (type) {
-    case "stage":
-      return "関連演劇"
-    case "event":
-      return "関連イベント"
-    default:
-      return "関連映画"
-  }
-}
-
-function getTypeLabel(type: ScreeningType): string {
-  switch (type) {
-    case "stage":
-      return "STAGE"
-    case "event":
-      return "EVENT"
-    default:
-      return "MOVIE"
-  }
-}
-
-function getStatusLabel(status: Screening["status"]): string {
-  return status === "now_showing" ? "上映中" : "公開予定"
-}
-
-function getHeroMeta(item: Screening) {
-  const meta = [{ label: "上映時間", value: `${item.durationMin}分` }]
-
-  if (item.type === "stage" || item.type === "event") {
-    meta.push({ label: "脚本", value: item.playwright?.trim() || "未登録" })
-    meta.push({ label: "演出", value: item.director?.trim() || "未登録" })
-  }
-
-  return meta
-}
-
-export default function ScreeningDetailPage() {
+export default function MovieDetailPage() {
   const { movieId } = useParams<{ movieId: string }>()
-  const { data, loading, error, days, selectedDate, setDate, selectedType } = useSchedules({ idParamName: "movieId" })
+  const { data, loading, error, days, selectedDate, setDate } = useSchedules({
+    type: "movie",
+    idParamName: "movieId",
+  })
+  const { products } = useProducts("goods")
   const imgRef = useRef<HTMLImageElement>(null)
   const [rgb, setRgb] = useState({ r: 15, g: 15, b: 30 })
-  const [relatedItems, setRelatedItems] = useState<Screening[]>([])
-  const { products } = useProducts("goods")
+  const [relatedMovies, setRelatedMovies] = useState<Screening[]>([])
+
+  const movie = data?.item
+  const relatedProducts = products
+    .filter((product) => !movie?.title || !product.movieTitle || product.movieTitle === movie.title)
+    .slice(0, 8)
 
   useEffect(() => {
     if (!movieId) return
 
-    const endpoint = selectedType === "stage" || selectedType === "event" ? `/stages?type=${selectedType}` : "/movies"
-    apiFetch<{ items: Screening[] }>(endpoint)
+    apiFetch<{ items: Screening[] }>("/movies")
       .then((res) => {
-        setRelatedItems(
+        setRelatedMovies(
           res.items
             .filter((item) => item.id !== Number(movieId))
-            .map((item) => ({ ...item, type: item.type ?? selectedType })),
+            .map((item) => ({ ...item, type: "movie" as const })),
         )
       })
       .catch(() => {
-        setRelatedItems([])
+        setRelatedMovies([])
       })
-  }, [movieId, selectedType])
+  }, [movieId])
 
   function handleImageLoad() {
     const img = imgRef.current
@@ -122,11 +91,6 @@ export default function ScreeningDetailPage() {
     const color = extractColor(img)
     if (color) setRgb(color)
   }
-
-  const item = data?.item
-  const relatedProducts = products
-    .filter((product) => !item?.title || !product.movieTitle || product.movieTitle === item.title)
-    .slice(0, 8)
 
   return (
     <div className="pb-16">
@@ -143,26 +107,26 @@ export default function ScreeningDetailPage() {
         <div className="container-center pt-8 pb-16">
           <nav className="mb-8 text-sm text-white/60">
             <Link
-              to={`/screenings?type=${selectedType}${selectedDate ? `&date=${selectedDate}` : ""}`}
+              to={`/screenings?type=movie${selectedDate ? `&date=${selectedDate}` : ""}`}
               className="transition-colors hover:text-white"
             >
-              {getBackLabel(selectedType)}
+              映画一覧
             </Link>
             <span className="mx-2 opacity-40">/</span>
-            <span className="text-white">{item?.title ?? "詳細"}</span>
+            <span className="text-white">{movie?.title ?? "詳細"}</span>
           </nav>
 
           {loading && <p className="text-white/80">読み込み中...</p>}
           {error && <p className="text-red-200">{error}</p>}
 
-          {item && (
+          {movie && (
             <div className="flex flex-col gap-8 md:flex-row md:items-end">
               <div className="w-44 shrink-0 md:w-52">
-                {item.thumbnailUrl ? (
+                {movie.thumbnailUrl ? (
                   <img
                     ref={imgRef}
-                    src={proxyImageUrl(item.thumbnailUrl)}
-                    alt={item.title}
+                    src={proxyImageUrl(movie.thumbnailUrl)}
+                    alt={movie.title}
                     crossOrigin="anonymous"
                     onLoad={handleImageLoad}
                     className="aspect-[2/3] w-full rounded-app object-cover shadow-2xl"
@@ -175,29 +139,50 @@ export default function ScreeningDetailPage() {
               </div>
 
               <div className="flex-1 pb-2">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span
-                    className={`inline-block rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${
-                      item.status === "now_showing"
-                        ? "border-emerald-500/30 bg-emerald-500/20 text-emerald-300"
-                        : "border-orange-500/30 bg-orange-500/20 text-orange-300"
-                    }`}
-                  >
-                    {getStatusLabel(item.status)}
-                  </span>
-                  <span className="rounded-full border border-white/20 px-3 py-1 text-xs font-bold tracking-[0.2em] text-white/80">
-                    {getTypeLabel(selectedType)}
-                  </span>
-                </div>
+                <span
+                  className={`inline-block rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${
+                    movie.status === "now_showing"
+                      ? "border-emerald-500/30 bg-emerald-500/20 text-emerald-300"
+                      : "border-orange-500/30 bg-orange-500/20 text-orange-300"
+                  }`}
+                >
+                  {statusLabel(movie.status)}
+                </span>
 
                 <h1 className="mt-4 text-4xl font-black tracking-tighter text-white md:text-5xl lg:text-6xl">
-                  {item.title}
+                  {movie.title}
                 </h1>
 
+                <div className="mt-4 flex items-center gap-3 text-sm font-medium text-white/60">
+                  <span>{movie.durationMin}分</span>
+                  <span className="h-1 w-1 rounded-full bg-white/30" />
+                  <span>2D / 字幕・吹替</span>
+                </div>
+
                 <div className="mt-8 grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm leading-relaxed">
-                  {getHeroMeta(item).map((entry) => (
-                    <FragmentRow key={entry.label} label={entry.label} value={entry.value} />
-                  ))}
+                  <span className="font-bold uppercase tracking-wider text-white/40">監督</span>
+                  <span className="text-white/80">{MOCK_META.director}</span>
+                  <span className="font-bold uppercase tracking-wider text-white/40">出演</span>
+                  <span className="text-white/80">{MOCK_META.cast.join("、")}</span>
+                </div>
+
+                <div className="mt-8">
+                  <a
+                    href={MOCK_META.officialUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-white/10"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                    公式サイト
+                  </a>
                 </div>
               </div>
             </div>
@@ -205,12 +190,14 @@ export default function ScreeningDetailPage() {
         </div>
       </div>
 
-      {item && (
+      {movie && (
         <section className="mt-12">
           <h2 className="mb-4 border-l-4 border-primary pl-4 text-lg font-bold uppercase tracking-widest text-foreground">
             作品紹介
           </h2>
-          <p className="max-w-3xl whitespace-pre-wrap leading-relaxed text-muted-foreground">{item.description}</p>
+          <p className="max-w-3xl whitespace-pre-wrap leading-relaxed text-muted-foreground">
+            {movie.description}
+          </p>
         </section>
       )}
 
@@ -218,25 +205,35 @@ export default function ScreeningDetailPage() {
         <h2 className="mb-6 text-2xl font-bold text-foreground">上映スケジュール</h2>
 
         <div className="mb-6">
+          <button
+            onClick={() => setDate("")}
+            className={`mb-3 shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition ${
+              !selectedDate
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+          >
+            すべて
+          </button>
           <DateSelector days={days} selectedDate={selectedDate} onSelect={setDate} />
         </div>
 
         {loading && <p className="text-muted-foreground">読み込み中...</p>}
         {!loading && error && <p className="text-primary">{error}</p>}
         {!loading && !error && data?.schedules.length === 0 && (
-          <p className="text-muted-foreground">選択した日の上映スケジュールはありません。</p>
+          <p className="text-muted-foreground">選択した日の上映回はありません。</p>
         )}
         {data && (
           <ScheduleGrid
             schedules={data.schedules}
             itemId={data.item.id}
             selectedDate={selectedDate}
-            screeningType={selectedType}
+            screeningType="movie"
           />
         )}
       </section>
 
-      {selectedType === "movie" && relatedProducts.length > 0 && (
+      {relatedProducts.length > 0 && (
         <section className="mt-16 border-t border-border pt-10">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-foreground">関連グッズ</h2>
@@ -256,14 +253,14 @@ export default function ScreeningDetailPage() {
         </section>
       )}
 
-      {relatedItems.length > 0 && (
+      {relatedMovies.length > 0 && (
         <section className="mt-16 border-t border-border pt-10">
-          <h2 className="mb-6 text-2xl font-bold text-foreground">{getRelatedLabel(selectedType)}</h2>
+          <h2 className="mb-6 text-2xl font-bold text-foreground">関連映画</h2>
           <div className="-mx-4 overflow-x-auto px-4">
             <div className="flex gap-4 pb-4">
-              {relatedItems.map((relatedItem) => (
-                <div key={relatedItem.id} className="w-36 shrink-0 md:w-44">
-                  <ScreeningGridCard screening={relatedItem} selectedDate={selectedDate} />
+              {relatedMovies.map((relatedMovie) => (
+                <div key={relatedMovie.id} className="w-36 shrink-0 md:w-44">
+                  <ScreeningGridCard screening={relatedMovie} selectedDate={selectedDate} />
                 </div>
               ))}
             </div>
@@ -271,14 +268,5 @@ export default function ScreeningDetailPage() {
         </section>
       )}
     </div>
-  )
-}
-
-function FragmentRow({ label, value }: { label: string; value: string }) {
-  return (
-    <>
-      <span className="font-bold uppercase tracking-wider text-white/40">{label}</span>
-      <span className="text-white/80">{value}</span>
-    </>
   )
 }

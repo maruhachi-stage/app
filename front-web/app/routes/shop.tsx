@@ -1,10 +1,11 @@
 import { useState } from "react"
 import type { Route } from "./+types/shop"
-import { shopProducts } from "~/entities/product/sampleProducts"
 import {
   PRODUCT_CATEGORY_LABELS,
   type ProductCategory,
 } from "~/entities/product/types"
+import { useProducts } from "~/features/product/useProducts"
+import { proxyImageUrl } from "~/shared/lib/image"
 import { ProductCard } from "~/widgets/ProductCard"
 
 type MenuFilter = ProductCategory | "all"
@@ -20,6 +21,8 @@ export function meta(_: Route.MetaArgs) {
 
 export default function Shop() {
   const [filter, setFilter] = useState<MenuFilter>("all")
+  const { products, loading, error } = useProducts()
+  const shopProducts = products.filter((product) => product.category !== "goods")
   const visibleProducts = shopProducts.filter(
     (product) => filter === "all" || product.category === filter,
   )
@@ -36,7 +39,7 @@ export default function Shop() {
                   index === 1 ? "" : "scale-90 opacity-60"
                 }`}
               >
-                <img src={product.imageUrl} alt="" className="h-full w-full object-cover" />
+                <img src={proxyImageUrl(product.imageUrl)} alt="" className="h-full w-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
                 <div className="absolute bottom-4 left-4">
                   <p className="text-[10px] font-bold text-white/70">Concession</p>
@@ -71,11 +74,15 @@ export default function Shop() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4">
-          {visibleProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {loading && <p className="py-12 text-center text-sm text-muted-foreground">商品を読み込み中です</p>}
+        {error && <p className="py-12 text-center text-sm font-bold text-primary">{error}</p>}
+        {!loading && !error && (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4">
+            {visibleProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

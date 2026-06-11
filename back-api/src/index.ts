@@ -14,7 +14,11 @@ import stagesRouter from '#modules/stages/index.js'
 import reservationsRouter from '#modules/reservations/index.js'
 import screensRouter from '#modules/screens/index.js'
 import configRouter from '#modules/config/index.js'
+import productsRouter from '#modules/products/index.js'
+import posRouter from '#modules/pos/index.js'
 import { seedSchedules } from '#db/seedSchedules.js'
+import { ensureProductCatalogSchema } from '#modules/products/service.js'
+import { ensurePosSchema } from '#modules/pos/service.js'
 
 const app = new Hono<AppEnv>()
 
@@ -38,6 +42,8 @@ app.route('/api', stagesRouter)
 app.route('/api', reservationsRouter)
 app.route('/api', screensRouter)
 app.route('/api', configRouter)
+app.route('/api', productsRouter)
+app.route('/api', posRouter)
 
 app.onError(errorHandler)
 app.get('/health', (c) => c.json({ status: 'ok' }))
@@ -45,6 +51,8 @@ app.get('/health', (c) => c.json({ status: 'ok' }))
 const port = Number(process.env.PORT ?? 3000)
 
 await seedSchedules()
+await ensureProductCatalogSchema()
+await ensurePosSchema()
 
 serve({ fetch: app.fetch, port }, (info) => {
   console.log(`Server is running on http://localhost:${info.port}`)

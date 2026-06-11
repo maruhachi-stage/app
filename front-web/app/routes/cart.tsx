@@ -5,6 +5,7 @@ import {
   formatProductPrice,
   type ProductCategory,
 } from "~/entities/product/types"
+import { proxyImageUrl } from "~/shared/lib/image"
 import { Button } from "~/shared/ui/Button"
 
 const CART_CATEGORIES: ProductCategory[] = ["goods", "food", "drink", "set"]
@@ -66,7 +67,7 @@ export default function CartPage() {
                   >
                     <div className="h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
                       {item.imageUrl ? (
-                        <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+                        <img src={proxyImageUrl(item.imageUrl)} alt="" className="h-full w-full object-cover" />
                       ) : null}
                     </div>
 

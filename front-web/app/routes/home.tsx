@@ -4,6 +4,7 @@ import { apiFetch, ApiError } from "~/shared/api/client"
 import { jstDateLabel, todayJst } from "~/shared/lib/date"
 import TimetableView from "~/features/screening/components/TimetableView"
 import { HomeNowShowingSection } from "~/widgets/HomeNowShowingSection"
+import { proxyImageUrl } from "~/shared/lib/image"
 import type { Screening as Movie } from "~/entities/screening/types"
 import type { Route } from "./+types/home"
 
@@ -20,6 +21,31 @@ function moviesListPath(params?: { status?: string; date?: string }): string {
 	if (params?.date) qs.set("date", params.date)
 	return `/screenings?${qs.toString()}`
 }
+
+function movieImageUrl(thumbnailUrl: string | null): string | null {
+	return proxyImageUrl(thumbnailUrl) ?? null
+}
+
+function movieDetailPath(movieId: number): string {
+	return `/screenings/${movieId}?type=movie`
+}
+
+// ─── スケジュール表示用の型 ────────────────────────────────────────────────
+
+type DisplaySchedule = {
+	scheduleId: number
+	movieId: number
+	title: string
+	thumbnailUrl: string | null
+	screen: string
+	startsAt: string
+	endsAt: string
+	durationMin: number
+	remainingSeats: number
+	totalSeats: number
+}
+
+// ─── お知らせ ─────────────────────────────────────────────────────────────-
 
 type NewsItem = {
 	id: number
@@ -164,7 +190,7 @@ export default function Home() {
 	const hasTodaySchedules = todayScreenings.some((screening) => screening.schedules && screening.schedules.length > 0)
 
 	return (
-		<div className="container-center py-10 space-y-14">
+		<div className=" py-10 space-y-14">
 			<HomeNowShowingSection movies={movies} loading={loading} error={error} />
 
 			<section>

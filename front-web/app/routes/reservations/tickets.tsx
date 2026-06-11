@@ -94,7 +94,8 @@ export default function TicketsPage() {
                       : "border-border bg-secondary text-muted-foreground hover:border-primary/30"
                   }`}
                 >
-                  {t.label}<br />{t.price.toLocaleString()}円
+                  <span className="block text-sm">{t.label}</span>
+                  <span className="block mt-1">{t.price.toLocaleString()}円</span>
                 </button>
               ))}
             </div>

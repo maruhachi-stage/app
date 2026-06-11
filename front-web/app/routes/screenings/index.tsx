@@ -19,7 +19,6 @@ export default function ScreeningsPage() {
     setSort,
     setView,
     setType,
-    clearAll,
   } = useScreenings()
 
   return (
@@ -29,14 +28,12 @@ export default function ScreeningsPage() {
       <ScreeningFilters
         selectedType={selectedType}
         selectedStatus={selectedStatus}
-        selectedDate={selectedDate}
         sortBy={sortBy}
         view={view}
         onTypeChange={setType}
         onStatusChange={setStatus}
         onSortChange={setSort}
         onViewChange={setView}
-        onClearAll={clearAll}
       />
 
       <ScreeningGrid screenings={screenings} selectedDate={selectedDate} loading={loading} view={view} error={error} />

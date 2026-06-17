@@ -1,66 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
+import type { SeatData, SeatMapData } from "~/entities/reservation/seat-layout"
 import { apiFetch } from "~/shared/api/client"
 
-export type SeatStatus = "available" | "reserved" | "held"
-export type SeatType = "standard" | "premium" | "wheelchair_companion" | "unavailable"
-
-export type LayoutObjectData = {
-  id: number
-  type: "screen" | "aisle" | "entrance" | "label" | "divider" | "stairs" | "wheelchair_space" | "background_zone"
-  code: string
-  label: string | null
-  leftPct: number
-  topPct: number
-  widthPct: number
-  heightPct: number
-  rotationDeg: number
-  zIndex: number
-  style?: Record<string, unknown>
-}
-
-export type SeatSectionData = {
-  id: number
-  code: string
-  name: string
-}
-
-export type SeatData = {
-  seatId: number
-  seatCode?: string
-  row: string
-  col: number
-  seatNo?: number
-  displayLabel?: string | null
-  sectionCode?: string | null
-  seatType?: SeatType
-  leftPct?: number
-  topPct?: number
-  widthPct?: number
-  heightPct?: number
-  rotationDeg?: number
-  hitRadiusPct?: number | null
-  positionTopPct: number
-  positionLeftPct: number
-  seatWidthPct: number
-  seatHeightPct: number
-  status: SeatStatus
-}
-
-export type SeatMapData = {
-  scheduleId: number
-  layout: {
-    screenId?: number
-    layoutId?: number
-    aspectRatio: string
-    layoutVersion: number
-    designWidth?: number
-    designHeight?: number
-    backgroundImageUrl?: string | null
-  }
-  objects?: LayoutObjectData[]
-  sections?: SeatSectionData[]
-  seats: SeatData[]
-}
+export type { SeatData, SeatMapData }
 
 const SEAT_STATUS_POLL_MS = 15_000
 

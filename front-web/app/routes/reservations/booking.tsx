@@ -95,7 +95,7 @@ export default function BookingPage() {
       )}
 
       {selectedScheduleId && (
-        <div className="mt-10 border-t border-border pt-10">
+        <div className={`mt-10 border-t border-border pt-10 ${selectedSeatIds.length > 0 ? "pb-28 sm:pb-0" : ""}`}>
           <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">3. 座席を選択</h2>
           <p className="mt-1 text-xs text-muted-foreground">最大8席まで選択できます</p>
 

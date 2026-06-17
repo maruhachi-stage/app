@@ -6,21 +6,54 @@ import { RESERVATION_CONFIG, TICKET_PRICES, type TicketType } from '#config/cons
 
 export type SeatLayout = {
   screenId: number
+  layoutId: number
   layoutVersion: number
-  backgroundImageUrl: string
+  backgroundImageUrl: string | null
   aspectRatio: string
+  designWidth: number
+  designHeight: number
+}
+
+export type LayoutObjectInfo = {
+  id: number
+  type: string
+  code: string
+  label: string | null
+  leftPct: number
+  topPct: number
+  widthPct: number
+  heightPct: number
+  rotationDeg: number
+  zIndex: number
+  style: Record<string, unknown>
+}
+
+export type SeatSectionInfo = {
+  id: number
+  code: string
+  name: string
 }
 
 export type SeatInfo = {
   seatId: number
+  seatCode: string
   row: string
   col: number
+  seatNo: number
+  displayLabel: string | null
+  sectionCode: string | null
+  seatType: 'standard' | 'premium' | 'wheelchair_companion' | 'unavailable'
+  leftPct: number
+  topPct: number
+  widthPct: number
+  heightPct: number
+  rotationDeg: number
   positionTopPct: number
   positionLeftPct: number
   seatWidthPct: number
   seatHeightPct: number
   hitRadiusPct: number | null
-  status: 'available' | 'reserved'
+  status: 'available' | 'reserved' | 'held'
 }
 
 export type ReservationForCancel = {
@@ -55,7 +88,12 @@ async function validateSeatsForSchedule(
   }
 }
 
-export async function getSeatsForSchedule(scheduleId: number): Promise<{ layout: SeatLayout; seats: SeatInfo[] }> {
+export async function getSeatsForSchedule(scheduleId: number): Promise<{
+  layout: SeatLayout
+  objects: LayoutObjectInfo[]
+  sections: SeatSectionInfo[]
+  seats: SeatInfo[]
+}> {
   const [schedRows] = await pool.execute<mysql.RowDataPacket[]>(
     'SELECT screen_id FROM schedules WHERE id = ? AND is_public = 1',
     [scheduleId],
@@ -77,7 +115,8 @@ export async function getSeatsForSchedule(scheduleId: number): Promise<{ layout:
         s.position_top_pct, s.position_left_pct,
         s.seat_width_pct, s.seat_height_pct, s.hit_radius_pct,
         CASE
-          WHEN r.id IS NOT NULL THEN 'reserved'
+          WHEN r.status = 'confirmed' THEN 'reserved'
+          WHEN r.status = 'pending' THEN 'held'
           ELSE 'available'
         END as status
       FROM seats s
@@ -92,20 +131,62 @@ export async function getSeatsForSchedule(scheduleId: number): Promise<{ layout:
   return {
     layout: {
       screenId,
+      layoutId: layout.id as number,
       layoutVersion: layout.layout_version as number,
-      backgroundImageUrl: layout.background_image_url as string,
+      backgroundImageUrl: layout.background_image_url as string | null,
       aspectRatio: `${layout.aspect_ratio_width}/${layout.aspect_ratio_height}`,
+      designWidth: Number(layout.aspect_ratio_width),
+      designHeight: Number(layout.aspect_ratio_height),
     },
+    objects: [
+      {
+        id: 0,
+        type: 'screen',
+        code: 'main-screen',
+        label: 'SCREEN',
+        leftPct: 12,
+        topPct: 6,
+        widthPct: 76,
+        heightPct: 5,
+        rotationDeg: 0,
+        zIndex: 1,
+        style: {},
+      },
+      {
+        id: 0,
+        type: 'entrance',
+        code: 'main-entrance',
+        label: 'ENTRANCE',
+        leftPct: 36,
+        topPct: 91,
+        widthPct: 28,
+        heightPct: 5,
+        rotationDeg: 0,
+        zIndex: 1,
+        style: {},
+      },
+    ],
+    sections: [],
     seats: seatRows.map(r => ({
       seatId: r.seat_id as number,
+      seatCode: `${r.row_label}-${r.col_no}`,
       row: r.row_label as string,
       col: r.col_no as number,
+      seatNo: r.col_no as number,
+      displayLabel: null,
+      sectionCode: null,
+      seatType: 'standard',
+      leftPct: Number(r.position_left_pct),
+      topPct: Number(r.position_top_pct),
+      widthPct: Number(r.seat_width_pct),
+      heightPct: Number(r.seat_height_pct),
+      rotationDeg: 0,
       positionTopPct: Number(r.position_top_pct),
       positionLeftPct: Number(r.position_left_pct),
       seatWidthPct: Number(r.seat_width_pct),
       seatHeightPct: Number(r.seat_height_pct),
       hitRadiusPct: r.hit_radius_pct != null ? Number(r.hit_radius_pct) : null,
-      status: r.status as 'available' | 'reserved',
+      status: r.status as 'available' | 'reserved' | 'held',
     })),
   }
 }

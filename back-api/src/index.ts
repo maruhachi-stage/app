@@ -16,21 +16,28 @@ import screensRouter from '#modules/screens/index.js'
 import configRouter from '#modules/config/index.js'
 import productsRouter from '#modules/products/index.js'
 import posRouter from '#modules/pos/index.js'
+import adminRouter from '#modules/admin/index.js'
 import { seedSchedules } from '#db/seedSchedules.js'
 import { ensureProductCatalogSchema } from '#modules/products/service.js'
 import { ensurePosSchema } from '#modules/pos/service.js'
 
 const app = new Hono<AppEnv>()
+const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
 
 app.use(
   '/api/*',
   cors({
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+    origin: corsOrigins,
     credentials: true,
+    allowHeaders: ['Content-Type', 'X-Admin-Edit-Key'],
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   }),
 )
 
-app.use('/api/*', csrf())
+app.use('/api/*', csrf({ origin: corsOrigins }))
 app.use('/api/*', requestIdMiddleware)
 app.use('/api/*', sessionMiddleware)
 app.use('/api/*', auditLogMiddleware)
@@ -44,6 +51,7 @@ app.route('/api', screensRouter)
 app.route('/api', configRouter)
 app.route('/api', productsRouter)
 app.route('/api', posRouter)
+app.route('/api', adminRouter)
 
 app.onError(errorHandler)
 app.get('/health', (c) => c.json({ status: 'ok' }))

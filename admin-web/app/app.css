@@ -5,11 +5,86 @@
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
+:root {
+  --admin-sidebar-width: 268px;
+  --admin-sidebar-collapsed-width: 72px;
+  --admin-header-height: 88px;
+  --admin-sidebar-toggle-height: 65px;
+}
+
 html,
 body {
-  @apply bg-white dark:bg-gray-950;
+  @apply bg-slate-50 text-slate-950 antialiased;
+}
 
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
+.admin-shell {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.admin-shell-grid {
+  height: 100dvh;
+  min-height: 0;
+}
+
+@media (min-width: 64rem) {
+  .admin-shell-grid-expanded {
+    grid-template-columns: var(--admin-sidebar-width) minmax(0, 1fr);
+  }
+
+  .admin-shell-grid-collapsed {
+    grid-template-columns: var(--admin-sidebar-collapsed-width) minmax(0, 1fr);
+  }
+}
+
+.admin-sidebar,
+.admin-main {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.admin-header-height {
+  min-height: var(--admin-header-height);
+}
+
+@media (min-width: 64rem) {
+  .admin-header-height {
+    height: var(--admin-header-height);
+  }
+}
+
+.admin-sidebar-nav {
+  max-height: calc(100dvh - var(--admin-header-height) - var(--admin-sidebar-toggle-height));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.admin-main-scroll {
+  height: calc(100dvh - var(--admin-header-height));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 63.999rem) {
+  .admin-shell,
+  .admin-shell-grid {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .admin-sidebar,
+  .admin-main {
+    overflow: visible;
+  }
+
+  .admin-sidebar-nav {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .admin-main-scroll {
+    height: auto;
+    overflow: visible;
   }
 }

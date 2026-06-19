@@ -1,25 +1,10 @@
-import { useState, useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
+import type { SeatData, SeatMapData } from "~/entities/reservation/seat-layout"
 import { apiFetch } from "~/shared/api/client"
 
-export type SeatData = {
-  seatId: number
-  row: string
-  col: number
-  positionTopPct: number
-  positionLeftPct: number
-  seatWidthPct: number
-  seatHeightPct: number
-  status: "available" | "reserved"
-}
+export type { SeatData, SeatMapData }
 
-export type SeatMapData = {
-  scheduleId: number
-  layout: {
-    aspectRatio: string
-    layoutVersion: number
-  }
-  seats: SeatData[]
-}
+const SEAT_STATUS_POLL_MS = 15_000
 
 export function useSeatMap(selectedScheduleId: number | null) {
   const [mapData, setMapData] = useState<SeatMapData | null>(null)
@@ -29,7 +14,7 @@ export function useSeatMap(selectedScheduleId: number | null) {
   const [toastMsg, setToastMsg] = useState("")
   const [reloadKey, setReloadKey] = useState(0)
 
-  useEffect(() => {
+  const loadSeatMap = useCallback((showLoading = true) => {
     if (!selectedScheduleId) {
       setMapData(null)
       setSelectedSeatIds([])
@@ -37,20 +22,38 @@ export function useSeatMap(selectedScheduleId: number | null) {
       return
     }
 
-    setMapLoading(true)
+    if (showLoading) setMapLoading(true)
     setError("")
     apiFetch<SeatMapData>(`/reservations/schedules/${selectedScheduleId}/seats`)
       .then(data => {
         setMapData(data)
+        setSelectedSeatIds(prev => {
+          const selectableIds = new Set(data.seats.filter(seat => seat.status === "available").map(seat => seat.seatId))
+          return prev.filter(id => selectableIds.has(id))
+        })
         setError("")
       })
       .catch(() => {
-        setMapData(null)
-        setSelectedSeatIds([])
+        if (showLoading) {
+          setMapData(null)
+          setSelectedSeatIds([])
+        }
         setError("座席情報の取得に失敗しました")
       })
-      .finally(() => setMapLoading(false))
-  }, [selectedScheduleId, reloadKey])
+      .finally(() => {
+        if (showLoading) setMapLoading(false)
+      })
+  }, [selectedScheduleId])
+
+  useEffect(() => {
+    loadSeatMap(true)
+  }, [loadSeatMap, reloadKey])
+
+  useEffect(() => {
+    if (!selectedScheduleId) return
+    const timer = window.setInterval(() => loadSeatMap(false), SEAT_STATUS_POLL_MS)
+    return () => window.clearInterval(timer)
+  }, [loadSeatMap, selectedScheduleId])
 
   function retryLoadSeatMap() {
     setReloadKey(prev => prev + 1)
@@ -62,7 +65,7 @@ export function useSeatMap(selectedScheduleId: number | null) {
   }
 
   function toggleSeat(seat: SeatData) {
-    if (seat.status === "reserved") return
+    if (seat.status !== "available") return
     if (selectedSeatIds.includes(seat.seatId)) {
       setSelectedSeatIds(prev => prev.filter(id => id !== seat.seatId))
     } else {

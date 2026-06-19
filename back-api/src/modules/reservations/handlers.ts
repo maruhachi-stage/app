@@ -9,6 +9,7 @@ import { getQrCodeUrl, toJstString } from '#utils/format.js'
 import { TICKET_LABELS, TICKET_PRICES } from '#config/constants.js'
 import { getFullScheduleById } from '#modules/movies/service.js'
 import * as ReservationService from '#modules/reservations/service.js'
+import * as SeatMapService from '#modules/reservations/seatMapService.js'
 
 const RESERVATION_CODE_RE = /^[A-Z0-9]{8,12}$/
 
@@ -44,7 +45,7 @@ export const getSeats = async (c: Context<AppEnv>) => {
     throw new AppError('VALIDATION_ERROR', 'Invalid scheduleId')
   }
 
-  const result = await ReservationService.getSeatsForSchedule(scheduleId)
+  const result = await SeatMapService.getSeatsForSchedule(scheduleId)
   return c.json(successResponse({ scheduleId, ...result }, requestId))
 }
 

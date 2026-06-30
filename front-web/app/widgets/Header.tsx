@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate } from "react-router"
 import { FiMoon, FiSun } from "react-icons/fi"
-import { AppConfig } from "~/shared/config/app"
 import { useAuth } from "~/shared/api/auth"
 import { apiFetch } from "~/shared/api/client"
 import { Button } from "~/shared/ui/Button"
+import { SiteLogo } from "~/shared/ui/SiteLogo"
 import { useCart } from "~/features/cart/useCart"
 import { useThemeContext } from "~/shared/lib/theme"
 import { HoldTimer } from "./HoldTimer"
@@ -18,19 +18,10 @@ const NAV_LINKS = [
   { to: "/reservations/lookup", label: "予約確認" },
 ]
 
-function getLogoSrc(theme: "dark" | "light") {
-  if (theme === "dark") {
-    return AppConfig.logoDarkUrl
-  }
-  return AppConfig.logoLightUrl
-}
-
 export function Header() {
   const { auth, setAuth } = useAuth()
   const { totalCount } = useCart()
-  const [theme, setTheme] = useState<"dark" | "light">(() => {
-    return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark"
-  })
+  const { theme, setTheme } = useThemeContext()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const headerRef = useRef<HTMLElement>(null)
@@ -43,26 +34,6 @@ export function Header() {
       document.body.style.overflow = ""
     }
   }, [menuOpen])
-
-  useEffect(() => {
-    const updateTheme = () => {
-      const currentTheme = document.documentElement.getAttribute("data-theme")
-      setTheme(currentTheme === "light" ? "light" : "dark")
-    }
-
-    updateTheme()
-
-    const observer = new MutationObserver(() => {
-      updateTheme()
-    })
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    })
-
-    return () => observer.disconnect()
-  }, [])
 
   useEffect(() => {
     const header = headerRef.current
@@ -122,13 +93,7 @@ export function Header() {
     <>
       <header ref={headerRef} className="bg-background/80 backdrop-blur-md border-b border-border relative z-50" style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <div className="container-center flex items-center justify-between py-4">
-          <Link to="/" className="text-2xl font-black tracking-tighter text-primary" onClick={() => setMenuOpen(false)}>
-            <img
-              src={getLogoSrc(theme)}
-              alt={AppConfig.name}
-              className="h-10 w-auto md:h-14"
-            />
-          </Link>
+          <SiteLogo onClick={() => setMenuOpen(false)} />
 
           <nav className="hidden md:flex items-center gap-6">
             {NAV_LINKS.map(({ to, label }) => (
@@ -161,7 +126,6 @@ export function Header() {
                 </Button>
               </Link>
             )}
-
           </nav>
 
           <button className="md:hidden text-foreground p-1" onClick={() => setMenuOpen((v) => !v)} aria-label="メニュー">
@@ -182,13 +146,7 @@ export function Header() {
       {menuOpen && (
         <div className="fixed inset-0 z-40 flex flex-col bg-background md:hidden overflow-y-auto" style={{ paddingTop: "env(safe-area-inset-top)" }}>
           <div className="flex items-center justify-between border-b border-border px-4 py-4">
-            <Link to="/" className="text-2xl font-black tracking-tighter text-primary" onClick={() => setMenuOpen(false)}>
-              <img
-                src={getLogoSrc(theme)}
-                alt={AppConfig.name}
-                className="h-10 w-auto"
-              />
-            </Link>
+            <SiteLogo imgClassName="h-10 w-auto" onClick={() => setMenuOpen(false)} />
             <button className="text-foreground p-1" onClick={() => setMenuOpen(false)} aria-label="閉じる">
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -251,7 +209,6 @@ export function Header() {
                     : "border-zinc-300 bg-zinc-700 text-white shadow-black/15 hover:bg-zinc-800"
                 }`}
                 aria-label={theme === "dark" ? "ライトテーマに切り替える" : "ダークテーマに切り替える"}
-                title={theme === "dark" ? "ライトテーマに切り替える" : "ダークテーマに切り替える"}
               >
                 {theme === "dark" ? <FiSun className="h-5 w-5" /> : <FiMoon className="h-5 w-5" />}
               </button>

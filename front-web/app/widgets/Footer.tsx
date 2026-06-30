@@ -1,38 +1,7 @@
-import { useEffect, useState } from "react"
 import { Link } from "react-router"
-import { AppConfig } from "~/shared/config/app"
-
-function getLogoSrc(theme: "dark" | "light") {
-  if (theme === "dark") {
-    return AppConfig.logoDarkUrl
-  }
-  return AppConfig.logoLightUrl
-}
+import { SiteLogo } from "~/shared/ui/SiteLogo"
 
 export function Footer() {
-  const [theme, setTheme] = useState<"dark" | "light">(() => {
-    return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark"
-  })
-
-  useEffect(() => {
-    const updateTheme = () => {
-      const currentTheme = document.documentElement.getAttribute("data-theme")
-      setTheme(currentTheme === "light" ? "light" : "dark")
-    }
-
-    updateTheme()
-
-    const observer = new MutationObserver(() => {
-      updateTheme()
-    })
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    })
-
-    return () => observer.disconnect()
-  }, [])
   return (
     <footer className="mt-16 border-t border-border bg-card">
       <div className="container-center py-12">
@@ -41,15 +10,8 @@ export function Footer() {
 
           {/* 左: ブランド情報 */}
           <div className="max-w-xs">
-            {/* H ロゴバッジ + サイト名 */}
-            <div className="mb-4 flex items-center gap-2">
-              <Link to="/" className="inline-flex">
-                <img
-                  src={getLogoSrc(theme)}
-                  alt={AppConfig.name}
-                  className="h-20 w-auto"
-                />
-              </Link>
+            <div className="mb-4">
+              <SiteLogo imgClassName="h-20 w-auto" />
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground">
               HAL-cinema 新宿。8スクリーン・1,050席。映画と演劇のための、新しい劇場体験。

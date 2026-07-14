@@ -1,15 +1,17 @@
 import { Link } from "react-router"
 import { useScreens } from "~/features/theater/useScreens"
+import Loading from "~/widgets/Loading"
 
 export default function TheaterIndexPage() {
   const { screens, loading, error } = useScreens()
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center py-20">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    )
+    return <Loading />;
+    // return (
+    //   <div className="flex justify-center items-center py-20">
+    //     <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+    //   </div>
+    // )
   }
 
   if (error) {

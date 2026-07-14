@@ -5,8 +5,12 @@ import {
     Outlet,
     Scripts,
     ScrollRestoration,
+    useNavigation
 } from "react-router";
+
 import { useState, useEffect } from "react";
+
+import Loading from "~/widgets/Loading";
 
 import type {Route} from "./+types/root";
 import "~/app.css";
@@ -32,6 +36,32 @@ export function Layout({children}: { children: React.ReactNode }) {
     const [auth, setAuth] = useState<AuthState>({ authenticated: false })
     const { theme, setTheme } = useTheme();
 
+    const navigation = useNavigation();
+    const [showLoading, setShowLoading] = useState(false);
+    const [startTime, setStartTime] = useState<number | null>(null);
+
+
+    useEffect(() => {
+    if (navigation.state === "loading") {
+        setStartTime(Date.now());
+        setShowLoading(true);
+    } else if (startTime !== null) {
+        const elapsed = Date.now() - startTime;
+
+        const minDuration = 500; // ←ここ変える
+        const remaining = Math.max(minDuration - elapsed, 0);
+
+        const timer = setTimeout(() => {
+        setShowLoading(false);
+        setStartTime(null);
+        }, remaining);
+
+        return () => clearTimeout(timer);
+    }
+    }, [navigation.state, startTime]);
+
+
+
     useEffect(() => {
         getAuthState().then(setAuth)
     }, [])
@@ -49,9 +79,14 @@ export function Layout({children}: { children: React.ReactNode }) {
             <Links/>
         </head>
         <body className="selection:bg-primary/30 selection:text-primary-foreground antialiased">
+
+        {/* 追加 */}
+        {showLoading && <Loading />}
+
         <ThemeContext.Provider value={{ theme, setTheme }}>
         <Outlet />
         </ThemeContext.Provider>
+
         <ScrollRestoration/>
         <Scripts/>
         </body>

@@ -16,7 +16,7 @@ import { container } from '#di/container.js'
 const app = new Hono<AppEnv>()
 // Legacy API: keep this prefix stable for the existing frontend.
 const api = new Hono<AppEnv>()
-// Versioned API: this app can be replaced independently of the legacy API.
+// Versioned API is currently reserved for health checks only.
 const apiV1 = new Hono<AppEnv>()
 const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
   .split(',')
@@ -84,57 +84,12 @@ api.get('/admin/overview', (c) => c.get('container').adminController.getOverview
 api.post('/admin/edit-key/verify', (c) => c.get('container').adminController.verifyEditKey(c))
 api.get('/admin/edit-access', requireAdminEditKey, (c) => c.get('container').adminController.getEditAccess(c))
 
-apiV1.use('*', async (c, next) => {
-  c.set('container', container)
-  await next()
-})
-
-apiV1.post('/members', (c) => c.get('container').memberController.create(c))
-apiV1.get('/members/profile', (c) => c.get('container').memberController.getProfile(c))
-apiV1.get('/members/reservations', (c) => c.get('container').memberController.getReservations(c))
-
-apiV1.get('/auth/me', (c) => c.get('container').authController.getMe(c))
-apiV1.post('/auth/otp/send', (c) => c.get('container').authController.sendOtp(c))
-apiV1.post('/auth/otp/verify', (c) => c.get('container').authController.verifyOtp(c))
-apiV1.post('/auth/logout', (c) => c.get('container').authController.logout(c))
-
-apiV1.get('/movies', (c) => c.get('container').movieController.listMovies(c))
-apiV1.get('/movies/:movieId', (c) => c.get('container').movieController.getMovie(c))
-apiV1.get('/movies/:movieId/schedules', (c) => c.get('container').movieController.getMovieSchedules(c))
-apiV1.get('/schedules/:scheduleId', (c) => c.get('container').movieController.getSchedule(c))
-
-apiV1.get('/stages', (c) => c.get('container').stageController.list(c))
-apiV1.get('/stages/:stageId', (c) => c.get('container').stageController.get(c))
-apiV1.get('/stages/:stageId/schedules', (c) => c.get('container').stageController.getSchedules(c))
-
-apiV1.post('/reservations/quote', (c) => c.get('container').reservationController.quote(c))
-apiV1.get('/reservations/schedules/:scheduleId/seats', (c) => c.get('container').reservationController.seats(c))
-apiV1.post('/reservations/hold', (c) => c.get('container').reservationController.hold(c))
-apiV1.post('/reservations', (c) => c.get('container').reservationController.create(c))
-apiV1.get('/reservations/:reservationCode', (c) => c.get('container').reservationController.get(c))
-apiV1.post('/reservations/:reservationCode/cancel', (c) => c.get('container').reservationController.cancel(c))
-
-apiV1.get('/screens', (c) => c.get('container').screenController.list(c))
-apiV1.get('/screens/:screenId', (c) => c.get('container').screenController.get(c))
-
-apiV1.get('/config', (c) => c.get('container').configController.getConfig(c))
-
-apiV1.get('/products', (c) => c.get('container').productController.listProducts(c))
-apiV1.get('/products/:productId', (c) => c.get('container').productController.getProduct(c))
-
-apiV1.get('/pos/products', (c) => c.get('container').posController.listProducts(c))
-apiV1.get('/pos/sales', (c) => c.get('container').posController.listSales(c))
-apiV1.post('/pos/sales', (c) => c.get('container').posController.createSale(c))
-
-apiV1.get('/admin/overview', (c) => c.get('container').adminController.getOverview(c))
-apiV1.post('/admin/edit-key/verify', (c) => c.get('container').adminController.verifyEditKey(c))
-apiV1.get('/admin/edit-access', requireAdminEditKey, (c) => c.get('container').adminController.getEditAccess(c))
+apiV1.get('/health', (c) => c.json({ status: 'ok' }))
 
 app.route('/api/v1', apiV1)
 app.route('/api', api)
 
 app.onError(errorHandler)
-app.get('/health', (c) => c.json({ status: 'ok' }))
 
 const port = Number(process.env.PORT ?? 3000)
 

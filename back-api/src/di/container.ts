@@ -19,6 +19,10 @@ import { MemberController } from '#presentation/controllers/member-controller.js
 import { MysqlAdminScreenRepository } from '#infrastructure/repositories/mysql-admin-screen-repository.js'
 import { AdminOverviewService } from '#application/services/admin-overview-service.js'
 import { ConfigService } from '#application/services/config-service.js'
+import { MysqlProductRepository } from '#infrastructure/repositories/mysql-product-repository.js'
+import { MysqlPosRepository } from '#infrastructure/repositories/mysql-pos-repository.js'
+import { ProductService } from '#application/services/product-service.js'
+import { PosService } from '#application/services/pos-service.js'
 
 /**
  * Composition root dependencies. Feature services are added here as they are
@@ -43,4 +47,6 @@ export const container = {
   )),
   adminOverviewService: new AdminOverviewService(new MysqlAdminScreenRepository()),
   configService: new ConfigService(),
+  productService: new ProductService(new MysqlProductRepository()),
+  posService: new PosService(new MysqlPosRepository()),
 }

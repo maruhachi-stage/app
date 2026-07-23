@@ -14,12 +14,12 @@ import { createStageRouter } from '#presentation/controllers/stage-router.js'
 import reservationsRouter from '#modules/reservations/index.js'
 import { createScreenRouter } from '#presentation/controllers/screen-router.js'
 import { createConfigRouter } from '#presentation/routers/config-router.js'
-import productsRouter from '#modules/products/index.js'
-import posRouter from '#modules/pos/index.js'
+import { createProductRouter } from '#presentation/routers/product-router.js'
+import { createPosRouter } from '#presentation/routers/pos-router.js'
 import { createAdminRouter } from '#presentation/routers/admin-router.js'
 import { seedSchedules } from '#db/seedSchedules.js'
-import { ensureProductCatalogSchema } from '#modules/products/service.js'
-import { ensurePosSchema } from '#modules/pos/service.js'
+import { initializeProductCatalog } from '#infrastructure/database/product-catalog-initializer.js'
+import { initializePosSchema } from '#infrastructure/database/pos-initializer.js'
 import { container } from '#di/container.js'
 
 const app = new Hono<AppEnv>()
@@ -50,8 +50,8 @@ app.route('/api', createStageRouter(container.stageQueryService))
 app.route('/api', reservationsRouter)
 app.route('/api', createScreenRouter(container.screenQueryService))
 app.route('/api', createConfigRouter(container.configService))
-app.route('/api', productsRouter)
-app.route('/api', posRouter)
+app.route('/api', createProductRouter(container.productService))
+app.route('/api', createPosRouter(container.posService))
 app.route('/api', createAdminRouter(container.adminOverviewService))
 
 app.onError(errorHandler)
@@ -60,8 +60,8 @@ app.get('/health', (c) => c.json({ status: 'ok' }))
 const port = Number(process.env.PORT ?? 3000)
 
 await seedSchedules()
-await ensureProductCatalogSchema()
-await ensurePosSchema()
+await initializeProductCatalog()
+await initializePosSchema()
 
 serve({ fetch: app.fetch, port }, (info) => {
   console.log(`Server is running on http://localhost:${info.port}`)

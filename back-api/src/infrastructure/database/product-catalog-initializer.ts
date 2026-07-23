@@ -1,6 +1,7 @@
-// MySQL product catalog schema initialization and repository query support.
-import type mysql from 'mysql2/promise'
-import { mysqlPool as pool } from '#infrastructure/database/mysqlPool.js'
+// Product catalog seed synchronization. The schema is managed by Drizzle migrations.
+import { and, asc, eq, inArray } from 'drizzle-orm'
+import { db } from '#infrastructure/database/mysqlPool.js'
+import { productNotes, productOptionGroups, productOptions, products } from '#infrastructure/database/schema.js'
 
 export type ProductCategory = 'goods' | 'food' | 'drink' | 'set'
 
@@ -35,6 +36,12 @@ export type ProductNoteRow = {
   product_id: string
   note: string
 }
+
+const toProductRow = (row: Omit<ProductRow, 'is_new' | 'is_sold_out'> & { is_new: boolean; is_sold_out: boolean }): ProductRow => ({
+  ...row,
+  is_new: Number(row.is_new),
+  is_sold_out: Number(row.is_sold_out),
+})
 
 const PRODUCT_IMAGE_DIR = 'products'
 
@@ -274,190 +281,133 @@ const SEED_PRODUCTS: SeedProduct[] = [
 ]
 
 export async function ensureProductCatalogSchema(): Promise<void> {
-  await pool.execute(`
-    CREATE TABLE IF NOT EXISTS products (
-      id VARCHAR(80) NOT NULL,
-      name VARCHAR(160) NOT NULL,
-      category ENUM('goods','food','drink','set') NOT NULL,
-      price INT UNSIGNED NOT NULL,
-      description TEXT NULL,
-      image_url VARCHAR(500) NULL,
-      movie_title VARCHAR(160) NULL,
-      is_new TINYINT(1) NOT NULL DEFAULT 0,
-      is_sold_out TINYINT(1) NOT NULL DEFAULT 0,
-      display_order INT UNSIGNED NOT NULL DEFAULT 0,
-      created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-      updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-      PRIMARY KEY (id),
-      KEY idx_products_category (category),
-      KEY idx_products_display_order (display_order)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-  `)
-
-  await pool.execute(`
-    CREATE TABLE IF NOT EXISTS product_option_groups (
-      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-      product_id VARCHAR(80) NOT NULL,
-      group_key VARCHAR(80) NOT NULL,
-      name VARCHAR(120) NOT NULL,
-      required TINYINT(1) NOT NULL DEFAULT 0,
-      display_order INT UNSIGNED NOT NULL DEFAULT 0,
-      PRIMARY KEY (id),
-      UNIQUE KEY uq_product_option_groups_key (product_id, group_key),
-      CONSTRAINT fk_product_option_groups_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-  `)
-
-  await pool.execute(`
-    CREATE TABLE IF NOT EXISTS product_options (
-      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-      group_id BIGINT UNSIGNED NOT NULL,
-      option_key VARCHAR(80) NOT NULL,
-      label VARCHAR(120) NOT NULL,
-      price_delta INT NOT NULL DEFAULT 0,
-      display_order INT UNSIGNED NOT NULL DEFAULT 0,
-      PRIMARY KEY (id),
-      UNIQUE KEY uq_product_options_key (group_id, option_key),
-      CONSTRAINT fk_product_options_group FOREIGN KEY (group_id) REFERENCES product_option_groups (id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-  `)
-
-  await pool.execute(`
-    CREATE TABLE IF NOT EXISTS product_notes (
-      id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-      product_id VARCHAR(80) NOT NULL,
-      note TEXT NOT NULL,
-      display_order INT UNSIGNED NOT NULL DEFAULT 0,
-      PRIMARY KEY (id),
-      CONSTRAINT fk_product_notes_product FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-  `)
-
+  // Kept for compatibility with the application bootstrap. DDL belongs to Drizzle migrations.
   for (const [index, product] of SEED_PRODUCTS.entries()) {
-    await pool.execute(
-      `INSERT INTO products
-       (id, name, category, price, description, image_url, movie_title, is_new, is_sold_out, display_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE
-         name = VALUES(name),
-         category = VALUES(category),
-         price = VALUES(price),
-         description = VALUES(description),
-         image_url = VALUES(image_url),
-         movie_title = VALUES(movie_title),
-         is_new = VALUES(is_new),
-         is_sold_out = VALUES(is_sold_out),
-         display_order = VALUES(display_order)`,
-      [
-        product.id,
-        product.name,
-        product.category,
-        product.price,
-        product.description,
-        `${PRODUCT_IMAGE_DIR}/${product.imageFile}`,
-        product.movieTitle ?? null,
-        product.isNew ? 1 : 0,
-        product.isSoldOut ? 1 : 0,
-        index,
-      ],
-    )
+    const productValues = {
+      id: product.id,
+      name: product.name,
+      category: product.category,
+      price: product.price,
+      description: product.description,
+      imageUrl: `${PRODUCT_IMAGE_DIR}/${product.imageFile}`,
+      movieTitle: product.movieTitle ?? null,
+      isNew: product.isNew ?? false,
+      isSoldOut: product.isSoldOut ?? false,
+      displayOrder: index,
+    }
+    await db.insert(products).values(productValues).onDuplicateKeyUpdate({
+      set: productValues,
+    })
 
     for (const [groupIndex, group] of (product.optionGroups ?? []).entries()) {
-      const [result] = await pool.execute<mysql.ResultSetHeader>(
-        `INSERT INTO product_option_groups (product_id, group_key, name, required, display_order)
-         VALUES (?, ?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE
-           id = LAST_INSERT_ID(id),
-           name = VALUES(name),
-           required = VALUES(required),
-           display_order = VALUES(display_order)`,
-        [product.id, group.id, group.name, group.required ? 1 : 0, groupIndex],
-      )
+      const groupValues = {
+        productId: product.id,
+        groupKey: group.id,
+        name: group.name,
+        required: group.required ?? false,
+        displayOrder: groupIndex,
+      }
+      await db.insert(productOptionGroups).values(groupValues).onDuplicateKeyUpdate({
+        set: groupValues,
+      })
+      const persistedGroup = await db
+        .select({ id: productOptionGroups.id })
+        .from(productOptionGroups)
+        .where(and(eq(productOptionGroups.productId, product.id), eq(productOptionGroups.groupKey, group.id)))
+      if (!persistedGroup[0]) throw new Error(`Product option group was not persisted: ${product.id}/${group.id}`)
       for (const [optionIndex, option] of group.options.entries()) {
-        await pool.execute(
-          `INSERT INTO product_options (group_id, option_key, label, price_delta, display_order)
-           VALUES (?, ?, ?, ?, ?)
-           ON DUPLICATE KEY UPDATE
-             label = VALUES(label),
-             price_delta = VALUES(price_delta),
-             display_order = VALUES(display_order)`,
-          [result.insertId, option.id, option.label, option.priceDelta ?? 0, optionIndex],
-        )
+        const optionValues = {
+          groupId: persistedGroup[0].id,
+          optionKey: option.id,
+          label: option.label,
+          priceDelta: option.priceDelta ?? 0,
+          displayOrder: optionIndex,
+        }
+        await db.insert(productOptions).values(optionValues).onDuplicateKeyUpdate({
+          set: optionValues,
+        })
       }
     }
 
-    await pool.execute('DELETE FROM product_notes WHERE product_id = ?', [product.id])
+    await db.delete(productNotes).where(eq(productNotes.productId, product.id))
     for (const [noteIndex, note] of (product.notes ?? []).entries()) {
-      await pool.execute(
-        `INSERT INTO product_notes (product_id, note, display_order)
-         VALUES (?, ?, ?)`,
-        [product.id, note, noteIndex],
-      )
+      await db.insert(productNotes).values({ productId: product.id, note, displayOrder: noteIndex })
     }
   }
 }
 
 export async function getProducts(category?: ProductCategory): Promise<ProductRow[]> {
-  const params: string[] = []
-  let sql = `
-    SELECT id, name, category, price, description, image_url, movie_title, is_new, is_sold_out
-    FROM products
-    WHERE 1 = 1`
-  if (category) {
-    sql += ' AND category = ?'
-    params.push(category)
-  }
-  sql += ' ORDER BY display_order ASC'
-
-  const [rows] = await pool.execute<mysql.RowDataPacket[]>(sql, params)
-  return rows as ProductRow[]
+  const rows = await db
+    .select({
+      id: products.id,
+      name: products.name,
+      category: products.category,
+      price: products.price,
+      description: products.description,
+      image_url: products.imageUrl,
+      movie_title: products.movieTitle,
+      is_new: products.isNew,
+      is_sold_out: products.isSoldOut,
+    })
+    .from(products)
+    .where(category ? eq(products.category, category) : undefined)
+    .orderBy(asc(products.displayOrder))
+  return rows.map(toProductRow)
 }
 
 export async function getProductById(productId: string): Promise<ProductRow | null> {
-  const [rows] = await pool.execute<mysql.RowDataPacket[]>(
-    `SELECT id, name, category, price, description, image_url, movie_title, is_new, is_sold_out
-     FROM products
-     WHERE id = ?`,
-    [productId],
-  )
-  return (rows[0] as ProductRow) || null
+  const rows = await db
+    .select({
+      id: products.id,
+      name: products.name,
+      category: products.category,
+      price: products.price,
+      description: products.description,
+      image_url: products.imageUrl,
+      movie_title: products.movieTitle,
+      is_new: products.isNew,
+      is_sold_out: products.isSoldOut,
+    })
+    .from(products)
+    .where(eq(products.id, productId))
+  return rows[0] ? toProductRow(rows[0]) : null
 }
 
 export async function getOptionGroups(productIds: string[]): Promise<ProductOptionGroupRow[]> {
   if (productIds.length === 0) return []
-  const placeholders = productIds.map(() => '?').join(',')
-  const [rows] = await pool.execute<mysql.RowDataPacket[]>(
-    `SELECT id, product_id, group_key, name, required
-     FROM product_option_groups
-     WHERE product_id IN (${placeholders})
-     ORDER BY display_order ASC`,
-    productIds,
-  )
-  return rows as ProductOptionGroupRow[]
+  const rows = await db
+    .select({
+      id: productOptionGroups.id,
+      product_id: productOptionGroups.productId,
+      group_key: productOptionGroups.groupKey,
+      name: productOptionGroups.name,
+      required: productOptionGroups.required,
+    })
+    .from(productOptionGroups)
+    .where(inArray(productOptionGroups.productId, productIds))
+    .orderBy(asc(productOptionGroups.displayOrder))
+  return rows.map((row) => ({ ...row, required: Number(row.required) }))
 }
 
 export async function getOptions(groupIds: number[]): Promise<ProductOptionRow[]> {
   if (groupIds.length === 0) return []
-  const placeholders = groupIds.map(() => '?').join(',')
-  const [rows] = await pool.execute<mysql.RowDataPacket[]>(
-    `SELECT group_id, option_key, label, price_delta
-     FROM product_options
-     WHERE group_id IN (${placeholders})
-     ORDER BY display_order ASC`,
-    groupIds,
-  )
-  return rows as ProductOptionRow[]
+  return db
+    .select({
+      group_id: productOptions.groupId,
+      option_key: productOptions.optionKey,
+      label: productOptions.label,
+      price_delta: productOptions.priceDelta,
+    })
+    .from(productOptions)
+    .where(inArray(productOptions.groupId, groupIds))
+    .orderBy(asc(productOptions.displayOrder))
 }
 
 export async function getNotes(productIds: string[]): Promise<ProductNoteRow[]> {
   if (productIds.length === 0) return []
-  const placeholders = productIds.map(() => '?').join(',')
-  const [rows] = await pool.execute<mysql.RowDataPacket[]>(
-    `SELECT product_id, note
-     FROM product_notes
-     WHERE product_id IN (${placeholders})
-     ORDER BY display_order ASC`,
-    productIds,
-  )
-  return rows as ProductNoteRow[]
+  return db
+    .select({ product_id: productNotes.productId, note: productNotes.note })
+    .from(productNotes)
+    .where(inArray(productNotes.productId, productIds))
+    .orderBy(asc(productNotes.displayOrder))
 }

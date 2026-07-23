@@ -12,8 +12,9 @@
  *   イベント: 中スクリーン × 週末 に夜 1 公演 (18:00〜22:00)
  */
 
-import type mysql from 'mysql2/promise'
-import { mysqlPool as pool } from '#infrastructure/database/mysqlPool.js'
+import { and, asc, eq, sql } from 'drizzle-orm'
+import { db } from '#infrastructure/database/mysqlPool.js'
+import { schedules, screenings, screens } from '#infrastructure/database/schema.js'
 
 // ─── 定数 ──────────────────────────────────────────────────────────────────
 
@@ -49,17 +50,23 @@ function jstMinToUtcStr(baseDate: Date, jstMin: number): string {
   return `${dateStr} ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`
 }
 
+function jstMinToUtcDate(baseDate: Date, jstMin: number): Date {
+  return new Date(`${jstMinToUtcStr(baseDate, jstMin).replace(' ', 'T')}Z`)
+}
+
 // ─── 既存チェック ──────────────────────────────────────────────────────────
 
 async function hasSchedule(screenId: number, jstDateStr: string): Promise<boolean> {
-  const [rows] = await pool.execute<mysql.RowDataPacket[]>(
-    `SELECT COUNT(*) as cnt FROM schedules
-     WHERE screen_id = ?
-       AND is_public = 1
-       AND DATE(CONVERT_TZ(starts_at, '+00:00', '+09:00')) = ?`,
-    [screenId, jstDateStr],
-  )
-  return (rows[0].cnt as number) > 0
+  const [schedule] = await db
+    .select({ id: schedules.id })
+    .from(schedules)
+    .where(and(
+      eq(schedules.screenId, screenId),
+      eq(schedules.isPublic, true),
+      sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${jstDateStr}`,
+    ))
+    .limit(1)
+  return schedule !== undefined
 }
 
 // ─── 映画スケジュール生成 ────────────────────────────────────────────────────
@@ -96,16 +103,13 @@ async function seedMovieSchedules(
       const endMin = curMin + movie.duration_min
       if (endMin > HOUR_END * 60) break
 
-      await pool.execute(
-        `INSERT INTO schedules (screening_id, screen_id, starts_at, ends_at, is_public)
-         VALUES (?, ?, ?, ?, 1)`,
-        [
-          movie.id,
-          screen.id,
-          jstMinToUtcStr(targetDate, curMin),
-          jstMinToUtcStr(targetDate, endMin),
-        ],
-      )
+      await db.insert(schedules).values({
+        screeningId: movie.id,
+        screenId: screen.id,
+        startsAt: jstMinToUtcDate(targetDate, curMin),
+        endsAt: jstMinToUtcDate(targetDate, endMin),
+        isPublic: true,
+      })
       inserted++
       prevMovieId = movie.id
 
@@ -148,25 +152,25 @@ async function seedStageSchedules(
 
   if (endMin <= HOUR_END * 60) {
     // この時間帯にスケジュールが既にあるか確認（映画と別チェック）
-    const [rows] = await pool.execute<mysql.RowDataPacket[]>(
-      `SELECT COUNT(*) as cnt FROM schedules
-       WHERE screen_id = ?
-         AND is_public = 1
-         AND DATE(CONVERT_TZ(starts_at, '+00:00', '+09:00')) = ?
-         AND screening_id IN (SELECT id FROM screenings WHERE type = 'stage')`,
-      [screen.id, jstDateStr],
-    )
-    if ((rows[0].cnt as number) === 0) {
-      await pool.execute(
-        `INSERT INTO schedules (screening_id, screen_id, starts_at, ends_at, is_public)
-         VALUES (?, ?, ?, ?, 1)`,
-        [
-          stage.id,
-          screen.id,
-          jstMinToUtcStr(targetDate, startMin),
-          jstMinToUtcStr(targetDate, endMin),
-        ],
-      )
+    const [existingStageSchedule] = await db
+      .select({ id: schedules.id })
+      .from(schedules)
+      .innerJoin(screenings, eq(schedules.screeningId, screenings.id))
+      .where(and(
+        eq(schedules.screenId, screen.id),
+        eq(schedules.isPublic, true),
+        eq(screenings.type, 'stage'),
+        sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${jstDateStr}`,
+      ))
+      .limit(1)
+    if (existingStageSchedule === undefined) {
+      await db.insert(schedules).values({
+        screeningId: stage.id,
+        screenId: screen.id,
+        startsAt: jstMinToUtcDate(targetDate, startMin),
+        endsAt: jstMinToUtcDate(targetDate, endMin),
+        isPublic: true,
+      })
       inserted++
     }
   }
@@ -205,26 +209,26 @@ async function seedEventSchedules(
 
   if (endMin > HOUR_END * 60) return 0
 
-  const [rows] = await pool.execute<mysql.RowDataPacket[]>(
-    `SELECT COUNT(*) as cnt FROM schedules
-     WHERE screen_id = ?
-       AND is_public = 1
-       AND DATE(CONVERT_TZ(starts_at, '+00:00', '+09:00')) = ?
-       AND screening_id IN (SELECT id FROM screenings WHERE type = 'event')`,
-    [screen.id, jstDateStr],
-  )
-  if ((rows[0].cnt as number) > 0) return 0
+  const [existingEventSchedule] = await db
+    .select({ id: schedules.id })
+    .from(schedules)
+    .innerJoin(screenings, eq(schedules.screeningId, screenings.id))
+    .where(and(
+      eq(schedules.screenId, screen.id),
+      eq(schedules.isPublic, true),
+      eq(screenings.type, 'event'),
+      sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${jstDateStr}`,
+    ))
+    .limit(1)
+  if (existingEventSchedule !== undefined) return 0
 
-  await pool.execute(
-    `INSERT INTO schedules (screening_id, screen_id, starts_at, ends_at, is_public)
-     VALUES (?, ?, ?, ?, 1)`,
-    [
-      event.id,
-      screen.id,
-      jstMinToUtcStr(targetDate, startMin),
-      jstMinToUtcStr(targetDate, endMin),
-    ],
-  )
+  await db.insert(schedules).values({
+    screeningId: event.id,
+    screenId: screen.id,
+    startsAt: jstMinToUtcDate(targetDate, startMin),
+    endsAt: jstMinToUtcDate(targetDate, endMin),
+    isPublic: true,
+  })
   return 1
 }
 
@@ -233,30 +237,33 @@ async function seedEventSchedules(
 export async function seedSchedules(): Promise<void> {
   try {
     // now_showing の上映アイテムを種別ごとに取得
-    const [allRows] = await pool.execute<mysql.RowDataPacket[]>(
-      `SELECT id, type, duration_min FROM screenings WHERE status = 'now_showing' ORDER BY id`,
-    )
+    const allRows = await db
+      .select({ id: screenings.id, type: screenings.type, durationMin: screenings.durationMin })
+      .from(screenings)
+      .where(eq(screenings.status, 'now_showing'))
+      .orderBy(asc(screenings.id))
     if (allRows.length === 0) {
       console.log('[seedSchedules] now_showingの上映アイテムがないためスキップ')
       return
     }
 
-    const movies = allRows.filter(r => r.type === 'movie') as { id: number; type: string; duration_min: number }[]
-    const stages = allRows.filter(r => r.type === 'stage') as { id: number; type: string; duration_min: number }[]
-    const events = allRows.filter(r => r.type === 'event') as { id: number; type: string; duration_min: number }[]
+    const movies = allRows.filter(r => r.type === 'movie').map(r => ({ id: r.id, duration_min: r.durationMin }))
+    const stages = allRows.filter(r => r.type === 'stage').map(r => ({ id: r.id, duration_min: r.durationMin }))
+    const events = allRows.filter(r => r.type === 'event').map(r => ({ id: r.id, duration_min: r.durationMin }))
 
     // スクリーンを取得
-    const [screenRows] = await pool.execute<mysql.RowDataPacket[]>(
-      `SELECT id, size FROM screens ORDER BY id`,
-    )
+    const screenRows = await db
+      .select({ id: screens.id, size: screens.size })
+      .from(screens)
+      .orderBy(asc(screens.id))
     if (screenRows.length === 0) {
       console.log('[seedSchedules] スクリーンが登録されていないためスキップ')
       return
     }
 
-    const screens = screenRows as { id: number; size: string }[]
+    const allScreens = screenRows
     // 映画用スクリーン: 全スクリーン
-    const movieScreens = screens
+    const movieScreens = allScreens
 
     let totalInserted = 0
 
@@ -275,10 +282,10 @@ export async function seedSchedules(): Promise<void> {
       }
 
       // 舞台スケジュール生成
-      totalInserted += await seedStageSchedules(stages, screens, targetDate, jstDateStr, dayOffset)
+      totalInserted += await seedStageSchedules(stages, allScreens, targetDate, jstDateStr, dayOffset)
 
       // イベントスケジュール生成
-      totalInserted += await seedEventSchedules(events, screens, targetDate, jstDateStr, dayOffset)
+      totalInserted += await seedEventSchedules(events, allScreens, targetDate, jstDateStr, dayOffset)
     }
 
     if (totalInserted > 0) {

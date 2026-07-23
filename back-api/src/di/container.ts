@@ -5,6 +5,17 @@ import { MysqlStageRepository } from '#infrastructure/repositories/mysql-stage-r
 import { MysqlScreenRepository } from '#infrastructure/repositories/mysql-screen-repository.js'
 import { StageQueryService } from '#application/services/stage-query-service.js'
 import { ScreenQueryService } from '#application/services/screen-query-service.js'
+import { MysqlMemberRepository } from '#infrastructure/repositories/mysql-member-repository.js'
+import { MysqlMemberReservationRepository } from '#infrastructure/repositories/mysql-member-reservation-repository.js'
+import { MysqlOtpTokenRepository } from '#infrastructure/repositories/mysql-otp-token-repository.js'
+import { ResendEmailSender } from '#infrastructure/adapters/resend-email-sender.js'
+import { CryptoOtpCodeGenerator } from '#infrastructure/adapters/crypto-otp-code-generator.js'
+import { InMemoryRateLimiter } from '#infrastructure/adapters/in-memory-rate-limiter.js'
+import { AuthService } from '#application/services/auth-service.js'
+import { MemberService } from '#application/services/member-service.js'
+import { OTP_CONFIG } from '#config/constants.js'
+import { AuthController } from '#presentation/controllers/auth-controller.js'
+import { MemberController } from '#presentation/controllers/member-controller.js'
 
 /**
  * Composition root dependencies. Feature services are added here as they are
@@ -15,4 +26,16 @@ export const container = {
   movieService: new MovieService(new MysqlMovieRepository()),
   stageQueryService: new StageQueryService(new MysqlStageRepository()),
   screenQueryService: new ScreenQueryService(new MysqlScreenRepository()),
+  authController: new AuthController(new AuthService(
+    new MysqlMemberRepository(),
+    new MysqlOtpTokenRepository(),
+    new ResendEmailSender(),
+    new CryptoOtpCodeGenerator(),
+    new InMemoryRateLimiter(),
+    { expiresMin: OTP_CONFIG.EXPIRES_MIN, resendSec: OTP_CONFIG.RESEND_SEC, maxAttempts: OTP_CONFIG.MAX_ATTEMPTS, lockMin: OTP_CONFIG.LOCK_MIN },
+  )),
+  memberController: new MemberController(new MemberService(
+    new MysqlMemberRepository(),
+    new MysqlMemberReservationRepository(),
+  )),
 }

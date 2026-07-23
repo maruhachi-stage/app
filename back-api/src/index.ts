@@ -7,8 +7,8 @@ import { requestIdMiddleware } from '#middleware/requestId.js'
 import { sessionMiddleware } from '#middleware/session.js'
 import { errorHandler } from '#middleware/errorHandler.js'
 import { auditLogMiddleware } from '#middleware/auditLog.js'
-import membersRouter from '#modules/members/index.js'
-import authRouter from '#modules/auth/index.js'
+import { createMemberRouter } from '#presentation/routers/member-router.js'
+import { createAuthRouter } from '#presentation/routers/auth-router.js'
 import { createMovieRouter } from '#presentation/routers/movie-router.js'
 import { createStageRouter } from '#presentation/controllers/stage-router.js'
 import reservationsRouter from '#modules/reservations/index.js'
@@ -43,8 +43,8 @@ app.use('/api/*', requestIdMiddleware)
 app.use('/api/*', sessionMiddleware)
 app.use('/api/*', auditLogMiddleware)
 
-app.route('/api', membersRouter)
-app.route('/api', authRouter)
+app.route('/api', createMemberRouter(container.memberController))
+app.route('/api', createAuthRouter(container.authController))
 app.route('/api', createMovieRouter(container.movieService))
 app.route('/api', createStageRouter(container.stageQueryService))
 app.route('/api', reservationsRouter)

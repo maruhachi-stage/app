@@ -11,7 +11,7 @@ import { createMemberRouter } from '#presentation/routers/member-router.js'
 import { createAuthRouter } from '#presentation/routers/auth-router.js'
 import { createMovieRouter } from '#presentation/routers/movie-router.js'
 import { createStageRouter } from '#presentation/controllers/stage-router.js'
-import reservationsRouter from '#modules/reservations/index.js'
+import { createReservationRouter } from '#presentation/routers/reservation-router.js'
 import { createScreenRouter } from '#presentation/controllers/screen-router.js'
 import { createConfigRouter } from '#presentation/routers/config-router.js'
 import { createProductRouter } from '#presentation/routers/product-router.js'
@@ -47,7 +47,7 @@ app.route('/api', createMemberRouter(container.memberController))
 app.route('/api', createAuthRouter(container.authController))
 app.route('/api', createMovieRouter(container.movieService))
 app.route('/api', createStageRouter(container.stageQueryService))
-app.route('/api', reservationsRouter)
+app.route('/api', createReservationRouter(container.reservationController))
 app.route('/api', createScreenRouter(container.screenQueryService))
 app.route('/api', createConfigRouter(container.configService))
 app.route('/api', createProductRouter(container.productService))

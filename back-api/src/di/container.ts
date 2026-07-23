@@ -23,6 +23,10 @@ import { MysqlProductRepository } from '#infrastructure/repositories/mysql-produ
 import { MysqlPosRepository } from '#infrastructure/repositories/mysql-pos-repository.js'
 import { ProductService } from '#application/services/product-service.js'
 import { PosService } from '#application/services/pos-service.js'
+import { MysqlReservationRepository } from '#infrastructure/repositories/mysql-reservation-repository.js'
+import { ReservationService } from '#application/services/reservation-service.js'
+import { ReservationController } from '#presentation/controllers/reservation-controller.js'
+import { checkRateLimit } from '#utils/rateLimit.js'
 
 /**
  * Composition root dependencies. Feature services are added here as they are
@@ -49,4 +53,8 @@ export const container = {
   configService: new ConfigService(),
   productService: new ProductService(new MysqlProductRepository()),
   posService: new PosService(new MysqlPosRepository()),
+  reservationController: new ReservationController(
+    new ReservationService(new MysqlReservationRepository()),
+    checkRateLimit,
+  ),
 }

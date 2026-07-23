@@ -10,9 +10,9 @@ import { auditLogMiddleware } from '#middleware/auditLog.js'
 import membersRouter from '#modules/members/index.js'
 import authRouter from '#modules/auth/index.js'
 import { createMovieRouter } from '#presentation/routers/movie-router.js'
-import stagesRouter from '#modules/stages/index.js'
+import { createStageRouter } from '#presentation/controllers/stage-router.js'
 import reservationsRouter from '#modules/reservations/index.js'
-import screensRouter from '#modules/screens/index.js'
+import { createScreenRouter } from '#presentation/controllers/screen-router.js'
 import configRouter from '#modules/config/index.js'
 import productsRouter from '#modules/products/index.js'
 import posRouter from '#modules/pos/index.js'
@@ -46,9 +46,9 @@ app.use('/api/*', auditLogMiddleware)
 app.route('/api', membersRouter)
 app.route('/api', authRouter)
 app.route('/api', createMovieRouter(container.movieService))
-app.route('/api', stagesRouter)
+app.route('/api', createStageRouter(container.stageQueryService))
 app.route('/api', reservationsRouter)
-app.route('/api', screensRouter)
+app.route('/api', createScreenRouter(container.screenQueryService))
 app.route('/api', configRouter)
 app.route('/api', productsRouter)
 app.route('/api', posRouter)

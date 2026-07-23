@@ -14,8 +14,5 @@ export const mysqlPool = mysql.createPool({
   decimalNumbers: true,
 })
 
-/**
- * Typed Drizzle access point. The mysql2 pool remains available during the
- * staged migration for MySQL-specific locking queries and transactions.
- */
+/** Typed Drizzle access point backed by the MySQL driver pool. */
 export const db = drizzle(mysqlPool, { schema, mode: 'default' })

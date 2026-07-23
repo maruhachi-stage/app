@@ -2,7 +2,7 @@ import type { Context } from 'hono'
 import type { ScreenQueryService } from '#application/services/screen-query-service.js'
 import type { AppEnv } from '#types.js'
 import { AppError } from '#lib/errors.js'
-import { successResponse } from '#utils/response.js'
+import { successResponse } from '#presentation/response.js'
 
 export class ScreenController {
   constructor(private readonly screenQueryService: ScreenQueryService) {}

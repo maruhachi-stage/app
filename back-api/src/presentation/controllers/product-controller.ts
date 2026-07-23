@@ -3,7 +3,7 @@ import { AppError } from '#domain/errors/appError.js'
 import type { ProductCategory } from '#domain/entities/product.js'
 import type { ProductService } from '#application/services/product-service.js'
 import type { AppEnv } from '#types.js'
-import { successResponse } from '#utils/response.js'
+import { successResponse } from '#presentation/response.js'
 
 const categories = ['goods', 'food', 'drink', 'set'] as const
 

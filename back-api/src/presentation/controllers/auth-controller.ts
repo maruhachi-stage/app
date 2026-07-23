@@ -4,8 +4,8 @@ import { sendOtpRequestSchema, verifyOtpRequestSchema } from '#application/dto/a
 import { DomainError } from '#domain/errors/domain-error.js'
 import { AppError } from '#lib/errors.js'
 import type { AppEnv } from '#types.js'
-import { createSession, destroySession } from '#middleware/session.js'
-import { successResponse } from '#utils/response.js'
+import { createSession, destroySession } from '#presentation/middleware/session.js'
+import { successResponse } from '#presentation/response.js'
 
 export class AuthController {
   constructor(private readonly service: AuthService) {}

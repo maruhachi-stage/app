@@ -2,8 +2,8 @@ import type { Context } from 'hono'
 import type { StageQueryService } from '#application/services/stage-query-service.js'
 import type { AppEnv } from '#types.js'
 import { AppError } from '#lib/errors.js'
-import { imageUrl } from '#utils/format.js'
-import { successResponse } from '#utils/response.js'
+import { imageUrl } from '#lib/format.js'
+import { successResponse } from '#presentation/response.js'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 

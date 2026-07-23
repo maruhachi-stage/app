@@ -4,10 +4,10 @@ import { quoteRequestSchema, holdRequestSchema, createReservationRequestSchema }
 import type { ReservationService } from '#application/services/reservation-service.js'
 import { ReservationError } from '#domain/errors/reservation-error.js'
 import { AppError } from '#lib/errors.js'
-import { getQrCodeUrl, imageUrl, maskEmail, toJstString } from '#utils/format.js'
+import { getQrCodeUrl, imageUrl, maskEmail, toJstString } from '#lib/format.js'
 import { sendReservationEmail } from '#lib/email.js'
-import { TICKET_LABELS, TICKET_PRICES } from '#config/constants.js'
-import { successResponse } from '#utils/response.js'
+import { TICKET_LABELS, TICKET_PRICES } from '#lib/constants.js'
+import { successResponse } from '#presentation/response.js'
 import type { AppEnv } from '#types.js'
 
 const codeRe=/^[A-Z0-9]{8,12}$/

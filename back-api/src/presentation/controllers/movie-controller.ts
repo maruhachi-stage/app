@@ -2,7 +2,7 @@ import type { Context } from 'hono'
 import type { MovieStatus } from '#domain/entities/movie.js'
 import { AppError } from '#lib/errors.js'
 import type { AppEnv } from '#types.js'
-import { successResponse } from '#utils/response.js'
+import { successResponse } from '#presentation/response.js'
 import type { MovieService } from '#application/services/movie-service.js'
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/

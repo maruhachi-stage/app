@@ -1,8 +1,8 @@
 import type mysql from 'mysql2/promise'
-import { pool } from '#db/client.js'
+import { mysqlPool as pool } from '#infrastructure/database/mysqlPool.js'
 import type { MemberReservation } from '#domain/entities/member-reservation.js'
 import type { MemberReservationRepository } from '#domain/interfaces/repositories/member-reservation-repository.js'
-import { imageUrl } from '#utils/format.js'
+import { imageUrl } from '#lib/format.js'
 
 export class MysqlMemberReservationRepository implements MemberReservationRepository {
   async findByMemberId(memberId: number): Promise<MemberReservation[]> {

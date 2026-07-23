@@ -1,5 +1,5 @@
 import type mysql from 'mysql2/promise'
-import { pool } from '#db/client.js'
+import { mysqlPool as pool } from '#infrastructure/database/mysqlPool.js'
 import type { Stage } from '#domain/entities/stage.js'
 import type { StageSchedule } from '#domain/entities/stage-schedule.js'
 import type { FindStagesCriteria, StageRepository } from '#domain/interfaces/repositories/stage-repository.js'

@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { AppError } from '#domain/errors/appError.js'
 import type { PosService } from '#application/services/pos-service.js'
 import type { AppEnv } from '#types.js'
-import { successResponse } from '#utils/response.js'
+import { successResponse } from '#presentation/response.js'
 
 const paymentMethods = ['cash', 'card', 'qr'] as const
 

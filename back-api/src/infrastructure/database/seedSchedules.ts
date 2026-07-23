@@ -3,7 +3,7 @@
  * サーバー起動時に今日から7日分のスケジュールがなければ自動生成する
  *
  * 使い方: src/index.ts で import して呼び出す
- *   import { seedSchedules } from '#db/seedSchedules.js'
+ *   import { seedSchedules } from '#infrastructure/database/seedSchedules.js'
  *   await seedSchedules()
  *
  * 生成ルール:
@@ -13,7 +13,7 @@
  */
 
 import type mysql from 'mysql2/promise'
-import { pool } from '#db/client.js'
+import { mysqlPool as pool } from '#infrastructure/database/mysqlPool.js'
 
 // ─── 定数 ──────────────────────────────────────────────────────────────────
 

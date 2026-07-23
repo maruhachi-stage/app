@@ -1,7 +1,7 @@
 import type { Context } from 'hono'
 import type { ConfigService } from '#application/services/config-service.js'
 import type { AppEnv } from '#types.js'
-import { successResponse } from '#utils/response.js'
+import { successResponse } from '#presentation/response.js'
 
 export class ConfigController {
   constructor(private readonly configService: ConfigService) {}

@@ -4,7 +4,7 @@ import type { MemberService } from '#application/services/member-service.js'
 import { DomainError } from '#domain/errors/domain-error.js'
 import { AppError } from '#lib/errors.js'
 import type { AppEnv } from '#types.js'
-import { successResponse } from '#utils/response.js'
+import { successResponse } from '#presentation/response.js'
 
 export class MemberController {
   constructor(private readonly service: MemberService) {}

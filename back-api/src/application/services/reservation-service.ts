@@ -1,4 +1,4 @@
-import { RESERVATION_CONFIG, TICKET_PRICES } from '#config/constants.js'
+import { RESERVATION_CONFIG, TICKET_PRICES } from '#lib/constants.js'
 import { ReservationError } from '#domain/errors/reservation-error.js'
 import type { ReservationRepository } from '#domain/interfaces/repositories/reservation-repository.js'
 import type { CreateReservationRequestDTO } from '#application/dto/reservation-dto.js'

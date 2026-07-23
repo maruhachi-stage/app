@@ -1,5 +1,5 @@
 import type { OtpCodeGenerator } from '#application/ports/otp-code-generator.js'
-import { generateOtp, hashOtp } from '#utils/otp.js'
+import { generateOtp, hashOtp } from '#lib/otp.js'
 
 export class CryptoOtpCodeGenerator implements OtpCodeGenerator {
   generate(): string { return generateOtp() }

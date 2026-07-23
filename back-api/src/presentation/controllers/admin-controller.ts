@@ -1,7 +1,7 @@
 import type { Context } from 'hono'
 import type { AdminOverviewService } from '#application/services/admin-overview-service.js'
 import type { AppEnv } from '#types.js'
-import { successResponse } from '#utils/response.js'
+import { successResponse } from '#presentation/response.js'
 import { hasValidAdminEditKey, isAdminEditKeyConfigured } from '#presentation/middleware/admin-edit-key.js'
 
 export class AdminController {

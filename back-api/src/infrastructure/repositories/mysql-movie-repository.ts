@@ -1,5 +1,5 @@
 import type mysql from 'mysql2/promise'
-import { pool } from '#db/client.js'
+import { mysqlPool as pool } from '#infrastructure/database/mysqlPool.js'
 import type { Movie } from '#domain/entities/movie.js'
 import type { MovieSchedule } from '#domain/entities/movie-schedule.js'
 import type { PublicSchedule } from '#domain/entities/public-schedule.js'

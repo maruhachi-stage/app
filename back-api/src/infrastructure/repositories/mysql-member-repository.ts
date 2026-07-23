@@ -1,5 +1,5 @@
 import type mysql from 'mysql2/promise'
-import { pool } from '#db/client.js'
+import { mysqlPool as pool } from '#infrastructure/database/mysqlPool.js'
 import type { Member } from '#domain/entities/member.js'
 import type { MemberRepository } from '#domain/interfaces/repositories/member-repository.js'
 

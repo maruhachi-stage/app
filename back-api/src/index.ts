@@ -3,23 +3,23 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { csrf } from 'hono/csrf'
 import type { AppEnv } from '#types.js'
-import { requestIdMiddleware } from '#middleware/requestId.js'
-import { sessionMiddleware } from '#middleware/session.js'
-import { errorHandler } from '#middleware/errorHandler.js'
-import { auditLogMiddleware } from '#middleware/auditLog.js'
+import { requestIdMiddleware } from '#presentation/middleware/requestId.js'
+import { sessionMiddleware } from '#presentation/middleware/session.js'
+import { errorHandler } from '#presentation/middleware/errorHandler.js'
+import { auditLogMiddleware } from '#presentation/middleware/auditLog.js'
 import { createMemberRouter } from '#presentation/routers/member-router.js'
 import { createAuthRouter } from '#presentation/routers/auth-router.js'
 import { createMovieRouter } from '#presentation/routers/movie-router.js'
-import { createStageRouter } from '#presentation/controllers/stage-router.js'
+import { createStageRouter } from '#presentation/routers/stage-router.js'
 import { createReservationRouter } from '#presentation/routers/reservation-router.js'
-import { createScreenRouter } from '#presentation/controllers/screen-router.js'
+import { createScreenRouter } from '#presentation/routers/screen-router.js'
 import { createConfigRouter } from '#presentation/routers/config-router.js'
 import { createProductRouter } from '#presentation/routers/product-router.js'
 import { createPosRouter } from '#presentation/routers/pos-router.js'
 import { createAdminRouter } from '#presentation/routers/admin-router.js'
-import { seedSchedules } from '#db/seedSchedules.js'
-import { initializeProductCatalog } from '#infrastructure/database/product-catalog-initializer.js'
-import { initializePosSchema } from '#infrastructure/database/pos-initializer.js'
+import { seedSchedules } from '#infrastructure/database/seedSchedules.js'
+import { ensureProductCatalogSchema } from '#infrastructure/database/product-catalog-initializer.js'
+import { ensurePosSchema } from '#infrastructure/database/pos-initializer.js'
 import { container } from '#di/container.js'
 
 const app = new Hono<AppEnv>()
@@ -60,8 +60,8 @@ app.get('/health', (c) => c.json({ status: 'ok' }))
 const port = Number(process.env.PORT ?? 3000)
 
 await seedSchedules()
-await initializeProductCatalog()
-await initializePosSchema()
+await ensureProductCatalogSchema()
+await ensurePosSchema()
 
 serve({ fetch: app.fetch, port }, (info) => {
   console.log(`Server is running on http://localhost:${info.port}`)

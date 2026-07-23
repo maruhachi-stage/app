@@ -1,5 +1,5 @@
 import type mysql from 'mysql2/promise'
-import { pool } from '#db/client.js'
+import { mysqlPool as pool } from '#infrastructure/database/mysqlPool.js'
 import type { Screen } from '#domain/entities/screen.js'
 import type { ScreenRepository } from '#domain/interfaces/repositories/screen-repository.js'
 

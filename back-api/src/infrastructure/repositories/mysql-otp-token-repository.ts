@@ -1,6 +1,6 @@
 import type mysql from 'mysql2/promise'
 import type { OtpPurpose } from '#application/dto/auth.js'
-import { pool } from '#db/client.js'
+import { mysqlPool as pool } from '#infrastructure/database/mysqlPool.js'
 import type { OtpToken } from '#domain/entities/otp-token.js'
 import type { OtpTokenRepository } from '#domain/interfaces/repositories/otp-token-repository.js'
 

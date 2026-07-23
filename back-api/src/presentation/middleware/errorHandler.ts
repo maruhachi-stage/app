@@ -2,7 +2,7 @@ import type { ErrorHandler } from 'hono'
 import type { AppEnv } from '#types.js'
 import { ZodError } from 'zod'
 import { AppError } from '#lib/errors.js'
-import { errorResponse } from '#utils/response.js'
+import { errorResponse } from '#presentation/response.js'
 
 export const errorHandler: ErrorHandler<AppEnv> = (err, c) => {
   const requestId = c.get('requestId') ?? 'unknown'

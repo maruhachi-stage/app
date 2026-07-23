@@ -13,7 +13,7 @@ import { CryptoOtpCodeGenerator } from '#infrastructure/adapters/crypto-otp-code
 import { InMemoryRateLimiter } from '#infrastructure/adapters/in-memory-rate-limiter.js'
 import { AuthService } from '#application/services/auth-service.js'
 import { MemberService } from '#application/services/member-service.js'
-import { OTP_CONFIG } from '#config/constants.js'
+import { OTP_CONFIG } from '#lib/constants.js'
 import { AuthController } from '#presentation/controllers/auth-controller.js'
 import { MemberController } from '#presentation/controllers/member-controller.js'
 import { MysqlAdminScreenRepository } from '#infrastructure/repositories/mysql-admin-screen-repository.js'
@@ -26,7 +26,7 @@ import { PosService } from '#application/services/pos-service.js'
 import { MysqlReservationRepository } from '#infrastructure/repositories/mysql-reservation-repository.js'
 import { ReservationService } from '#application/services/reservation-service.js'
 import { ReservationController } from '#presentation/controllers/reservation-controller.js'
-import { checkRateLimit } from '#utils/rateLimit.js'
+import { checkRateLimit } from '#lib/rateLimit.js'
 
 /**
  * Composition root dependencies. Feature services are added here as they are

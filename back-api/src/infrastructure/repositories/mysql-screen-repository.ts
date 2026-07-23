@@ -1,47 +1,34 @@
-import type mysql from 'mysql2/promise'
-import { mysqlPool as pool } from '#infrastructure/database/mysqlPool.js'
+import { asc, eq } from 'drizzle-orm'
+import { db } from '#infrastructure/database/mysqlPool.js'
+import { screenSeatLayouts, screens } from '#infrastructure/database/schema.js'
 import type { Screen } from '#domain/entities/screen.js'
 import type { ScreenRepository } from '#domain/interfaces/repositories/screen-repository.js'
 
-type ScreenRow = {
-  id: number
-  name: string
-  size: 'large' | 'medium' | 'small'
-  total_seats: number
-  background_image_url: string | null
-  aspect_ratio_width: number | null
-  aspect_ratio_height: number | null
-}
+type ScreenRow = { id: number; name: string; size: 'large' | 'medium' | 'small'; totalSeats: number; backgroundImageUrl: string | null; aspectRatioWidth: number | null; aspectRatioHeight: number | null }
 
 const toScreen = (row: ScreenRow): Screen => ({
   id: row.id,
   name: row.name,
   size: row.size,
-  totalSeats: row.total_seats,
-  backgroundImageUrl: row.background_image_url,
-  aspectRatioWidth: row.aspect_ratio_width,
-  aspectRatioHeight: row.aspect_ratio_height,
+  totalSeats: row.totalSeats,
+  backgroundImageUrl: row.backgroundImageUrl,
+  aspectRatioWidth: row.aspectRatioWidth,
+  aspectRatioHeight: row.aspectRatioHeight,
 })
 
 export class MysqlScreenRepository implements ScreenRepository {
   async findAll(): Promise<Screen[]> {
-    const [rows] = await pool.execute<mysql.RowDataPacket[]>(`
-      SELECT s.id, s.name, s.size, s.total_seats, l.background_image_url,
-        l.aspect_ratio_width, l.aspect_ratio_height
-      FROM screens s
-      LEFT JOIN screen_seat_layouts l ON s.id = l.screen_id
-      ORDER BY s.id ASC`)
-    return (rows as ScreenRow[]).map(toScreen)
+    const rows = await this.baseQuery().orderBy(asc(screens.id))
+    return rows.map(toScreen)
   }
 
   async findById(screenId: number): Promise<Screen | null> {
-    const [rows] = await pool.execute<mysql.RowDataPacket[]>(`
-      SELECT s.id, s.name, s.size, s.total_seats, l.background_image_url,
-        l.aspect_ratio_width, l.aspect_ratio_height
-      FROM screens s
-      LEFT JOIN screen_seat_layouts l ON s.id = l.screen_id
-      WHERE s.id = ?`, [screenId])
-    const row = rows[0] as ScreenRow | undefined
+    const [row] = await this.baseQuery().where(eq(screens.id, screenId))
     return row ? toScreen(row) : null
+  }
+  private baseQuery() {
+    return db.select({ id: screens.id, name: screens.name, size: screens.size, totalSeats: screens.totalSeats, backgroundImageUrl: screenSeatLayouts.backgroundImageUrl, aspectRatioWidth: screenSeatLayouts.aspectRatioWidth, aspectRatioHeight: screenSeatLayouts.aspectRatioHeight })
+      .from(screens)
+      .leftJoin(screenSeatLayouts, eq(screens.id, screenSeatLayouts.screenId))
   }
 }

@@ -1,27 +1,36 @@
-import type mysql from 'mysql2/promise'
+import { and, desc, eq, gt, sql } from 'drizzle-orm'
 import type { OtpPurpose } from '#application/dto/auth.js'
-import { mysqlPool as pool } from '#infrastructure/database/mysqlPool.js'
+import { db } from '#infrastructure/database/mysqlPool.js'
+import { otpTokens } from '#infrastructure/database/schema.js'
 import type { OtpToken } from '#domain/entities/otp-token.js'
 import type { OtpTokenRepository } from '#domain/interfaces/repositories/otp-token-repository.js'
 
 export class MysqlOtpTokenRepository implements OtpTokenRepository {
   async findRecent(memberId: number, purpose: OtpPurpose, sinceSeconds: number): Promise<OtpToken | null> {
-    const [rows] = await pool.execute<mysql.RowDataPacket[]>(`SELECT id, member_id, token_hash, purpose, expires_at, used_at, failed_attempts, locked_until, created_at FROM otp_tokens WHERE member_id = ? AND purpose = ? AND created_at > DATE_SUB(NOW(3), INTERVAL ? SECOND) LIMIT 1`, [memberId, purpose, sinceSeconds])
-    return rows.length ? this.token(rows[0]) : null
+    const [row] = await db.select().from(otpTokens)
+      .where(and(eq(otpTokens.memberId, memberId), eq(otpTokens.purpose, purpose), gt(otpTokens.createdAt, sql`DATE_SUB(NOW(3), INTERVAL ${sinceSeconds} SECOND)`)))
+      .limit(1)
+    return row ? this.token(row) : null
   }
   async create(memberId: number, tokenHash: string, purpose: OtpPurpose, expiresAt: Date): Promise<void> {
-    await pool.execute('INSERT INTO otp_tokens (member_id, token_hash, purpose, expires_at) VALUES (?, ?, ?, ?)', [memberId, tokenHash, purpose, expiresAt])
+    await db.insert(otpTokens).values({ memberId, tokenHash, purpose, expiresAt })
   }
   async findLatest(memberId: number, purpose: OtpPurpose): Promise<OtpToken | null> {
-    const [rows] = await pool.execute<mysql.RowDataPacket[]>(`SELECT id, member_id, token_hash, purpose, expires_at, used_at, failed_attempts, locked_until, created_at FROM otp_tokens WHERE member_id = ? AND purpose = ? ORDER BY created_at DESC LIMIT 1`, [memberId, purpose])
-    return rows.length ? this.token(rows[0]) : null
+    const [row] = await db.select().from(otpTokens)
+      .where(and(eq(otpTokens.memberId, memberId), eq(otpTokens.purpose, purpose)))
+      .orderBy(desc(otpTokens.createdAt))
+      .limit(1)
+    return row ? this.token(row) : null
   }
   async recordFailure(id: number, failedAttempts: number, lockedUntil?: Date): Promise<void> {
-    if (lockedUntil) await pool.execute('UPDATE otp_tokens SET failed_attempts = ?, locked_until = ? WHERE id = ?', [failedAttempts, lockedUntil, id])
-    else await pool.execute('UPDATE otp_tokens SET failed_attempts = ? WHERE id = ?', [failedAttempts, id])
+    await db.update(otpTokens)
+      .set(lockedUntil ? { failedAttempts, lockedUntil } : { failedAttempts })
+      .where(eq(otpTokens.id, id))
   }
-  async markUsed(id: number): Promise<void> { await pool.execute('UPDATE otp_tokens SET used_at = NOW(3) WHERE id = ?', [id]) }
-  private token(row: mysql.RowDataPacket): OtpToken {
-    return { id: row.id as number, memberId: row.member_id as number, tokenHash: row.token_hash as string, purpose: row.purpose as OtpPurpose, expiresAt: row.expires_at as Date | string, usedAt: (row.used_at ?? null) as Date | string | null, failedAttempts: row.failed_attempts as number, lockedUntil: (row.locked_until ?? null) as Date | string | null, createdAt: row.created_at as Date | string }
+  async markUsed(id: number): Promise<void> {
+    await db.update(otpTokens).set({ usedAt: sql`NOW(3)` }).where(eq(otpTokens.id, id))
+  }
+  private token(row: typeof otpTokens.$inferSelect): OtpToken {
+    return { id: row.id, memberId: row.memberId, tokenHash: row.tokenHash, purpose: row.purpose as OtpPurpose, expiresAt: row.expiresAt, usedAt: row.usedAt, failedAttempts: row.failedAttempts, lockedUntil: row.lockedUntil, createdAt: row.createdAt }
   }
 }

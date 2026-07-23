@@ -15,6 +15,13 @@ import { MemberService } from '#application/services/member-service.js'
 import { OTP_CONFIG } from '#lib/constants.js'
 import { AuthController } from '#presentation/controllers/auth-controller.js'
 import { MemberController } from '#presentation/controllers/member-controller.js'
+import { MovieController } from '#presentation/controllers/movie-controller.js'
+import { StageController } from '#presentation/controllers/stage-controller.js'
+import { ScreenController } from '#presentation/controllers/screen-controller.js'
+import { ConfigController } from '#presentation/controllers/config-controller.js'
+import { ProductController } from '#presentation/controllers/product-controller.js'
+import { PosController } from '#presentation/controllers/pos-controller.js'
+import { AdminController } from '#presentation/controllers/admin-controller.js'
 import { MysqlAdminScreenRepository } from '#infrastructure/repositories/mysql-admin-screen-repository.js'
 import { AdminOverviewService } from '#application/services/admin-overview-service.js'
 import { ConfigService } from '#application/services/config-service.js'
@@ -32,9 +39,9 @@ import { checkRateLimit } from '#lib/rateLimit.js'
  * migrated, keeping framework and database construction out of application code.
  */
 export const container = {
-  movieService: new MovieService(new MysqlMovieRepository()),
-  stageQueryService: new StageQueryService(new MysqlStageRepository()),
-  screenQueryService: new ScreenQueryService(new MysqlScreenRepository()),
+  movieController: new MovieController(new MovieService(new MysqlMovieRepository())),
+  stageController: new StageController(new StageQueryService(new MysqlStageRepository())),
+  screenController: new ScreenController(new ScreenQueryService(new MysqlScreenRepository())),
   authController: new AuthController(new AuthService(
     new MysqlMemberRepository(),
     new MysqlOtpTokenRepository(),
@@ -47,10 +54,10 @@ export const container = {
     new MysqlMemberRepository(),
     new MysqlMemberReservationRepository(),
   )),
-  adminOverviewService: new AdminOverviewService(new MysqlAdminScreenRepository()),
-  configService: new ConfigService(),
-  productService: new ProductService(new MysqlProductRepository()),
-  posService: new PosService(new MysqlPosRepository()),
+  adminController: new AdminController(new AdminOverviewService(new MysqlAdminScreenRepository())),
+  configController: new ConfigController(new ConfigService()),
+  productController: new ProductController(new ProductService(new MysqlProductRepository())),
+  posController: new PosController(new PosService(new MysqlPosRepository())),
   reservationController: new ReservationController(
     new ReservationService(new MysqlReservationRepository()),
     checkRateLimit,

@@ -15,11 +15,11 @@ import {
   varchar,
 } from 'drizzle-orm/mysql-core'
 
-const timestamp = () => datetime({ fsp: 3, mode: 'date' })
+const timestamp = (name: string) => datetime(name, { fsp: 3, mode: 'date' })
   .notNull()
   .default(sql`CURRENT_TIMESTAMP(3)`)
 
-const updatedTimestamp = () => timestamp().$onUpdate(() => sql`CURRENT_TIMESTAMP(3)`)
+const updatedTimestamp = (name: string) => timestamp(name).$onUpdateFn(() => sql`CURRENT_TIMESTAMP(3)`)
 
 export const otpPurposeValues = ['login', 'register'] as const
 export const screenSizeValues = ['large', 'medium', 'small'] as const
@@ -35,8 +35,8 @@ export const members = mysqlTable('members', {
   id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
   email: varchar({ length: 254 }).notNull(),
   name: varchar({ length: 100 }),
-  createdAt: timestamp(),
-  updatedAt: updatedTimestamp(),
+  createdAt: timestamp('created_at'),
+  updatedAt: updatedTimestamp('updated_at'),
 }, (table) => [
   uniqueIndex('uq_members_email').on(table.email),
 ])
@@ -50,8 +50,8 @@ export const otpTokens = mysqlTable('otp_tokens', {
   usedAt: datetime('used_at', { fsp: 3, mode: 'date' }),
   failedAttempts: smallint('failed_attempts', { unsigned: true }).notNull().default(0),
   lockedUntil: datetime('locked_until', { fsp: 3, mode: 'date' }),
-  createdAt: timestamp(),
-  updatedAt: updatedTimestamp(),
+  createdAt: timestamp('created_at'),
+  updatedAt: updatedTimestamp('updated_at'),
 }, (table) => [
   index('idx_otp_member').on(table.memberId, table.purpose, table.createdAt),
   index('idx_otp_expires').on(table.expiresAt),
@@ -62,8 +62,8 @@ export const screens = mysqlTable('screens', {
   name: varchar({ length: 50 }).notNull(),
   size: mysqlEnum('size', screenSizeValues).notNull(),
   totalSeats: int('total_seats', { unsigned: true }).notNull(),
-  createdAt: timestamp(),
-  updatedAt: updatedTimestamp(),
+  createdAt: timestamp('created_at'),
+  updatedAt: updatedTimestamp('updated_at'),
 })
 
 export const screenings = mysqlTable('screenings', {
@@ -75,8 +75,8 @@ export const screenings = mysqlTable('screenings', {
   status: mysqlEnum('status', screeningStatusValues).notNull(),
   playwright: varchar({ length: 100 }),
   director: varchar({ length: 100 }),
-  createdAt: timestamp(),
-  updatedAt: updatedTimestamp(),
+  createdAt: timestamp('created_at'),
+  updatedAt: updatedTimestamp('updated_at'),
 }, (table) => [
   index('idx_screenings_title').on(table.title),
   index('idx_screenings_type').on(table.type),
@@ -90,7 +90,7 @@ export const images = mysqlTable('images', {
   entityId: bigint('entity_id', { mode: 'number', unsigned: true }).notNull(),
   fileName: varchar('file_name', { length: 500 }).notNull(),
   displayOrder: int('display_order', { unsigned: true }).notNull().default(1),
-  createdAt: timestamp(),
+  createdAt: timestamp('created_at'),
 }, (table) => [
   index('idx_images_entity').on(table.entityType, table.entityId, table.displayOrder),
 ])
@@ -102,8 +102,8 @@ export const schedules = mysqlTable('schedules', {
   startsAt: datetime('starts_at', { fsp: 3, mode: 'date' }).notNull(),
   endsAt: datetime('ends_at', { fsp: 3, mode: 'date' }).notNull(),
   isPublic: boolean('is_public').notNull().default(true),
-  createdAt: timestamp(),
-  updatedAt: updatedTimestamp(),
+  createdAt: timestamp('created_at'),
+  updatedAt: updatedTimestamp('updated_at'),
 }, (table) => [
   index('idx_schedules_starts_at').on(table.startsAt),
 ])
@@ -115,8 +115,8 @@ export const screenSeatLayouts = mysqlTable('screen_seat_layouts', {
   backgroundImageUrl: varchar('background_image_url', { length: 500 }).notNull(),
   aspectRatioWidth: smallint('aspect_ratio_width', { unsigned: true }).notNull(),
   aspectRatioHeight: smallint('aspect_ratio_height', { unsigned: true }).notNull(),
-  createdAt: timestamp(),
-  updatedAt: updatedTimestamp(),
+  createdAt: timestamp('created_at'),
+  updatedAt: updatedTimestamp('updated_at'),
 }, (table) => [
   uniqueIndex('uq_ssl_screen').on(table.screenId),
 ])
@@ -132,7 +132,7 @@ export const seats = mysqlTable('seats', {
   seatWidthPct: decimal('seat_width_pct', { precision: 5, scale: 2 }).notNull(),
   seatHeightPct: decimal('seat_height_pct', { precision: 5, scale: 2 }).notNull(),
   hitRadiusPct: decimal('hit_radius_pct', { precision: 5, scale: 2 }),
-  createdAt: timestamp(),
+  createdAt: timestamp('created_at'),
 }, (table) => [
   uniqueIndex('uq_seats_screen_row_col').on(table.screenId, table.rowLabel, table.colNo),
 ])
@@ -148,8 +148,8 @@ export const reservations = mysqlTable('reservations', {
   status: reservationStatus.notNull().default('confirmed'),
   expiresAt: datetime('expires_at', { fsp: 3, mode: 'date' }),
   totalPrice: int('total_price', { unsigned: true }).notNull(),
-  createdAt: timestamp(),
-  updatedAt: updatedTimestamp(),
+  createdAt: timestamp('created_at'),
+  updatedAt: updatedTimestamp('updated_at'),
 }, (table) => [
   uniqueIndex('uq_reservation_code').on(table.reservationCode),
   index('idx_reservations_member').on(table.memberId, table.createdAt),
@@ -162,7 +162,7 @@ export const reservationSeats = mysqlTable('reservation_seats', {
   seatId: bigint('seat_id', { mode: 'number', unsigned: true }).notNull().references(() => seats.id, { onDelete: 'restrict' }),
   ticketType: mysqlEnum('ticket_type', ticketTypeValues).notNull(),
   price: int({ unsigned: true }).notNull(),
-  createdAt: timestamp(),
+  createdAt: timestamp('created_at'),
 }, (table) => [
   uniqueIndex('uq_rs_schedule_seat').on(table.scheduleId, table.seatId),
 ])
@@ -178,8 +178,8 @@ export const products = mysqlTable('products', {
   isNew: boolean('is_new').notNull().default(false),
   isSoldOut: boolean('is_sold_out').notNull().default(false),
   displayOrder: int('display_order', { unsigned: true }).notNull().default(0),
-  createdAt: timestamp(),
-  updatedAt: updatedTimestamp(),
+  createdAt: timestamp('created_at'),
+  updatedAt: updatedTimestamp('updated_at'),
 }, (table) => [
   index('idx_products_category').on(table.category),
   index('idx_products_display_order').on(table.displayOrder),
@@ -223,8 +223,8 @@ export const posProducts = mysqlTable('pos_products', {
   imageUrl: varchar('image_url', { length: 500 }),
   stockQuantity: int('stock_quantity', { unsigned: true }),
   isActive: boolean('is_active').notNull().default(true),
-  createdAt: timestamp(),
-  updatedAt: updatedTimestamp(),
+  createdAt: timestamp('created_at'),
+  updatedAt: updatedTimestamp('updated_at'),
 }, (table) => [
   uniqueIndex('uq_pos_products_slug').on(table.slug),
   index('idx_pos_products_category').on(table.category),
@@ -235,7 +235,7 @@ export const posSales = mysqlTable('pos_sales', {
   saleCode: varchar('sale_code', { length: 16 }).notNull(),
   totalAmount: int('total_amount', { unsigned: true }).notNull(),
   paymentMethod: mysqlEnum('payment_method', paymentMethodValues).notNull(),
-  createdAt: timestamp(),
+  createdAt: timestamp('created_at'),
 }, (table) => [
   uniqueIndex('uq_pos_sales_code').on(table.saleCode),
   index('idx_pos_sales_created_at').on(table.createdAt),
@@ -249,7 +249,7 @@ export const posSaleItems = mysqlTable('pos_sale_items', {
   unitPrice: int('unit_price', { unsigned: true }).notNull(),
   quantity: int({ unsigned: true }).notNull(),
   lineTotal: int('line_total', { unsigned: true }).notNull(),
-  createdAt: timestamp(),
+  createdAt: timestamp('created_at'),
 }, (table) => [
   index('idx_pos_sale_items_sale').on(table.saleId),
 ])

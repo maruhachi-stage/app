@@ -9,7 +9,7 @@
     "db:down": "docker compose -f docker-compose.yml down",
     "db:logs": "docker compose -f docker-compose.yml logs -f mysql",
     "db:reset": "docker compose -f docker-compose.yml down -v",
-    "db:migrate": "echo 'Schema is initialized automatically on db:up (Docker initdb.d)'",
+    "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
     "db:check": "drizzle-kit check",
     "db:introspect": "drizzle-kit pull"

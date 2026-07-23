@@ -13,10 +13,10 @@ import { createMovieRouter } from '#presentation/routers/movie-router.js'
 import { createStageRouter } from '#presentation/controllers/stage-router.js'
 import reservationsRouter from '#modules/reservations/index.js'
 import { createScreenRouter } from '#presentation/controllers/screen-router.js'
-import configRouter from '#modules/config/index.js'
+import { createConfigRouter } from '#presentation/routers/config-router.js'
 import productsRouter from '#modules/products/index.js'
 import posRouter from '#modules/pos/index.js'
-import adminRouter from '#modules/admin/index.js'
+import { createAdminRouter } from '#presentation/routers/admin-router.js'
 import { seedSchedules } from '#db/seedSchedules.js'
 import { ensureProductCatalogSchema } from '#modules/products/service.js'
 import { ensurePosSchema } from '#modules/pos/service.js'
@@ -49,10 +49,10 @@ app.route('/api', createMovieRouter(container.movieService))
 app.route('/api', createStageRouter(container.stageQueryService))
 app.route('/api', reservationsRouter)
 app.route('/api', createScreenRouter(container.screenQueryService))
-app.route('/api', configRouter)
+app.route('/api', createConfigRouter(container.configService))
 app.route('/api', productsRouter)
 app.route('/api', posRouter)
-app.route('/api', adminRouter)
+app.route('/api', createAdminRouter(container.adminOverviewService))
 
 app.onError(errorHandler)
 app.get('/health', (c) => c.json({ status: 'ok' }))

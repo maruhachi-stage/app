@@ -16,6 +16,9 @@ import { MemberService } from '#application/services/member-service.js'
 import { OTP_CONFIG } from '#config/constants.js'
 import { AuthController } from '#presentation/controllers/auth-controller.js'
 import { MemberController } from '#presentation/controllers/member-controller.js'
+import { MysqlAdminScreenRepository } from '#infrastructure/repositories/mysql-admin-screen-repository.js'
+import { AdminOverviewService } from '#application/services/admin-overview-service.js'
+import { ConfigService } from '#application/services/config-service.js'
 
 /**
  * Composition root dependencies. Feature services are added here as they are
@@ -38,4 +41,6 @@ export const container = {
     new MysqlMemberRepository(),
     new MysqlMemberReservationRepository(),
   )),
+  adminOverviewService: new AdminOverviewService(new MysqlAdminScreenRepository()),
+  configService: new ConfigService(),
 }

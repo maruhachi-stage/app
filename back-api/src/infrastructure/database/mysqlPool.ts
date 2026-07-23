@@ -1,4 +1,6 @@
 import mysql from 'mysql2/promise'
+import { drizzle } from 'drizzle-orm/mysql2'
+import * as schema from '#infrastructure/database/schema.js'
 
 export const mysqlPool = mysql.createPool({
   host: process.env.DB_HOST ?? 'localhost',
@@ -11,3 +13,9 @@ export const mysqlPool = mysql.createPool({
   connectionLimit: 10,
   decimalNumbers: true,
 })
+
+/**
+ * Typed Drizzle access point. The mysql2 pool remains available during the
+ * staged migration for MySQL-specific locking queries and transactions.
+ */
+export const db = drizzle(mysqlPool, { schema, mode: 'default' })

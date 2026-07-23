@@ -1,12 +1,49 @@
-import type mysql from 'mysql2/promise'
-import { mysqlPool as pool } from '#infrastructure/database/mysqlPool.js'
+import { desc, eq, sql } from 'drizzle-orm'
+import { db } from '#infrastructure/database/mysqlPool.js'
+import { images, reservations, schedules, screens, screenings } from '#infrastructure/database/schema.js'
 import type { MemberReservation } from '#domain/entities/member-reservation.js'
 import type { MemberReservationRepository } from '#domain/interfaces/repositories/member-reservation-repository.js'
 import { imageUrl } from '#lib/format.js'
 
+const screeningThumbnail = sql<string | null>`(
+  SELECT ${images.fileName}
+  FROM ${images}
+  WHERE ${images.entityType} = 'screening'
+    AND ${images.entityId} = ${screenings.id}
+  ORDER BY ${images.displayOrder}
+  LIMIT 1
+)`
+
 export class MysqlMemberReservationRepository implements MemberReservationRepository {
   async findByMemberId(memberId: number): Promise<MemberReservation[]> {
-    const [rows] = await pool.execute<mysql.RowDataPacket[]>(`SELECT r.reservation_code, r.status, r.total_price, r.created_at, m.title as movie_title, s.title as stage_title, COALESCE(m.thumbnail_url, (SELECT file_name FROM stage_images WHERE stage_id = s.id ORDER BY display_order LIMIT 1)) as thumbnail_url, sch.starts_at, sch.ends_at, sc.name as screen_name FROM reservations r JOIN schedules sch ON sch.id = r.schedule_id LEFT JOIN movies m ON m.id = sch.movie_id LEFT JOIN stages s ON s.id = sch.stage_id JOIN screens sc ON sc.id = sch.screen_id WHERE r.member_id = ? ORDER BY r.created_at DESC`, [memberId])
-    return rows.map(row => ({ reservationCode: row.reservation_code as string, status: row.status as string, totalPrice: row.total_price as number, createdAt: row.created_at as Date | string, movieTitle: (row.movie_title ?? row.stage_title) as string, thumbnailUrl: imageUrl(row.thumbnail_url as string | null), startsAt: row.starts_at as Date | string, endsAt: row.ends_at as Date | string, screenName: row.screen_name as string }))
+    const rows = await db.select({
+      reservationCode: reservations.reservationCode,
+      status: reservations.status,
+      totalPrice: reservations.totalPrice,
+      createdAt: reservations.createdAt,
+      title: screenings.title,
+      thumbnailUrl: screeningThumbnail,
+      startsAt: schedules.startsAt,
+      endsAt: schedules.endsAt,
+      screenName: screens.name,
+    })
+      .from(reservations)
+      .innerJoin(schedules, eq(schedules.id, reservations.scheduleId))
+      .innerJoin(screenings, eq(screenings.id, schedules.screeningId))
+      .innerJoin(screens, eq(screens.id, schedules.screenId))
+      .where(eq(reservations.memberId, memberId))
+      .orderBy(desc(reservations.createdAt))
+
+    return rows.map((row) => ({
+      reservationCode: row.reservationCode,
+      status: row.status,
+      totalPrice: row.totalPrice,
+      createdAt: row.createdAt,
+      movieTitle: row.title,
+      thumbnailUrl: imageUrl(row.thumbnailUrl),
+      startsAt: row.startsAt,
+      endsAt: row.endsAt,
+      screenName: row.screenName,
+    }))
   }
 }

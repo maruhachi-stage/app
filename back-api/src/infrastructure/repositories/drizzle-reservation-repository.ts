@@ -7,7 +7,7 @@ import type { BookingType, Reservation, SeatLayout, SeatPosition, TicketType } f
 
 const ticketPrices: Record<TicketType, number> = { general: 1800, university: 1600, highschool: 1400, child: 1000 }
 
-export class MysqlReservationRepository implements ReservationRepository {
+export class DrizzleReservationRepository implements ReservationRepository {
   async findPublicSchedule(id: number) {
     const [row] = await db.select({ screenId: schedules.screenId, title: screenings.title, startsAt: schedules.startsAt, endsAt: schedules.endsAt, screenName: screens.name })
       .from(schedules).innerJoin(screenings, eq(screenings.id, schedules.screeningId)).innerJoin(screens, eq(screens.id, schedules.screenId))

@@ -1,21 +1,25 @@
+import { alias } from 'drizzle-orm/mysql-core'
 import { and, asc, desc, eq, ne, sql } from 'drizzle-orm'
 import { db } from '#infrastructure/database/mysqlPool.js'
-import { images, schedules, screens, screenings } from '#infrastructure/database/schema.js'
+import { images, reservations, reservationSeats, schedules, screens, screenings } from '#infrastructure/database/schema.js'
 import type { Stage } from '#domain/entities/stage.js'
 import type { StageSchedule } from '#domain/entities/stage-schedule.js'
 import type { FindStagesCriteria, StageRepository } from '#domain/interfaces/repositories/stage-repository.js'
 
+const reservedSeats = alias(reservationSeats, 'reserved_seats')
+const seatReservations = alias(reservations, 'seat_reservations')
+
 const thumbnailUrl = sql<string | null>`(
-  SELECT file_name FROM images
-  WHERE entity_type = 'screening' AND entity_id = ${screenings.id}
-  ORDER BY display_order LIMIT 1
+  SELECT ${images.fileName} FROM ${images}
+  WHERE ${images.entityType} = 'screening' AND ${images.entityId} = ${screenings.id}
+  ORDER BY ${images.displayOrder} LIMIT 1
 )`
 
 const remainingSeats = sql<number>`${screens.totalSeats} - COALESCE((
-  SELECT COUNT(*) FROM reservation_seats rs
-  JOIN reservations r ON r.id = rs.reservation_id
-  WHERE rs.schedule_id = ${schedules.id}
-    AND (r.status = 'confirmed' OR (r.status = 'pending' AND r.expires_at > CURRENT_TIMESTAMP(3)))
+  SELECT COUNT(*) FROM ${reservedSeats}
+  JOIN ${seatReservations} ON ${seatReservations.id} = ${reservedSeats.reservationId}
+  WHERE ${reservedSeats.scheduleId} = ${schedules.id}
+    AND (${seatReservations.status} = 'confirmed' OR (${seatReservations.status} = 'pending' AND ${seatReservations.expiresAt} > CURRENT_TIMESTAMP(3)))
 ), 0)`
 
 const toStage = (row: {
@@ -23,7 +27,7 @@ const toStage = (row: {
   thumbnailUrl: string | null; status: 'now_showing' | 'coming_soon'; playwright: string | null; director: string | null
 }): Stage => row
 
-export class MysqlStageRepository implements StageRepository {
+export class DrizzleStageRepository implements StageRepository {
   async findById(stageId: number): Promise<Stage | null> {
     const [row] = await db.select({
       id: screenings.id, type: screenings.type, title: screenings.title, description: screenings.description,
@@ -48,8 +52,8 @@ export class MysqlStageRepository implements StageRepository {
     const conditions = [criteria.type ? eq(screenings.type, criteria.type) : ne(screenings.type, 'movie')]
     if (criteria.status) conditions.push(eq(screenings.status, criteria.status))
     if (criteria.date) conditions.push(sql`${screenings.id} IN (
-      SELECT DISTINCT screening_id FROM schedules
-      WHERE is_public = 1 AND DATE(CONVERT_TZ(starts_at, '+00:00', '+09:00')) = ${criteria.date}
+      SELECT DISTINCT ${schedules.screeningId} FROM ${schedules}
+      WHERE ${schedules.isPublic} = true AND DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${criteria.date}
     )`)
     const rows = await db.select({
       id: screenings.id, type: screenings.type, title: screenings.title, description: screenings.description,

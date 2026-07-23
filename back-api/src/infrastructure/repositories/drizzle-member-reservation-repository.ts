@@ -14,7 +14,7 @@ const screeningThumbnail = sql<string | null>`(
   LIMIT 1
 )`
 
-export class MysqlMemberReservationRepository implements MemberReservationRepository {
+export class DrizzleMemberReservationRepository implements MemberReservationRepository {
   async findByMemberId(memberId: number): Promise<MemberReservation[]> {
     const rows = await db.select({
       reservationCode: reservations.reservationCode,

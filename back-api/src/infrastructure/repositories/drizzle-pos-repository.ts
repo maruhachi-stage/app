@@ -6,7 +6,7 @@ import type { CreatedPosSale, PosSale } from '#domain/entities/pos-sale.js'
 import type { PosProduct } from '#domain/entities/pos-product.js'
 import type { PosRepository } from '#domain/interfaces/repositories/pos-repository.js'
 
-export class MysqlPosRepository implements PosRepository {
+export class DrizzlePosRepository implements PosRepository {
   async findProducts(): Promise<PosProduct[]> {
     const rows = await db
       .select()

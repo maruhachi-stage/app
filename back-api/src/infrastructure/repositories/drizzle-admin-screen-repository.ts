@@ -28,7 +28,7 @@ const toAdminScreen = (row: AdminScreenRow): AdminScreen => ({
   seatCount: Number(row.seatCount),
 })
 
-export class MysqlAdminScreenRepository implements AdminScreenRepository {
+export class DrizzleAdminScreenRepository implements AdminScreenRepository {
   async findAll(): Promise<AdminScreen[]> {
     const rows = await db.select({ id: screens.id, name: screens.name, size: screens.size, totalSeats: screens.totalSeats, layoutId: screenSeatLayouts.id, layoutVersion: screenSeatLayouts.layoutVersion, aspectRatioWidth: screenSeatLayouts.aspectRatioWidth, aspectRatioHeight: screenSeatLayouts.aspectRatioHeight, seatCount: count(seats.id) })
       .from(screens)

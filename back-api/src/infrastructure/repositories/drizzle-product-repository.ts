@@ -4,7 +4,7 @@ import { productNotes, productOptionGroups, productOptions, products } from '#in
 import type { Product, ProductCategory } from '#domain/entities/product.js'
 import type { ProductRepository } from '#domain/interfaces/repositories/product-repository.js'
 
-export class MysqlProductRepository implements ProductRepository {
+export class DrizzleProductRepository implements ProductRepository {
   async findAll(category?: ProductCategory): Promise<Product[]> {
     const rows = await db
       .select()

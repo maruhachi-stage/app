@@ -16,7 +16,7 @@ const toScreen = (row: ScreenRow): Screen => ({
   aspectRatioHeight: row.aspectRatioHeight,
 })
 
-export class MysqlScreenRepository implements ScreenRepository {
+export class DrizzleScreenRepository implements ScreenRepository {
   async findAll(): Promise<Screen[]> {
     const rows = await this.baseQuery().orderBy(asc(screens.id))
     return rows.map(toScreen)

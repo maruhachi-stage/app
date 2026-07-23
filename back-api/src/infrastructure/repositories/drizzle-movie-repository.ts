@@ -27,7 +27,7 @@ const hasPublicScheduleOn = (date: string) => sql`
   )
 `
 
-export class MysqlMovieRepository implements MovieRepository {
+export class DrizzleMovieRepository implements MovieRepository {
   async findMovies({ status, date }: { status?: Movie['status']; date?: string }): Promise<Movie[]> {
     const conditions = [eq(screenings.type, 'movie')]
     if (status) conditions.push(eq(screenings.status, status))

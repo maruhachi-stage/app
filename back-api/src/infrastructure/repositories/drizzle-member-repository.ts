@@ -4,7 +4,7 @@ import { members } from '#infrastructure/database/schema.js'
 import type { Member } from '#domain/entities/member.js'
 import type { MemberRepository } from '#domain/interfaces/repositories/member-repository.js'
 
-export class MysqlMemberRepository implements MemberRepository {
+export class DrizzleMemberRepository implements MemberRepository {
   async findByEmail(email: string): Promise<Member | null> {
     const [row] = await db.select({ id: members.id, email: members.email, name: members.name })
       .from(members)

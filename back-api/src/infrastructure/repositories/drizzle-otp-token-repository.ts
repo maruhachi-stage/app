@@ -5,7 +5,7 @@ import { otpTokens } from '#infrastructure/database/schema.js'
 import type { OtpToken } from '#domain/entities/otp-token.js'
 import type { OtpTokenRepository } from '#domain/interfaces/repositories/otp-token-repository.js'
 
-export class MysqlOtpTokenRepository implements OtpTokenRepository {
+export class DrizzleOtpTokenRepository implements OtpTokenRepository {
   async findRecent(memberId: number, purpose: OtpPurpose, sinceSeconds: number): Promise<OtpToken | null> {
     const [row] = await db.select().from(otpTokens)
       .where(and(eq(otpTokens.memberId, memberId), eq(otpTokens.purpose, purpose), gt(otpTokens.createdAt, sql`DATE_SUB(NOW(3), INTERVAL ${sinceSeconds} SECOND)`)))

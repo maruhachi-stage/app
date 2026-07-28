@@ -17,10 +17,10 @@ Infrastructure → Domain
 Domain → 外側のレイヤーへ依存しない
 ```
 
-- Presentation は画面、HTTP境界、外部入力を扱う。
+- Presentation は画面と外部入力を扱う。
 - Application はユースケースと状態・処理フローを調整する。
 - Domain は正規化済みの型、業務ルール、不変条件を定義する。
-- Infrastructure はAPI、DB、ストレージ、外部ProviderなどのI/Oを実装する。
+- Infrastructure はAPI、ブラウザストレージなどのI/Oを実装する。
 
 依存は常に内側へ向ける。DomainはPresentation、Infrastructure、フレームワークに依存してはならない。
 
@@ -28,15 +28,14 @@ Domain → 外側のレイヤーへ依存しない
 
 | パス | 責務 |
 | --- | --- |
-| `app/routes/` | HTTP境界と画面の組み立て |
+| `app/routes/` | 画面の組み立てとルーティング |
 | `app/components/` | 表示コンポーネント |
 | `app/hooks/` | クライアント側のApplicationロジック |
-| `app/usecases/` | サーバー側のApplicationロジック |
+| `app/usecases/` | Applicationロジック |
 | `app/domain/` | Domain型と純粋な業務ロジック |
 | `app/service/` | 外部I/Oの抽象化と正規化 |
 | `app/lib/` | 技術的な共通ユーティリティ |
 | `app/context/` | 横断的なUIまたはセッション状態 |
-| `server/` | DBクライアント、Repositoryなどサーバー専用処理 |
 
 ディレクトリ名は手段であり、責務の境界を明確にすることを優先する。
 
@@ -56,7 +55,7 @@ Presentationは外部入出力の境界である。
 
 行ってよいこと:
 
-- 外部入力、URL、form dataのparseと形式検証
+- URL、form dataなど外部入力のparseと形式検証
 - 認証・認可の確認
 - Applicationのユースケースまたはserviceの呼び出し
 - Domain型を表示用データへ変換すること
@@ -65,10 +64,10 @@ Presentationは外部入出力の境界である。
 行ってはならないこと:
 
 - 業務ルールの定義や評価
-- DBや外部Providerへの直接アクセス
+- API clientやブラウザストレージへの直接アクセス
 - 生のInfrastructure型をUIへ渡すこと
 
-画面やHTTP境界のmoduleは薄く保つ。
+画面やルートmoduleは薄く保つ。
 
 ## Application
 
@@ -80,7 +79,7 @@ Applicationはユースケースと処理フローを調整する。
 - 認可の適用
 - Domainルールの適用
 - Infrastructure ErrorをAppErrorへ変換すること
-- UI操作やサーバー処理の状態遷移を組み立てること
+- UI操作の状態遷移を組み立てること
 
 行ってはならないこと:
 
@@ -103,7 +102,7 @@ Domainに含めるもの:
 - 純粋な検証ルール
 - Domain Error
 
-Domainはフレームワーク、UI、HTTP、DB、外部Providerの形式に依存してはならない。外部のDTOや命名規則をDomainへ漏らしてはならない。
+Domainはフレームワーク、UI、API、ブラウザAPIの形式に依存してはならない。外部のDTOや命名規則をDomainへ漏らしてはならない。
 
 ## InfrastructureとService
 
@@ -111,7 +110,7 @@ Infrastructureおよびserviceは、外部システムとの境界を担当す�
 
 行うこと:
 
-- API、DB、ストレージ、外部Providerとの通信
+- API、ブラウザストレージとの通信
 - データの取得と更新
 - RawデータまたはDTOからDomain型への正規化
 - retryやrate limitなど外部通信に関する技術的処理
@@ -125,18 +124,6 @@ Infrastructureおよびserviceは、外部システムとの境界を担当す�
 - 複数Domain概念の業務フロー調整
 
 Raw型はserviceまたはInfrastructure境界から外へ出してはならない。
-
-## サーバー専用コード
-
-`server/` 配下のコードはクライアント側からimportしてはならない。
-
-- Secret
-- サーバー専用の環境変数
-- DBクライアント
-- Repository
-- Node.js専用API
-
-画面コンポーネントとクライアント側hookは、`server/` に依存してはならない。
 
 ## UI配置
 
@@ -153,9 +140,9 @@ UI設定は、それを所有するFeatureまたは画面の近くに置く。�
 
 状態には明確な所有者を持たせる。
 
-- URL状態 → 画面またはHTTP境界
+- URL状態 → 画面またはルート
 - UI状態 → componentまたはhook
-- サーバー状態 → サーバー側の読み込み処理
+- API由来の状態 → hookまたはApplicationロジック
 - Application flow状態 → hookまたはuse case
 - 業務状態 → Domain
 
@@ -196,7 +183,7 @@ Infrastructure ErrorはAppErrorへ変換する。AppErrorは機械可読なcode�
 
 ## テスト
 
-- Domainはnetwork、browser、DBに依存しないunit testで検証する。
+- Domainはnetwork、browserに依存しないunit testで検証する。
 - Serviceは外部システムのmockまたはfakeを使って検証する。
 - Use caseはservice mockを使って検証する。
 - Hookはservice mockを使って状態と操作フローを検証する。

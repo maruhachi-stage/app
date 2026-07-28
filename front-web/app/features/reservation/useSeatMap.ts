@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
-import type { SeatData, SeatMapData } from "~/entities/reservation/seat-layout"
-import { apiFetch } from "~/shared/api/client"
+import type { SeatData, SeatMapData } from "~/features/reservation/domain/seat-layout"
+import { apiFetch } from "~/lib/api-client"
 
 export type { SeatData, SeatMapData }
 

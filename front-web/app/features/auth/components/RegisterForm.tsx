@@ -1,6 +1,6 @@
 import { Link } from "react-router"
-import { Button } from "~/shared/ui/Button"
-import { Input } from "~/shared/ui/Input"
+import { Button } from "~/components/Button"
+import { Input } from "~/components/Input"
 import { useRegister } from "~/features/auth/useRegister"
 
 export function RegisterForm() {

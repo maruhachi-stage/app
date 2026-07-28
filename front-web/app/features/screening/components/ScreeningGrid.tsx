@@ -1,5 +1,5 @@
-import type { Screening } from "~/entities/screening/types"
-import { ScreeningGridCard, ScreeningListCard } from "~/widgets/ScreeningCard"
+import type { Screening } from "~/features/screening/domain/screening"
+import { ScreeningGridCard, ScreeningListCard } from "~/components/ScreeningCard"
 import TimetableView from "~/features/screening/components/TimetableView"
 
 type Props = {

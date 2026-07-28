@@ -1,4 +1,4 @@
-import { useReservationFlow } from "~/processes/reservation-flow/context"
+import { useReservationFlow } from "~/components/ReservationFlowProvider"
 
 export function useEntry() {
   const { setBookingType } = useReservationFlow()

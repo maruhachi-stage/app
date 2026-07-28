@@ -1,6 +1,6 @@
 import type { Route } from "./+types/contact"
-import { Button } from "~/shared/ui/Button"
-import { Input } from "~/shared/ui/Input"
+import { Button } from "~/components/Button"
+import { Input } from "~/components/Input"
 
 export function meta(_: Route.MetaArgs) {
   return [

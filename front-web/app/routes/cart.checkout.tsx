@@ -1,9 +1,9 @@
 import { useMemo, useState, type FormEvent } from "react"
 import { Link, useNavigate } from "react-router"
-import { formatProductPrice } from "~/entities/product/types"
-import { useCart } from "~/features/cart/useCart"
-import { proxyImageUrl } from "~/shared/lib/image"
-import { Button } from "~/shared/ui/Button"
+import { formatProductPrice } from "~/features/product/domain/product"
+import { useCart } from "~/components/CartProvider"
+import { proxyImageUrl } from "~/lib/image"
+import { Button } from "~/components/Button"
 
 type FormErrors = {
   name?: string

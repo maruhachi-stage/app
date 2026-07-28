@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router"
 import { useScreen } from "~/features/theater/useScreen"
-import Loading from "~/components/Loading"
+import Loading from "~/widgets/Loading"
 
 const descriptions: Record<"large" | "medium" | "small", string> = {
   large: "最大200席の大型スクリーン。最新の音響システムと大画面で、圧倒的な没入感と迫力ある映像体験をお楽しみいただけます。話題の超大作の鑑賞に最適です。",

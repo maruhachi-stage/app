@@ -9,10 +9,16 @@
     "db:down": "docker compose -f docker-compose.yml down",
     "db:logs": "docker compose -f docker-compose.yml logs -f mysql",
     "db:reset": "docker compose -f docker-compose.yml down -v",
-    "db:migrate": "echo 'Schema is initialized automatically on db:up (Docker initdb.d)'"
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx --env-file=.env src/infrastructure/database/seed.ts",
+    "db:migrate-and-seed": "npm run db:migrate && npm run db:seed",
+    "db:generate": "drizzle-kit generate",
+    "db:check": "drizzle-kit check",
+    "db:introspect": "drizzle-kit pull"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.14",
+    "drizzle-orm": "^0.45.2",
     "hono": "^4.12.15",
     "mysql2": "^3.22.3",
     "resend": "^6.12.2",
@@ -23,6 +29,8 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.7.1",
     "typescript": "^5.8.3"
   }

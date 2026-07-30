@@ -21,9 +21,9 @@ import { ScreenController } from '#presentation/controllers/screen-controller.js
 import { ConfigController } from '#presentation/controllers/config-controller.js'
 import { ProductController } from '#presentation/controllers/product-controller.js'
 import { PosController } from '#presentation/controllers/pos-controller.js'
-import { AdminController } from '#presentation/controllers/admin-controller.js'
 import { DrizzleAdminScreenRepository } from '#infrastructure/repositories/drizzle-admin-screen-repository.js'
 import { AdminOverviewService } from '#application/services/admin-overview-service.js'
+import { StaffAuthController } from '#presentation/controllers/staff-auth-controller.js'
 import { ConfigService } from '#application/services/config-service.js'
 import { DrizzleProductRepository } from '#infrastructure/repositories/drizzle-product-repository.js'
 import { DrizzlePosRepository } from '#infrastructure/repositories/drizzle-pos-repository.js'
@@ -54,7 +54,7 @@ export const container = {
     new DrizzleMemberRepository(),
     new DrizzleMemberReservationRepository(),
   )),
-  adminController: new AdminController(new AdminOverviewService(new DrizzleAdminScreenRepository())),
+  staffAuthController: new StaffAuthController(new AdminOverviewService(new DrizzleAdminScreenRepository())),
   configController: new ConfigController(new ConfigService()),
   productController: new ProductController(new ProductService(new DrizzleProductRepository())),
   posController: new PosController(new PosService(new DrizzlePosRepository())),

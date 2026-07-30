@@ -44,6 +44,11 @@ api.use('*', async (c, next) => {
   await next()
 })
 
+apiV1.use('*', async (c, next) => {
+  c.set('container', container)
+  await next()
+})
+
 api.post('/members', (c) => c.get('container').memberController.create(c))
 api.get('/members/profile', (c) => c.get('container').memberController.getProfile(c))
 api.get('/members/reservations', (c) => c.get('container').memberController.getReservations(c))

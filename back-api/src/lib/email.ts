@@ -9,8 +9,7 @@ function getResend(): Resend {
 }
 
 export async function sendOtpEmail(to: string, code: string, subject = '認証コード'): Promise<void> {
-  if (!process.env.RESEND_API_KEY) {
-    if (process.env.NODE_ENV === 'production') throw new Error('RESEND_API_KEY is not set')
+  if (process.env.NODE_ENV !== 'production') {
     /*
      * =====================================================================
      * ⚠⚠⚠ DEVELOPMENT DEBUG LOG (INTENTIONAL) ⚠⚠⚠
@@ -21,6 +20,9 @@ export async function sendOtpEmail(to: string, code: string, subject = '認証�
      */
     console.log(`[DEV] ${subject} OTP for ${to}: ${code}`)
     return
+  }
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is not set')
   }
   const resend = getResend()
   await resend.emails.send({

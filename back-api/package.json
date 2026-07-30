@@ -14,7 +14,8 @@
     "db:migrate-and-seed": "npm run db:migrate && npm run db:seed",
     "db:generate": "drizzle-kit generate",
     "db:check": "drizzle-kit check",
-    "db:introspect": "drizzle-kit pull"
+    "db:introspect": "drizzle-kit pull",
+    "staff:bootstrap": "tsx --env-file=.env src/scripts/bootstrap-staff.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.14",

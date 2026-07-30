@@ -1,192 +1,91 @@
-# アーキテクチャ
+# ARCHITECTURE.md
 
-## 目的
+## 概要
 
-この文書は、`front-web` を変更に強く、責務が明確で、外部実装を置き換え可能な構造で維持するための原則を定義する。
+React Router v7で構成するSPAである。4層で責務を分け、機能ごとのコードは`app/features/`にまとめる。
 
-フレームワーク固有の書き方や細かな命名規則は定義しない。設計上の責務と依存境界を定義する。
-
-## レイヤーと依存方向
-
-アプリケーションは次の4レイヤーで構成する。
+## 4層と依存方向
 
 ```text
-Presentation → Application / Domain
-Application  → Domain / Infrastructure
-Infrastructure → Domain
-Domain → 外側のレイヤーへ依存しない
+Presentation → Application → Domain
+                     ↓
+              Infrastructure → Domain
 ```
 
-- Presentation は画面と外部入力を扱う。
-- Application はユースケースと状態・処理フローを調整する。
-- Domain は正規化済みの型、業務ルール、不変条件を定義する。
-- Infrastructure はAPI、ブラウザストレージなどのI/Oを実装する。
+- Domainは他の層に依存しない。
+- PresentationはApplicationとDomainを利用できる。
+- ApplicationはDomainとInfrastructureを利用できる。
+- InfrastructureはDomainを利用できる。
 
-依存は常に内側へ向ける。DomainはPresentation、Infrastructure、フレームワークに依存してはならない。
+## 配置
 
-## ディレクトリの責務
+### Feature内
 
-| パス | 責務 |
-| --- | --- |
-| `app/routes/` | 画面の組み立てとルーティング |
-| `app/components/` | 表示コンポーネント |
-| `app/hooks/` | クライアント側のApplicationロジック |
-| `app/usecases/` | Applicationロジック |
-| `app/domain/` | Domain型と純粋な業務ロジック |
-| `app/service/` | 外部I/Oの抽象化と正規化 |
-| `app/lib/` | 技術的な共通ユーティリティ |
-| `app/context/` | 横断的なUIまたはセッション状態 |
-
-ディレクトリ名は手段であり、責務の境界を明確にすることを優先する。
-
-## ファイル責務
-
-各ファイルは、ひとつのまとまった責務だけを持つ。
-
-- ファイルは明確なひとつの目的を表す。
-- 同じ責務を支えるヘルパー関数は同居してよい。
-- 無関係なユースケースや操作をひとつのファイルにまとめない。
-- 構造の明確さを保てるなら、ファイル数の増加は許容する。
-- 役割の説明に「〜と〜」が必要なら、分割を検討する。
-
-## Presentation
-
-Presentationは外部入出力の境界である。
-
-行ってよいこと:
-
-- URL、form dataなど外部入力のparseと形式検証
-- 認証・認可の確認
-- Applicationのユースケースまたはserviceの呼び出し
-- Domain型を表示用データへ変換すること
-- 画面固有の表示構成
-
-行ってはならないこと:
-
-- 業務ルールの定義や評価
-- API clientやブラウザストレージへの直接アクセス
-- 生のInfrastructure型をUIへ渡すこと
-
-画面やルートmoduleは薄く保つ。
-
-## Application
-
-Applicationはユースケースと処理フローを調整する。
-
-行ってよいこと:
-
-- 複数service呼び出しの調整
-- 認可の適用
-- Domainルールの適用
-- Infrastructure ErrorをAppErrorへ変換すること
-- UI操作の状態遷移を組み立てること
-
-行ってはならないこと:
-
-- UIの詳細に依存すること
-- 生の外部レスポンス形式を返すこと
-- Infrastructureの実装詳細を公開すること
-
-複数の外部操作を調整する場合、認可を含む場合、またはDomainルールを評価する場合は、専用のユースケースを作る。
-
-## Domain
-
-Domainは業務上の正とする。
-
-Domainに含めるもの:
-
-- Entity
-- Value Object
-- Domain型
-- 業務上の不変条件
-- 純粋な検証ルール
-- Domain Error
-
-Domainはフレームワーク、UI、API、ブラウザAPIの形式に依存してはならない。外部のDTOや命名規則をDomainへ漏らしてはならない。
-
-## InfrastructureとService
-
-Infrastructureおよびserviceは、外部システムとの境界を担当する。
-
-行うこと:
-
-- API、ブラウザストレージとの通信
-- データの取得と更新
-- RawデータまたはDTOからDomain型への正規化
-- retryやrate limitなど外部通信に関する技術的処理
-- 失敗時のAppError送出
-
-行ってはならないこと:
-
-- UIロジック
-- Domainルールの定義
-- 生の外部レスポンス形式の公開
-- 複数Domain概念の業務フロー調整
-
-Raw型はserviceまたはInfrastructure境界から外へ出してはならない。
-
-## UI配置
-
-UIは再利用範囲に応じて配置する。
-
-- ページ固有のUI → `components/<area>/parts/`
-- 画面を構成するページコンポーネント → `components/<area>/pages/`
-- Feature内で再利用するUI → `components/<area>/`
-- Feature横断で再利用するUI → `components/shared/`
-
-UI設定は、それを所有するFeatureまたは画面の近くに置く。グローバルな定数置き場へ雑多に集めない。
-
-## 状態の所有者
-
-状態には明確な所有者を持たせる。
-
-- URL状態 → 画面またはルート
-- UI状態 → componentまたはhook
-- API由来の状態 → hookまたはApplicationロジック
-- Application flow状態 → hookまたはuse case
-- 業務状態 → Domain
-
-無関係な関心ごとのためにglobal stateを使わない。
-
-## データ変換とエラー処理
-
-レイヤー間の変換はすべて明示する。
+一つのFeatureだけで使うコードは`app/features/<feature>/`に置く。
 
 ```text
-外部入力 → Presentation → Application → Domain
-外部結果 → Infrastructure / Service → Domain → Presentation
+app/features/<feature>/
+├── pages/          # Presentation
+├── components/     # Presentation
+├── hooks/          # Application
+├── usecases/       # Application
+├── domain/         # Domain
+└── api/            # Infrastructure
 ```
 
-構造が似ていることを理由に変換を省略しない。
+既存のdirectoryに当てはまらない場合は、所属する層を明確にしてFeature内に追加できる。
 
-Infrastructure ErrorはAppErrorへ変換する。AppErrorは機械可読なcodeを持ち、外部Providerの詳細、stack trace、生のエラーメッセージをUIへ公開しない。
+### Feature外
 
-## `lib/` のルール
+Feature外にはRouteの境界、複数Featureで使うコード、技術的な共通処理だけを置く。
 
-`lib/` は技術的な共通ユーティリティ専用とする。
+| Path              | 配置するもの                                        |
+| ----------------- | --------------------------------------------------- |
+| `app/routes.ts`   | URLとRoute moduleの登録                             |
+| `app/routes/`     | `clientLoader`、`clientAction`、meta、ErrorBoundary |
+| `app/components/` | 複数Featureで使うcomponent                          |
+| `app/hooks/`      | 複数Featureで使うhook                               |
+| `app/config/`     | Routeや公開環境設定                                 |
+| `app/lib/`        | 技術的な共通処理                                    |
+| `app/types/`      | 複数Featureで使う型                                 |
+| `public/`         | 静的asset                                           |
 
-許可するもの:
+## 共通ルール
 
-- assertion helper
-- class name utility
-- 汎用format処理
-- 汎用functional utility
-- クライアント安全な環境変数アクセス
+- 必要なdirectoryだけ作る。
+- Importは`~/`aliasを使う。
+- 1fileに1つの責務を持たせる。
+- Feature間で内部fileを直接参照しない。
+- 循環依存を作らない。
+- Secret、DB client、Node.js専用APIを含めない。
+- 公開できない値を`VITE_`環境変数へ設定しない。
 
-許可しないもの:
+## 各層のルール
 
-- 業務ルール
-- Feature固有の処理フロー
-- 外部I/O
-- UI設定
-- Domainロジック
+### Presentation
 
-## テスト
+- Route moduleは`clientLoader`、`clientAction`、meta、ErrorBoundary、Pageの呼び出しに限定する。
+- Path、search params、`clientLoader`のデータはRouteが持つ。
+- Pageとcomponentには画面の表示と入力処理を書く。
+- Component内だけの状態はComponentが持つ。
+- 業務ルールと外部I/Oは書かない。
 
-- Domainはnetwork、browserに依存しないunit testで検証する。
-- Serviceは外部システムのmockまたはfakeを使って検証する。
-- Use caseはservice mockを使って検証する。
-- Hookはservice mockを使って状態と操作フローを検証する。
-- Presentationは入力処理、認可、出力形式を検証する。
-- Componentはユーザー操作を基準に検証する。
-- 実装詳細ではなく、観測可能な振る舞いをテストする。
+### Application
+
+- 一つの操作や状態は`hooks/`に置く。
+- 複数処理の調整は`usecases/`に置く。
+- 複数Componentにまたがる状態はHookが持つ。
+- JSXと外部response型は書かない。
+
+### Domain
+
+- 型、純粋な検証、業務ルールを書く。
+- React、React Router、外部APIに依存しない。
+- 外部データの`snake_case`は書かない。
+
+### Infrastructure
+
+- API呼び出しとresponse型は`api/`に置く。
+- ResponseはDomainの型へ変換して返す。
+- 共通のHTTP処理は`app/lib/api-client.ts`を使う。
+- UI状態、業務ルール、複数処理の調整は書かない。

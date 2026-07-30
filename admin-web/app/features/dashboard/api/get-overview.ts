@@ -1,6 +1,7 @@
+import { staffApiPaths } from "~/config/api"
 import { apiRequest } from "~/lib/api-client"
-import type { AdminOverview } from "~/types/admin"
+import type { StaffOverview } from "~/types/staff"
 
-export function getOverview(editKey: string) {
-  return apiRequest<AdminOverview>("/api/admin/overview", { headers: editKey ? { "X-Admin-Edit-Key": editKey } : {} })
+export function getOverview() {
+  return apiRequest<StaffOverview>(staffApiPaths.overview)
 }

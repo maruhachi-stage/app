@@ -1,4 +1,4 @@
-# HAL Cinema Admin Web
+# HAL Cinema Staff Web
 
 映画館管理画面です。React Router v7、TypeScript、TailwindCSS v4 で構成しています。
 
@@ -26,6 +26,8 @@ npm run typecheck
 npm run build
 ```
 
-## Admin Edit Key
+## スタッフ認証
+
+ユーザーID、パスワード、メールOTPでログインします。開発時のOTPはバックエンドのコンソールにも出力されます。
 
 ログイン画面を作るまでは、バックエンドの `ADMIN_EDIT_KEY` と画面で手入力した編集キーを照合して編集可否を判断します。

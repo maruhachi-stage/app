@@ -1,3 +1,5 @@
+import { apiPath } from "~/config/api"
+
 type ApiResponse<T> = { data: T; meta?: { requestId: string } }
 type ApiErrorBody = { error: { code: string; message: string; details?: unknown } }
 
@@ -11,7 +13,7 @@ export class ApiError extends Error {
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers)
   if (options.body !== undefined && !headers.has("Content-Type")) headers.set("Content-Type", "application/json")
-  const response = await fetch(path, { ...options, headers, credentials: "include" })
+  const response = await fetch(apiPath(path), { ...options, headers, credentials: "include" })
   const payload = await readPayload(response)
   if (!response.ok) {
     if (isApiErrorBody(payload)) throw new ApiError(payload.error.code, payload.error.message, payload.error.details, response.status)

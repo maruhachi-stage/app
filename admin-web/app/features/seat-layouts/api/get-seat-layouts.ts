@@ -1,7 +1,8 @@
+import { staffApiPaths } from "~/config/api"
 import { apiRequest } from "~/lib/api-client"
-import type { AdminScreen } from "~/types/admin"
+import type { StaffScreen } from "~/types/staff"
 
-export async function getSeatLayouts(editKey: string): Promise<AdminScreen[]> {
-  const overview = await apiRequest<{ screens: { items: AdminScreen[] } }>("/api/admin/overview", { headers: editKey ? { "X-Admin-Edit-Key": editKey } : {} })
+export async function getSeatLayouts(): Promise<StaffScreen[]> {
+  const overview = await apiRequest<{ screens: { items: StaffScreen[] } }>(staffApiPaths.overview)
   return overview.screens.items
 }

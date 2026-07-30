@@ -33,6 +33,9 @@
 }
 
 html, body { @apply bg-admin-canvas text-admin-foreground antialiased; }
+.input { @apply h-11 w-full rounded-lg border border-admin-border bg-admin-surface px-3 text-admin-foreground outline-none focus:border-admin-accent; }
+.primary-button { @apply h-11 rounded-lg bg-admin-accent px-4 text-sm font-black text-admin-accent-foreground hover:bg-admin-accent-hover disabled:cursor-not-allowed disabled:opacity-50; }
+.secondary-button { @apply h-11 rounded-lg border border-admin-border px-4 text-sm font-black text-admin-muted-foreground hover:bg-admin-muted disabled:cursor-not-allowed disabled:opacity-50; }
 .admin-layout { display: grid; min-height: 100dvh; background: var(--admin-canvas); }
 .admin-layout__sidebar, .admin-layout__content { min-width: 0; min-height: 0; }
 .admin-layout__sidebar { background: var(--admin-surface); border-right: 1px solid var(--admin-border); }

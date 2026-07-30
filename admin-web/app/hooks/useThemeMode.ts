@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
 
 export type ThemeMode = "light" | "dark" | "system"
-const STORAGE_KEY = "admin-theme-mode"
+const STORAGE_KEY = "staff-theme-mode"
 
 export function useThemeMode() {
   const [mode, setModeState] = useState<ThemeMode>("system")

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="admin-web run" type="js.build_tools.npm">
-    <package-json value="$PROJECT_DIR$/admin-web/package.json" />
+  <configuration default="false" name="staff-web run" type="js.build_tools.npm">
+    <package-json value="$PROJECT_DIR$/staff-web/package.json" />
     <command value="run" />
     <scripts>
       <script value="dev" />

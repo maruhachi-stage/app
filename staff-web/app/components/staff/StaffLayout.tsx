@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { FiChevronLeft, FiChevronRight, FiGrid, FiLogOut, FiMenu, FiMonitor } from "react-icons/fi"
 import { NavLink, Outlet, useNavigate } from "react-router"
-import { ThemeModeSelect } from "~/components/admin/ThemeModeSelect"
+import { ThemeModeSelect } from "~/components/staff/ThemeModeSelect"
 import { getCurrentStaff, logout } from "~/features/auth/api/staff-auth"
 import type { AuthenticatedStaff } from "~/features/auth/domain/staff"
 import { useThemeMode } from "~/hooks/useThemeMode"

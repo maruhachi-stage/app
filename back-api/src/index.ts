@@ -17,7 +17,7 @@ import { container } from '#di/container.js'
 const app = new Hono<AppEnv>()
 // Legacy API: keep this prefix stable for the existing frontend.
 const api = new Hono<AppEnv>()
-// Versioned API is currently reserved for health checks only.
+// New staff APIs use the versioned prefix. Legacy customer APIs remain under /api.
 const apiV1 = new Hono<AppEnv>()
 const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
   .split(',')

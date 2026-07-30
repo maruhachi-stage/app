@@ -14,5 +14,5 @@ export type AuthenticatedStaff = {
 
 export type LoginResult = {
   otpRequired: true
-  expiresAt: string
+  expiresInSec: number
 }

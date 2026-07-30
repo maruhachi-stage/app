@@ -1,5 +1,5 @@
 import { FiEdit3, FiGrid, FiRefreshCw } from "react-icons/fi"
-import { ErrorMessage, LoadingMessage } from "~/components/admin/AsyncState"
+import { ErrorMessage, LoadingMessage } from "~/components/staff/AsyncState"
 import { useSeatLayouts } from "~/features/seat-layouts/hooks/useSeatLayouts"
 import type { StaffScreen } from "~/types/staff"
 

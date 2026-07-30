@@ -2,7 +2,7 @@
 
 ## 対象アプリケーション
 
-この文書は利用者向けWebアプリケーションである`front-web`を対象とする。管理画面向けの方針は`admin-web/ARCHITECTURE.md`を参照する。
+この文書は利用者向けWebアプリケーションである`front-web`を対象とする。スタッフ画面向けの方針は`staff-web/ARCHITECTURE.md`を参照する。
 
 ## 概要
 

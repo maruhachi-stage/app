@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import { FiGrid, FiMonitor, FiRefreshCw } from "react-icons/fi"
 import { Link } from "react-router"
-import { ErrorMessage, LoadingMessage } from "~/components/staff/AsyncState"
+import { ErrorMessage, LoadingMessage } from "~/components/ui/AsyncState"
 import { useDashboard } from "~/features/dashboard/hooks/useDashboard"
 
 export function DashboardPage() {

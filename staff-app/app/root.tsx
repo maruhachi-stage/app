@@ -9,6 +9,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { AppProviders } from "~/providers/AppProviders";
 
 const themeBootstrap = `(() => { try { const mode = localStorage.getItem('staff-theme-mode') || 'system'; const dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches); document.documentElement.dataset.theme = dark ? 'dark' : 'light'; } catch {} })()`;
 
@@ -45,7 +46,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return <AppProviders><Outlet /></AppProviders>;
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

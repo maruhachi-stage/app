@@ -1,3 +1,3 @@
-import { StaffLayout } from "~/components/staff/StaffLayout"
+import { AppLayout } from "~/components/ui/AppLayout"
 
-export default function StaffRoute() { return <StaffLayout /> }
+export default function StaffRoute() { return <AppLayout /> }

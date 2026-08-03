@@ -4,11 +4,13 @@ import { FiEye, FiEyeOff } from "react-icons/fi"
 import { useNavigate } from "react-router"
 import { ApiError } from "~/lib/api-client"
 import { login, resendOtp, verifyOtp } from "~/features/auth/api/staff-auth"
+import { useStaffAuth } from "~/hooks/useStaffAuth"
 
 type Step = "password" | "otp"
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const { setAuthenticatedStaff } = useStaffAuth()
   const [step, setStep] = useState<Step>("password")
   const [userId, setUserId] = useState("")
   const [password, setPassword] = useState("")
@@ -40,7 +42,8 @@ export function LoginPage() {
     setSubmitting(true)
     setError("")
     try {
-      await verifyOtp(code)
+      const authenticatedStaff = await verifyOtp(code)
+      setAuthenticatedStaff(authenticatedStaff)
       navigate("/", { replace: true })
     } catch (cause) {
       setError(toMessage(cause))

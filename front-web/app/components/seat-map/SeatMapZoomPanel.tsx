@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react"
 import { clamp, type SeatData, type SeatMapData } from "~/features/reservation/domain/seat-layout"
-import { SeatLayoutRenderer } from "~/widgets/seat-map/SeatLayoutRenderer"
+import { SeatLayoutRenderer } from "~/components/seat-map/SeatLayoutRenderer"
 
 export type FocusPoint = {
   xPct: number

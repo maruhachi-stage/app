@@ -1,5 +1,5 @@
 import { useScreenings } from "~/features/screening/useScreenings"
-import { DateSelector } from "~/widgets/DateSelector"
+import { DateSelector } from "~/components/DateSelector"
 import { ScreeningFilters } from "~/features/screening/components/ScreeningFilters"
 import { ScreeningGrid } from "~/features/screening/components/ScreeningGrid"
 

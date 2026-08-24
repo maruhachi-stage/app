@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
 import { useParams, useSearchParams } from "react-router"
-import { apiFetch } from "~/shared/api/client"
-import { getNext7Days } from "~/shared/lib/date"
-import type { Screening, Schedule, ScreeningType } from "~/entities/screening/types"
+import { apiFetch } from "~/lib/api-client"
+import { getNext7Days } from "~/lib/date"
+import type { Screening, Schedule, ScreeningType } from "~/features/screening/domain/screening"
 
 type ScheduleInfo = {
   scheduleId: number

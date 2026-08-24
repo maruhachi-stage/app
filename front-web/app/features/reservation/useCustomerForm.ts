@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useReservationFlow } from "~/processes/reservation-flow/context"
+import { useReservationFlow } from "~/components/ReservationFlowProvider"
 
 export function useCustomerForm() {
   const { state, setCustomer } = useReservationFlow()

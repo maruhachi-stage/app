@@ -1,14 +1,14 @@
 import { useNavigate } from "react-router"
-import { Button } from "~/shared/ui/Button"
+import { Button } from "~/components/Button"
 import { useBooking } from "~/features/reservation/useBooking"
-import { SeatMap } from "~/widgets/SeatMap"
-import { DateSelector } from "~/widgets/DateSelector"
-import { ScheduleGrid } from "~/widgets/ScheduleGrid"
-import { ScreeningHeroBanner } from "~/widgets/ScreeningHeroBanner"
-import { getAuthState } from "~/shared/api/auth"
-import { apiFetch } from "~/shared/api/client"
-import { useReservationFlow } from "~/processes/reservation-flow/context"
-import { ReservationActionBar } from "~/widgets/ReservationActionBar"
+import { SeatMap } from "~/components/SeatMap"
+import { DateSelector } from "~/components/DateSelector"
+import { ScheduleGrid } from "~/components/ScheduleGrid"
+import { ScreeningHeroBanner } from "~/components/ScreeningHeroBanner"
+import { getAuthState } from "~/lib/api/auth"
+import { apiFetch } from "~/lib/api-client"
+import { useReservationFlow } from "~/components/ReservationFlowProvider"
+import { ReservationActionBar } from "~/components/ReservationActionBar"
 
 export default function BookingPage() {
   const navigate = useNavigate()

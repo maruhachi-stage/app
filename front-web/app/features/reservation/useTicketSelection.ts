@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
-import { apiFetch } from "~/shared/api/client"
-import { useReservationFlow } from "~/processes/reservation-flow/context"
-import type { TicketType } from "~/entities/ticket"
-import type { SelectedSeat } from "~/entities/reservation/draft"
+import { apiFetch } from "~/lib/api-client"
+import { useReservationFlow } from "~/components/ReservationFlowProvider"
+import type { TicketType } from "~/features/reservation/domain/ticket"
+import type { SelectedSeat } from "~/features/reservation/domain/draft"
 
 export function useTicketSelection() {
   const { state, setTickets } = useReservationFlow()

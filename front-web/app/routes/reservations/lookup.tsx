@@ -1,5 +1,5 @@
-import {Button} from "~/shared/ui/Button"
-import {Input} from "~/shared/ui/Input"
+import {Button} from "~/components/Button"
+import {Input} from "~/components/Input"
 import {useLookup} from "~/features/reservation/useLookup"
 
 export default function LookupPage() {

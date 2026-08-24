@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import type { Product, ProductCategory } from "~/entities/product/types"
-import { apiFetch, ApiError } from "~/shared/api/client"
+import type { Product, ProductCategory } from "~/features/product/domain/product"
+import { apiFetch, ApiError } from "~/lib/api-client"
 
 export function useProducts(category?: ProductCategory) {
   const [products, setProducts] = useState<Product[]>([])

@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
-import { Button } from "~/shared/ui/Button"
-import { Input } from "~/shared/ui/Input"
+import { Button } from "~/components/Button"
+import { Input } from "~/components/Input"
 import { useCustomerForm } from "~/features/reservation/useCustomerForm"
-import { useReservationFlow } from "~/processes/reservation-flow/context"
-import { getAuthState } from "~/shared/api/auth"
-import { apiFetch } from "~/shared/api/client"
+import { useReservationFlow } from "~/components/ReservationFlowProvider"
+import { getAuthState } from "~/lib/api/auth"
+import { apiFetch } from "~/lib/api-client"
 
 export default function CustomerPage() {
   const navigate = useNavigate()

@@ -1,4 +1,4 @@
-import type { ScreeningType } from "~/entities/screening/types"
+import type { ScreeningType } from "~/features/screening/domain/screening"
 
 type Props = {
   selectedType: "all" | ScreeningType

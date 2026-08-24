@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { apiFetch } from '../../shared/api/client'
-import type { Screen } from '../../entities/screen/types'
+import { apiFetch } from '~/lib/api-client'
+import type { Screen } from '~/features/theater/domain/screen'
 
 export function useScreens() {
   const [screens, setScreens] = useState<Screen[]>([])

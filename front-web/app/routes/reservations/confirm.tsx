@@ -1,10 +1,10 @@
 import { useEffect } from "react"
 import { useNavigate } from "react-router"
-import { Button } from "~/shared/ui/Button"
-import { formatJst } from "~/entities/ticket"
+import { Button } from "~/components/Button"
+import { formatJst } from "~/lib/date"
 import { useConfirm } from "~/features/reservation/useConfirm"
-import { useReservationFlow } from "~/processes/reservation-flow/context"
-import { useAppConfig } from "~/shared/config"
+import { useReservationFlow } from "~/components/ReservationFlowProvider"
+import { useAppConfig } from "~/config"
 
 export default function ConfirmPage() {
   const navigate = useNavigate()

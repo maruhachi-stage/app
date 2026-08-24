@@ -1,12 +1,12 @@
 import { Link, useNavigate } from "react-router"
-import { useCart } from "~/features/cart/useCart"
+import { useCart } from "~/components/CartProvider"
 import {
   PRODUCT_CATEGORY_LABELS,
   formatProductPrice,
   type ProductCategory,
-} from "~/entities/product/types"
-import { proxyImageUrl } from "~/shared/lib/image"
-import { Button } from "~/shared/ui/Button"
+} from "~/features/product/domain/product"
+import { proxyImageUrl } from "~/lib/image"
+import { Button } from "~/components/Button"
 
 const CART_CATEGORIES: ProductCategory[] = ["goods", "food", "drink", "set"]
 

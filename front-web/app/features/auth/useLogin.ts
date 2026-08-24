@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { useNavigate, useSearchParams } from "react-router"
-import { apiFetch, ApiError } from "~/shared/api/client"
-import { safeRedirect } from "~/shared/api/auth"
-import { draft } from "~/entities/reservation/draft"
+import { apiFetch, ApiError } from "~/lib/api-client"
+import { safeRedirect } from "~/lib/api/auth"
+import { draftStorage } from "~/lib/storage"
 
 export function useLogin() {
   const [email, setEmail] = useState("")
@@ -40,7 +40,7 @@ export function useLogin() {
   }
 
   function handleGuestContinue() {
-    draft.set({ bookingType: "guest" })
+    draftStorage.set({ bookingType: "guest" })
   }
 
   return { email, setEmail, error, loading, redirect, handleSubmit, handleGuestContinue }

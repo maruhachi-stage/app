@@ -1,5 +1,5 @@
 import {useMemberReservations} from "~/features/member/useMemberReservations"
-import {formatJst} from "~/entities/ticket"
+import {formatJst} from "~/lib/date"
 import {Link} from "react-router"
 
 export default function MemberReservationsPage() {

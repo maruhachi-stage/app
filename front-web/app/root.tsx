@@ -10,14 +10,15 @@ import {
 
 import { useState, useEffect } from "react";
 
-import Loading from "~/widgets/Loading";
+import Loading from "~/components/Loading";
 
 import type {Route} from "./+types/root";
 import "~/app.css";
-import { AuthContext, getAuthState, type AuthState } from "~/shared/api/auth";
-import { ThemeContext, useTheme } from "~/shared/lib/theme";
-import { ConfigProvider } from "~/shared/config";
-import { CartProvider } from "~/features/cart/useCart";
+import { getAuthState, type AuthState } from "~/lib/api/auth";
+import { AuthContext } from "~/components/AuthProvider";
+import { ThemeContext, useTheme } from "~/lib/theme";
+import { ConfigProvider } from "~/config";
+import { CartProvider } from "~/components/CartProvider";
 
 export const links: Route.LinksFunction = () => [
     {rel: "preconnect", href: "https://fonts.googleapis.com"},

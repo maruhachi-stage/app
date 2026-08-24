@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useParams } from "react-router"
-import { apiFetch, ApiError } from "~/shared/api/client"
+import { apiFetch, ApiError } from "~/lib/api-client"
 
 type Seat = { row: string; col: number; ticketType: string; price: number }
 

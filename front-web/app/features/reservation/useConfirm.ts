@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
-import { apiFetch, ApiError } from "~/shared/api/client"
-import { useReservationFlow } from "~/processes/reservation-flow/context"
+import { apiFetch, ApiError } from "~/lib/api-client"
+import { useReservationFlow } from "~/components/ReservationFlowProvider"
 
 type ScheduleInfo = {
   scheduleId: number

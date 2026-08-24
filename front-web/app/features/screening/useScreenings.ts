@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
 import { useSearchParams } from "react-router"
-import { apiFetch, ApiError } from "~/shared/api/client"
-import { getNext7Days } from "~/shared/lib/date"
-import type { Screening, ScreeningType } from "~/entities/screening/types"
+import { apiFetch, ApiError } from "~/lib/api-client"
+import { getNext7Days } from "~/lib/date"
+import type { Screening, ScreeningType } from "~/features/screening/domain/screening"
 
 export interface UseScreeningsOptions {
   type?: ScreeningType | "all"

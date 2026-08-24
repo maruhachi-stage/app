@@ -1,8 +1,8 @@
 import { useEffect } from "react"
 import { Link, useNavigate } from "react-router"
-import { Button } from "~/shared/ui/Button"
+import { Button } from "~/components/Button"
 import { useEntry } from "~/features/reservation/useEntry"
-import { useReservationFlow } from "~/processes/reservation-flow/context"
+import { useReservationFlow } from "~/components/ReservationFlowProvider"
 
 export default function EntryPage() {
   const navigate = useNavigate()

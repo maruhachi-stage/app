@@ -8,8 +8,8 @@ function getResend(): Resend {
   return new Resend(key)
 }
 
-export async function sendOtpEmail(to: string, code: string): Promise<void> {
-  if (!process.env.RESEND_API_KEY) {
+export async function sendOtpEmail(to: string, code: string, subject = '認証コード'): Promise<void> {
+  if (process.env.NODE_ENV !== 'production') {
     /*
      * =====================================================================
      * ⚠⚠⚠ DEVELOPMENT DEBUG LOG (INTENTIONAL) ⚠⚠⚠
@@ -18,8 +18,11 @@ export async function sendOtpEmail(to: string, code: string): Promise<void> {
      * もし本番相当環境でこのログが出る場合は設定不備として即時対処すること。
      * =====================================================================
      */
-    console.log(`[DEV] OTP for ${to}: ${code}`)
+    console.log(`[DEV] ${subject} OTP for ${to}: ${code}`)
     return
+  }
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is not set')
   }
   const resend = getResend()
   await resend.emails.send({

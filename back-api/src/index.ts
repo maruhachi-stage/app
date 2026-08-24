@@ -7,7 +7,8 @@ import { requestIdMiddleware } from '#presentation/middleware/requestId.js'
 import { sessionMiddleware } from '#presentation/middleware/session.js'
 import { errorHandler } from '#presentation/middleware/errorHandler.js'
 import { auditLogMiddleware } from '#presentation/middleware/auditLog.js'
-import { requireAdminEditKey } from '#presentation/middleware/admin-edit-key.js'
+import { staffSessionMiddleware } from '#presentation/middleware/staff-session.js'
+import { requireStaffPermission } from '#presentation/middleware/require-staff-permission.js'
 import { seedSchedules } from '#infrastructure/database/seedSchedules.js'
 import { ensureProductCatalogSchema } from '#infrastructure/database/product-catalog-initializer.js'
 import { ensurePosSchema } from '#infrastructure/database/pos-initializer.js'
@@ -16,7 +17,7 @@ import { container } from '#di/container.js'
 const app = new Hono<AppEnv>()
 // Legacy API: keep this prefix stable for the existing frontend.
 const api = new Hono<AppEnv>()
-// Versioned API is currently reserved for health checks only.
+// New staff APIs use the versioned prefix. Legacy customer APIs remain under /api.
 const apiV1 = new Hono<AppEnv>()
 const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
   .split(',')
@@ -28,7 +29,7 @@ app.use(
   cors({
     origin: corsOrigins,
     credentials: true,
-    allowHeaders: ['Content-Type', 'X-Admin-Edit-Key'],
+    allowHeaders: ['Content-Type'],
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   }),
 )
@@ -39,6 +40,11 @@ app.use('/api/*', sessionMiddleware)
 app.use('/api/*', auditLogMiddleware)
 
 api.use('*', async (c, next) => {
+  c.set('container', container)
+  await next()
+})
+
+apiV1.use('*', async (c, next) => {
   c.set('container', container)
   await next()
 })
@@ -80,11 +86,19 @@ api.get('/pos/products', (c) => c.get('container').posController.listProducts(c)
 api.get('/pos/sales', (c) => c.get('container').posController.listSales(c))
 api.post('/pos/sales', (c) => c.get('container').posController.createSale(c))
 
-api.get('/admin/overview', (c) => c.get('container').adminController.getOverview(c))
-api.post('/admin/edit-key/verify', (c) => c.get('container').adminController.verifyEditKey(c))
-api.get('/admin/edit-access', requireAdminEditKey, (c) => c.get('container').adminController.getEditAccess(c))
-
 apiV1.get('/health', (c) => c.json({ status: 'ok' }))
+apiV1.use('/staff/*', staffSessionMiddleware)
+apiV1.post('/staff/auth/login', (c) => c.get('container').staffAuthController.login(c))
+apiV1.post('/staff/auth/otp/verify', (c) => c.get('container').staffAuthController.verifyOtp(c))
+apiV1.post('/staff/auth/otp/resend', (c) => c.get('container').staffAuthController.resendOtp(c))
+apiV1.get('/staff/auth/me', (c) => c.get('container').staffAuthController.me(c))
+apiV1.post('/staff/auth/logout', (c) => c.get('container').staffAuthController.logout(c))
+apiV1.post('/staff/auth/password', (c) => c.get('container').staffAuthController.changePassword(c))
+apiV1.get('/staff/overview', requireStaffPermission('staff.overview.read'), (c) => c.get('container').staffAuthController.overview(c))
+apiV1.get('/staff/accounts', requireStaffPermission('staff.accounts.manage'), (c) => c.get('container').staffAuthController.listAccounts(c))
+apiV1.post('/staff/accounts', requireStaffPermission('staff.accounts.manage'), (c) => c.get('container').staffAuthController.createAccount(c))
+apiV1.patch('/staff/accounts/:staffId', requireStaffPermission('staff.accounts.manage'), (c) => c.get('container').staffAuthController.updateAccount(c))
+apiV1.post('/staff/accounts/:staffId/otp/reset', requireStaffPermission('staff.accounts.manage'), (c) => c.get('container').staffAuthController.resetOtp(c))
 
 app.route('/api/v1', apiV1)
 app.route('/api', api)

@@ -30,6 +30,7 @@ export const reservationStatus = mysqlEnum('reservation_status', ['pending', 'co
 export const ticketTypeValues = ['general', 'university', 'highschool', 'child'] as const
 export const productCategoryValues = ['goods', 'food', 'drink', 'set'] as const
 export const paymentMethodValues = ['cash', 'card', 'qr'] as const
+export const staffAccountStatusValues = ['active', 'suspended'] as const
 
 export const members = mysqlTable('members', {
   id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
@@ -65,6 +66,57 @@ export const screens = mysqlTable('screens', {
   createdAt: timestamp('created_at'),
   updatedAt: updatedTimestamp('updated_at'),
 })
+
+/** Internal operators. Role definitions live in src/config/staff-roles.ts. */
+export const staffAccounts = mysqlTable('staff_accounts', {
+  id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
+  userId: varchar('user_id', { length: 80 }).notNull(),
+  displayName: varchar('display_name', { length: 100 }).notNull(),
+  email: varchar({ length: 254 }).notNull(),
+  passwordHash: varchar('password_hash', { length: 255 }).notNull(),
+  roleId: smallint('role_id', { unsigned: true }).notNull(),
+  status: mysqlEnum('status', staffAccountStatusValues).notNull().default('active'),
+  failedLoginCount: smallint('failed_login_count', { unsigned: true }).notNull().default(0),
+  lockedUntil: datetime('locked_until', { fsp: 3, mode: 'date' }),
+  lastLoginAt: datetime('last_login_at', { fsp: 3, mode: 'date' }),
+  createdAt: timestamp('created_at'),
+  updatedAt: updatedTimestamp('updated_at'),
+}, (table) => [uniqueIndex('uq_staff_accounts_user_id').on(table.userId), uniqueIndex('uq_staff_accounts_email').on(table.email)])
+
+export const staffOtpChallenges = mysqlTable('staff_otp_challenges', {
+  id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
+  challengeTokenHash: char('challenge_token_hash', { length: 64 }).notNull(),
+  staffAccountId: bigint('staff_account_id', { mode: 'number', unsigned: true }).notNull().references(() => staffAccounts.id, { onDelete: 'cascade' }),
+  otpHash: char('otp_hash', { length: 64 }).notNull(),
+  expiresAt: datetime('expires_at', { fsp: 3, mode: 'date' }).notNull(),
+  usedAt: datetime('used_at', { fsp: 3, mode: 'date' }),
+  failedAttempts: smallint('failed_attempts', { unsigned: true }).notNull().default(0),
+  createdAt: timestamp('created_at'),
+}, (table) => [uniqueIndex('uq_staff_otp_challenge_token').on(table.challengeTokenHash), index('idx_staff_otp_account').on(table.staffAccountId, table.createdAt)])
+
+export const staffSessions = mysqlTable('staff_sessions', {
+  id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
+  tokenHash: char('token_hash', { length: 64 }).notNull(),
+  staffAccountId: bigint('staff_account_id', { mode: 'number', unsigned: true }).notNull().references(() => staffAccounts.id, { onDelete: 'cascade' }),
+  expiresAt: datetime('expires_at', { fsp: 3, mode: 'date' }).notNull(),
+  revokedAt: datetime('revoked_at', { fsp: 3, mode: 'date' }),
+  lastSeenAt: datetime('last_seen_at', { fsp: 3, mode: 'date' }),
+  ipAddress: varchar('ip_address', { length: 64 }),
+  userAgent: varchar('user_agent', { length: 500 }),
+  createdAt: timestamp('created_at'),
+}, (table) => [uniqueIndex('uq_staff_session_token').on(table.tokenHash), index('idx_staff_session_account').on(table.staffAccountId, table.expiresAt)])
+
+export const staffAuditLogs = mysqlTable('staff_audit_logs', {
+  id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
+  staffAccountId: bigint('staff_account_id', { mode: 'number', unsigned: true }).references(() => staffAccounts.id, { onDelete: 'set null' }),
+  action: varchar({ length: 100 }).notNull(),
+  targetType: varchar('target_type', { length: 100 }),
+  targetId: varchar('target_id', { length: 100 }),
+  requestId: varchar('request_id', { length: 64 }),
+  ipAddress: varchar('ip_address', { length: 64 }),
+  metadata: text(),
+  createdAt: timestamp('created_at'),
+}, (table) => [index('idx_staff_audit_account').on(table.staffAccountId, table.createdAt)])
 
 export const screenings = mysqlTable('screenings', {
   id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),

@@ -14,11 +14,23 @@ type StaffResponse = {
   }
 }
 
-export function login(userId: string, password: string) {
-  return apiRequest<LoginResult>(staffApiPaths.auth.login, {
+type LoginResponse = {
+  otpRequired: boolean
+  expiresInSec: number
+}
+
+type ResendOtpResponse = {
+  resent: boolean
+  expiresInSec: number
+}
+
+export async function login(userId: string, password: string): Promise<LoginResult> {
+  const response = await apiRequest<LoginResponse>(staffApiPaths.auth.login, {
     method: "POST",
     body: JSON.stringify({ userId, password }),
   })
+  if (!response.otpRequired) throw new Error("OTP認証を開始できませんでした")
+  return { otpRequired: true, expiresInSec: response.expiresInSec }
 }
 
 export function verifyOtp(code: string) {
@@ -28,8 +40,11 @@ export function verifyOtp(code: string) {
   }).then(toAuthenticatedStaff)
 }
 
-export function resendOtp() {
-  return apiRequest<LoginResult>(staffApiPaths.auth.resendOtp, { method: "POST" })
+export async function resendOtp(): Promise<void> {
+  const response = await apiRequest<ResendOtpResponse>(staffApiPaths.auth.resendOtp, {
+    method: "POST",
+  })
+  if (!response.resent) throw new Error("認証コードを再送できませんでした")
 }
 
 export function getCurrentStaff() {

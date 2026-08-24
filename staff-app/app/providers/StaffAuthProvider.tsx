@@ -1,7 +1,10 @@
 import { createContext, useCallback, useContext, useState } from "react"
 import type { ReactNode } from "react"
-import { getCurrentStaff, logout as logoutRequest } from "~/features/auth/api/staff-auth"
-import type { AuthenticatedStaff } from "~/features/auth/domain/staff"
+import {
+  getCurrentStaff,
+  logout as logoutRequest,
+  type AuthenticatedStaff,
+} from "~/features/auth"
 
 type StaffAuthContextValue = {
   staff: AuthenticatedStaff | null

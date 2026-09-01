@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test": "vitest run",
     "db:up": "docker compose -f docker-compose.yml up -d --no-recreate",
     "db:down": "docker compose -f docker-compose.yml down",
     "db:logs": "docker compose -f docker-compose.yml logs -f mysql",
@@ -41,6 +42,7 @@
     "prettier": "^3.9.6",
     "tsx": "^4.7.1",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.69.0"
+    "typescript-eslint": "^8.69.0",
+    "vitest": "^4.1.11"
   }
 }

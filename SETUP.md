@@ -59,6 +59,8 @@ npm.cmd run dev
 ```
 
 - 起動 URL: `http://localhost:3000`
+- Swagger UI: `http://localhost:3000/api/docs`
+- OpenAPI JSON: `http://localhost:3000/api/openapi.json`
 
 ### 3) front-web
 

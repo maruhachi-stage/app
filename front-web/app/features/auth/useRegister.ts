@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate, useSearchParams } from "react-router"
-import { apiFetch, ApiError } from "~/shared/api/client"
-import { safeRedirect } from "~/shared/api/auth"
+import { apiFetch, ApiError } from "~/lib/api-client"
+import { safeRedirect } from "~/lib/api/auth"
 
 export function useRegister() {
   const [email, setEmail] = useState("")

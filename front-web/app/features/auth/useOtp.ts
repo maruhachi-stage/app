@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate, useSearchParams } from "react-router"
-import { apiFetch, ApiError } from "~/shared/api/client"
-import { safeRedirect, useAuth } from "~/shared/api/auth"
+import { apiFetch, ApiError } from "~/lib/api-client"
+import { safeRedirect } from "~/lib/api/auth"
+import { useAuth } from "~/components/AuthProvider"
 
 const OTP_RESEND_SEC = 60
 

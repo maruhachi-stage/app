@@ -3,10 +3,10 @@ import type { Route } from "./+types/shop"
 import {
   PRODUCT_CATEGORY_LABELS,
   type ProductCategory,
-} from "~/entities/product/types"
+} from "~/features/product/domain/product"
 import { useProducts } from "~/features/product/useProducts"
-import { proxyImageUrl } from "~/shared/lib/image"
-import { ProductCard } from "~/widgets/ProductCard"
+import { proxyImageUrl } from "~/lib/image"
+import { ProductCard } from "~/components/ProductCard"
 
 type MenuFilter = ProductCategory | "all"
 

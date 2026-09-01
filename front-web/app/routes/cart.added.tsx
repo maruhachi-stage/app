@@ -1,10 +1,10 @@
 import { Link, useSearchParams } from "react-router"
-import { formatProductPrice, type Product } from "~/entities/product/types"
-import { useCart } from "~/features/cart/useCart"
+import { formatProductPrice, type Product } from "~/features/product/domain/product"
+import { useCart } from "~/components/CartProvider"
 import { useProducts } from "~/features/product/useProducts"
-import { proxyImageUrl } from "~/shared/lib/image"
-import { Button } from "~/shared/ui/Button"
-import { ProductCard } from "~/widgets/ProductCard"
+import { proxyImageUrl } from "~/lib/image"
+import { Button } from "~/components/Button"
+import { ProductCard } from "~/components/ProductCard"
 
 const PICKUP_LOCATION = "劇場内 ショップ受け取りカウンター"
 

@@ -1,7 +1,7 @@
 import { type RouteConfig, index, route, layout } from "@react-router/dev/routes"
 
 export default [
-  layout("shared/ui/layouts/MainLayout.tsx", [
+  layout("components/layouts/MainLayout.tsx", [
     index("routes/home.tsx"),
 
     route("/screenings", "routes/screenings/index.tsx"),
@@ -25,13 +25,13 @@ export default [
     route("/reservations/r/:reservationCode", "routes/reservations/detail.tsx"),
   ]),
 
-  layout("shared/ui/layouts/AuthLayout.tsx", [
+  layout("components/layouts/AuthLayout.tsx", [
     route("/login", "routes/auth/login.tsx"),
     route("/register", "routes/auth/register.tsx"),
     route("/auth/otp", "routes/auth/otp.tsx"),
   ]),
 
-  layout("shared/ui/layouts/ReservationLayout.tsx", [
+  layout("components/layouts/ReservationLayout.tsx", [
     route("/reservations/booking/:movieId", "routes/reservations/booking.tsx"),
     route("/reservations/entry", "routes/reservations/entry.tsx"),
     route("/reservations/customer", "routes/reservations/customer.tsx"),

@@ -1,6 +1,6 @@
-import { apiFetch, ApiError } from "~/shared/api/client"
-import type { SelectedSeat } from "~/entities/reservation/draft"
-import { useReservationFlow } from "~/processes/reservation-flow/context"
+import { apiFetch, ApiError } from "~/lib/api-client"
+import type { SelectedSeat } from "~/features/reservation/domain/draft"
+import { useReservationFlow } from "~/components/ReservationFlowProvider"
 import type { SeatMapData } from "~/features/reservation/useSeatMap"
 
 type Props = {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
-import { apiFetch, ApiError } from "~/shared/api/client"
+import { apiFetch, ApiError } from "~/lib/api-client"
 
 export type MemberReservation = {
   reservationCode: string

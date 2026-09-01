@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router"
-import { apiFetch, ApiError } from "~/shared/api/client"
+import { apiFetch, ApiError } from "~/lib/api-client"
 
 export function useLookup() {
   const navigate = useNavigate()

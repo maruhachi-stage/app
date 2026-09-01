@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router"
-import { formatJst } from "~/entities/ticket"
+import { formatJst } from "~/lib/date"
 import { useTicketSelection } from "~/features/reservation/useTicketSelection"
-import { useReservationFlow } from "~/processes/reservation-flow/context"
-import { apiFetch } from "~/shared/api/client"
-import { useAppConfig } from "~/shared/config"
-import { ScreeningHeroBanner } from "~/widgets/ScreeningHeroBanner"
-import { ReservationActionBar } from "~/widgets/ReservationActionBar"
+import { useReservationFlow } from "~/components/ReservationFlowProvider"
+import { apiFetch } from "~/lib/api-client"
+import { useAppConfig } from "~/config"
+import { ScreeningHeroBanner } from "~/components/ScreeningHeroBanner"
+import { ReservationActionBar } from "~/components/ReservationActionBar"
 
 type ScheduleInfo = {
   scheduleId: number

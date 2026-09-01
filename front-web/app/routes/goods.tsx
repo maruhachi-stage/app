@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react"
 import type { Route } from "./+types/goods"
 import { useProducts } from "~/features/product/useProducts"
-import { proxyImageUrl } from "~/shared/lib/image"
-import { ProductCard } from "~/widgets/ProductCard"
+import { proxyImageUrl } from "~/lib/image"
+import { ProductCard } from "~/components/ProductCard"
 
 export function meta(_: Route.MetaArgs) {
   return [

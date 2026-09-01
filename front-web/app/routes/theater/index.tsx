@@ -1,6 +1,6 @@
 import { Link } from "react-router"
 import { useScreens } from "~/features/theater/useScreens"
-import Loading from "~/widgets/Loading"
+import Loading from "~/components/Loading"
 
 export default function TheaterIndexPage() {
   const { screens, loading, error } = useScreens()

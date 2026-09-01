@@ -1,8 +1,8 @@
 import { useRef } from "react"
 import { Link } from "react-router"
-import type { Screening } from "~/entities/screening/types"
-import { formatTimeJst } from "~/shared/lib/date"
-import { proxyImageUrl } from "~/shared/lib/image"
+import type { Screening } from "~/features/screening/domain/screening"
+import { formatTimeJst } from "~/lib/date"
+import { proxyImageUrl } from "~/lib/image"
 
 type Props = {
   screenings: Screening[]

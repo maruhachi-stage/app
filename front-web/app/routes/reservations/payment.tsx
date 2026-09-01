@@ -1,8 +1,8 @@
 import { useEffect, type FormEvent } from "react"
 import { useNavigate } from "react-router"
 import { usePayment } from "~/features/reservation/usePayment"
-import { useReservationFlow } from "~/processes/reservation-flow/context"
-import { PaymentForm } from "~/widgets/PaymentForm"
+import { useReservationFlow } from "~/components/ReservationFlowProvider"
+import { PaymentForm } from "~/components/PaymentForm"
 
 export default function PaymentPage() {
   const navigate = useNavigate()

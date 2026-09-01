@@ -6,6 +6,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "start": "node dist/index.js",
+    "db:setup": "npm run db:up && npm run db:migrate",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

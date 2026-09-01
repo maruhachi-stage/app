@@ -46,3 +46,45 @@ jobs:
 
       - name: テスト
         run: npm test
+
+  integration:
+    name: back-api-integration
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3307
+      DB_NAME: hal_cinema_test
+      DB_USER: hal_user
+      DB_PASSWORD: hal_pass
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Node.jsをセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: back-api/package-lock.json
+
+      - name: 依存関係をインストール
+        working-directory: back-api
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: テスト用MySQLを起動
+        working-directory: back-api
+        run: npm run db:test:up
+
+      - name: マイグレーションを適用
+        working-directory: back-api
+        run: npm run db:test:migrate
+
+      - name: Integration Test
+        working-directory: back-api
+        run: npm run test:integration
+
+      - name: テスト用MySQLを停止
+        if: always()
+        working-directory: back-api
+        run: npm run db:test:down

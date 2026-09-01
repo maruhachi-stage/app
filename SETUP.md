@@ -74,6 +74,18 @@ cd admin-web
 npm.cmd run dev
 ```
 
+### Integration Test（back-api）
+
+開発用MySQLとは別のテスト用MySQL（`localhost:3307`）を起動し、migration適用後にIntegration Testを実行します。
+
+```powershell
+cd back-api
+npm.cmd run db:test:up
+npm.cmd run db:test:migrate
+npm.cmd run test:integration
+npm.cmd run db:test:down
+```
+
 ## 停止・リセット（MySQL）
 
 ```powershell

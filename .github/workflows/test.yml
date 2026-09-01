@@ -1,4 +1,4 @@
-name: CI
+name: Test
 
 on:
   pull_request:
@@ -10,27 +10,25 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: test-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: ${{ matrix.app.name }}
+  test:
+    name: ${{ matrix.app }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         app:
-          - name: front-web
-            directory: front-web
-          - name: admin-web
-            directory: admin-web
-          - name: back-api
-            directory: back-api
+          - front-web
+          - admin-web
+          - back-api
+          - image-server
 
     defaults:
       run:
-        working-directory: ${{ matrix.app.directory }}
+        working-directory: ${{ matrix.app }}
 
     steps:
       - name: リポジトリをチェックアウト
@@ -41,13 +39,10 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: ${{ matrix.app.directory }}/package-lock.json
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
 
       - name: 依存関係をインストール
         run: npm ci
 
-      - name: ビルド
-        run: npm run build
-
-      - name: 型チェック
-        run: npm run typecheck
+      - name: テスト
+        run: npm test

@@ -9,12 +9,15 @@ const SESSION_MAX_AGE = 7 * 24 * 60 * 60 // 7 days
 // In-memory session store (replace with Redis in production)
 const sessionStore = new Map<string, { data: SessionData; expiresAt: number }>()
 
-setInterval(() => {
-  const now = Date.now()
-  for (const [id, s] of sessionStore) {
-    if (s.expiresAt < now) sessionStore.delete(id)
-  }
-}, 60 * 60 * 1000)
+setInterval(
+  () => {
+    const now = Date.now()
+    for (const [id, s] of sessionStore) {
+      if (s.expiresAt < now) sessionStore.delete(id)
+    }
+  },
+  60 * 60 * 1000,
+)
 
 export const sessionMiddleware: MiddlewareHandler<AppEnv> = async (c, next) => {
   const sid = getCookie(c, SESSION_COOKIE)

@@ -1,4 +1,9 @@
-import type { ListStagesQueryDTO, StageDTO, StageScheduleDTO, StageWithSchedulesDTO } from '#application/dto/stage-dto.js'
+import type {
+  ListStagesQueryDTO,
+  StageDTO,
+  StageScheduleDTO,
+  StageWithSchedulesDTO,
+} from '#application/dto/stage-dto.js'
 import type { StageRepository } from '#domain/interfaces/repositories/stage-repository.js'
 
 export class StageQueryService {

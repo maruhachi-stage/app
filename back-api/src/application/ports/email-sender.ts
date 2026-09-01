@@ -1,1 +1,3 @@
-export interface EmailSender { sendOtp(to: string, code: string): Promise<void> }
+export interface EmailSender {
+  sendOtp(to: string, code: string): Promise<void>
+}

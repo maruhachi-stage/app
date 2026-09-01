@@ -1,6 +1,12 @@
 import { desc, eq, sql } from 'drizzle-orm'
 import { db } from '#infrastructure/database/mysqlPool.js'
-import { images, reservations, schedules, screens, screenings } from '#infrastructure/database/schema.js'
+import {
+  images,
+  reservations,
+  schedules,
+  screens,
+  screenings,
+} from '#infrastructure/database/schema.js'
 import type { MemberReservation } from '#domain/entities/member-reservation.js'
 import type { MemberReservationRepository } from '#domain/interfaces/repositories/member-reservation-repository.js'
 import { imageUrl } from '#lib/format.js'
@@ -16,17 +22,18 @@ const screeningThumbnail = sql<string | null>`(
 
 export class DrizzleMemberReservationRepository implements MemberReservationRepository {
   async findByMemberId(memberId: number): Promise<MemberReservation[]> {
-    const rows = await db.select({
-      reservationCode: reservations.reservationCode,
-      status: reservations.status,
-      totalPrice: reservations.totalPrice,
-      createdAt: reservations.createdAt,
-      title: screenings.title,
-      thumbnailUrl: screeningThumbnail,
-      startsAt: schedules.startsAt,
-      endsAt: schedules.endsAt,
-      screenName: screens.name,
-    })
+    const rows = await db
+      .select({
+        reservationCode: reservations.reservationCode,
+        status: reservations.status,
+        totalPrice: reservations.totalPrice,
+        createdAt: reservations.createdAt,
+        title: screenings.title,
+        thumbnailUrl: screeningThumbnail,
+        startsAt: schedules.startsAt,
+        endsAt: schedules.endsAt,
+        screenName: screens.name,
+      })
       .from(reservations)
       .innerJoin(schedules, eq(schedules.id, reservations.scheduleId))
       .innerJoin(screenings, eq(screenings.id, schedules.screeningId))

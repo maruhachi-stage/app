@@ -30,11 +30,31 @@ const toAdminScreen = (row: AdminScreenRow): AdminScreen => ({
 
 export class DrizzleAdminScreenRepository implements AdminScreenRepository {
   async findAll(): Promise<AdminScreen[]> {
-    const rows = await db.select({ id: screens.id, name: screens.name, size: screens.size, totalSeats: screens.totalSeats, layoutId: screenSeatLayouts.id, layoutVersion: screenSeatLayouts.layoutVersion, aspectRatioWidth: screenSeatLayouts.aspectRatioWidth, aspectRatioHeight: screenSeatLayouts.aspectRatioHeight, seatCount: count(seats.id) })
+    const rows = await db
+      .select({
+        id: screens.id,
+        name: screens.name,
+        size: screens.size,
+        totalSeats: screens.totalSeats,
+        layoutId: screenSeatLayouts.id,
+        layoutVersion: screenSeatLayouts.layoutVersion,
+        aspectRatioWidth: screenSeatLayouts.aspectRatioWidth,
+        aspectRatioHeight: screenSeatLayouts.aspectRatioHeight,
+        seatCount: count(seats.id),
+      })
       .from(screens)
       .leftJoin(screenSeatLayouts, eq(screenSeatLayouts.screenId, screens.id))
       .leftJoin(seats, eq(seats.seatLayoutId, screenSeatLayouts.id))
-      .groupBy(screens.id, screens.name, screens.size, screens.totalSeats, screenSeatLayouts.id, screenSeatLayouts.layoutVersion, screenSeatLayouts.aspectRatioWidth, screenSeatLayouts.aspectRatioHeight)
+      .groupBy(
+        screens.id,
+        screens.name,
+        screens.size,
+        screens.totalSeats,
+        screenSeatLayouts.id,
+        screenSeatLayouts.layoutVersion,
+        screenSeatLayouts.aspectRatioWidth,
+        screenSeatLayouts.aspectRatioHeight,
+      )
       .orderBy(asc(screens.id))
     return rows.map(toAdminScreen)
   }

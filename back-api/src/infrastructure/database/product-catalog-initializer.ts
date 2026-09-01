@@ -1,7 +1,12 @@
 // Product catalog seed synchronization. The schema is managed by Drizzle migrations.
 import { and, asc, eq, inArray } from 'drizzle-orm'
 import { db } from '#infrastructure/database/mysqlPool.js'
-import { productNotes, productOptionGroups, productOptions, products } from '#infrastructure/database/schema.js'
+import {
+  productNotes,
+  productOptionGroups,
+  productOptions,
+  products,
+} from '#infrastructure/database/schema.js'
 
 export type ProductCategory = 'goods' | 'food' | 'drink' | 'set'
 
@@ -37,7 +42,9 @@ export type ProductNoteRow = {
   note: string
 }
 
-const toProductRow = (row: Omit<ProductRow, 'is_new' | 'is_sold_out'> & { is_new: boolean; is_sold_out: boolean }): ProductRow => ({
+const toProductRow = (
+  row: Omit<ProductRow, 'is_new' | 'is_sold_out'> & { is_new: boolean; is_sold_out: boolean },
+): ProductRow => ({
   ...row,
   is_new: Number(row.is_new),
   is_sold_out: Number(row.is_sold_out),
@@ -313,8 +320,14 @@ export async function ensureProductCatalogSchema(): Promise<void> {
       const persistedGroup = await db
         .select({ id: productOptionGroups.id })
         .from(productOptionGroups)
-        .where(and(eq(productOptionGroups.productId, product.id), eq(productOptionGroups.groupKey, group.id)))
-      if (!persistedGroup[0]) throw new Error(`Product option group was not persisted: ${product.id}/${group.id}`)
+        .where(
+          and(
+            eq(productOptionGroups.productId, product.id),
+            eq(productOptionGroups.groupKey, group.id),
+          ),
+        )
+      if (!persistedGroup[0])
+        throw new Error(`Product option group was not persisted: ${product.id}/${group.id}`)
       for (const [optionIndex, option] of group.options.entries()) {
         const optionValues = {
           groupId: persistedGroup[0].id,

@@ -11,12 +11,22 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
   listProducts = async (context: Context<AppEnv>) => {
     const category = context.req.query('category')
-    if (category && !categories.includes(category as ProductCategory)) throw new AppError('VALIDATION_ERROR', 'Invalid product category')
-    return context.json(successResponse(await this.productService.listProducts({ category: category as ProductCategory | undefined }), context.get('requestId')))
+    if (category && !categories.includes(category as ProductCategory))
+      throw new AppError('VALIDATION_ERROR', 'Invalid product category')
+    return context.json(
+      successResponse(
+        await this.productService.listProducts({
+          category: category as ProductCategory | undefined,
+        }),
+        context.get('requestId'),
+      ),
+    )
   }
   getProduct = async (context: Context<AppEnv>) => {
-    const productId = context.req.param('productId'); if (!productId) throw new AppError('VALIDATION_ERROR', 'Product id is required')
-    const product = await this.productService.getProduct(productId); if (!product) throw new AppError('NOT_FOUND', 'Product not found')
+    const productId = context.req.param('productId')
+    if (!productId) throw new AppError('VALIDATION_ERROR', 'Product id is required')
+    const product = await this.productService.getProduct(productId)
+    if (!product) throw new AppError('NOT_FOUND', 'Product not found')
     return context.json(successResponse(product, context.get('requestId')))
   }
 }

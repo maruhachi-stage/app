@@ -1,5 +1,32 @@
 import { z } from 'zod'
-export const quoteRequestSchema = z.object({ scheduleId: z.number().int().positive(), ticketCounts: z.object({ general: z.number().int().min(0), university: z.number().int().min(0), highschool: z.number().int().min(0), child: z.number().int().min(0) }) })
-export const holdRequestSchema = z.object({ scheduleId: z.number().int().positive(), seatIds: z.array(z.number().int().positive()).min(1).max(8) })
-export const createReservationRequestSchema = z.object({ reservationCode: z.string().optional(), scheduleId: z.number().int().positive(), layoutVersion: z.number().int().positive(), seatIds: z.array(z.number().int().positive()).min(1).max(8), bookingType: z.enum(['member', 'guest']), tickets: z.array(z.object({ seatId: z.number().int().positive(), ticketType: z.enum(['general', 'university', 'highschool', 'child']) })).min(1).max(8), customer: z.object({ email: z.string().email().max(254) }) })
+export const quoteRequestSchema = z.object({
+  scheduleId: z.number().int().positive(),
+  ticketCounts: z.object({
+    general: z.number().int().min(0),
+    university: z.number().int().min(0),
+    highschool: z.number().int().min(0),
+    child: z.number().int().min(0),
+  }),
+})
+export const holdRequestSchema = z.object({
+  scheduleId: z.number().int().positive(),
+  seatIds: z.array(z.number().int().positive()).min(1).max(8),
+})
+export const createReservationRequestSchema = z.object({
+  reservationCode: z.string().optional(),
+  scheduleId: z.number().int().positive(),
+  layoutVersion: z.number().int().positive(),
+  seatIds: z.array(z.number().int().positive()).min(1).max(8),
+  bookingType: z.enum(['member', 'guest']),
+  tickets: z
+    .array(
+      z.object({
+        seatId: z.number().int().positive(),
+        ticketType: z.enum(['general', 'university', 'highschool', 'child']),
+      }),
+    )
+    .min(1)
+    .max(8),
+  customer: z.object({ email: z.string().email().max(254) }),
+})
 export type CreateReservationRequestDTO = z.infer<typeof createReservationRequestSchema>

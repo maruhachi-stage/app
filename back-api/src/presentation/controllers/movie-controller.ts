@@ -13,9 +13,14 @@ export class MovieController {
   listMovies = async (context: Context<AppEnv>) => {
     const date = context.req.query('date')
     const status = context.req.query('status')
-    if (date && !datePattern.test(date)) throw new AppError('VALIDATION_ERROR', 'date must be YYYY-MM-DD')
-    if (status && !['now_showing', 'coming_soon'].includes(status)) throw new AppError('VALIDATION_ERROR', 'Invalid status value')
-    const data = await this.movieService.listMovies({ date, status: status as MovieStatus | undefined })
+    if (date && !datePattern.test(date))
+      throw new AppError('VALIDATION_ERROR', 'date must be YYYY-MM-DD')
+    if (status && !['now_showing', 'coming_soon'].includes(status))
+      throw new AppError('VALIDATION_ERROR', 'Invalid status value')
+    const data = await this.movieService.listMovies({
+      date,
+      status: status as MovieStatus | undefined,
+    })
     return context.json(successResponse(data, context.get('requestId')))
   }
 
@@ -29,7 +34,8 @@ export class MovieController {
   getMovieSchedules = async (context: Context<AppEnv>) => {
     const movieId = this.parsePositiveId(context.req.param('movieId'), 'movieId')
     const date = context.req.query('date')
-    if (date && !datePattern.test(date)) throw new AppError('VALIDATION_ERROR', 'date must be YYYY-MM-DD')
+    if (date && !datePattern.test(date))
+      throw new AppError('VALIDATION_ERROR', 'date must be YYYY-MM-DD')
     const data = await this.movieService.getMovieSchedules(movieId, date)
     if (!data) throw new AppError('NOT_FOUND', 'Movie not found')
     return context.json(successResponse(data, context.get('requestId')))

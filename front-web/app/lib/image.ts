@@ -3,8 +3,8 @@
 const USE_IMAGE_PROXY = true
 
 export function proxyImageUrl(url: string | null | undefined): string | undefined {
-  if (!url) return undefined
-  // USE_IMAGE_PROXY = false の場合はそのまま返す
-  if (!USE_IMAGE_PROXY) return url
-  return url.replace(/^https?:\/\/localhost:3001/, "/img-proxy")
+    if (!url) return undefined
+    // USE_IMAGE_PROXY = false の場合はそのまま返す
+    if (!USE_IMAGE_PROXY) return url
+    return url.replace(/^https?:\/\/localhost:3001/, '/img-proxy')
 }

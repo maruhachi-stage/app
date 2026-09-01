@@ -14,7 +14,8 @@ export class ScreenController {
 
   get = async (c: Context<AppEnv>) => {
     const screenId = Number(c.req.param('screenId'))
-    if (!Number.isInteger(screenId) || screenId <= 0) throw new AppError('VALIDATION_ERROR', 'Invalid screenId')
+    if (!Number.isInteger(screenId) || screenId <= 0)
+      throw new AppError('VALIDATION_ERROR', 'Invalid screenId')
     const screen = await this.screenQueryService.getById(screenId)
     if (!screen) throw new AppError('NOT_FOUND', 'Screen not found')
     return c.json(successResponse(toScreenResponse(screen), c.get('requestId')))

@@ -1,42 +1,44 @@
-import { useState, useEffect } from "react"
-import { apiFetch } from "~/lib/api-client"
-import { useReservationFlow } from "~/components/ReservationFlowProvider"
-import type { TicketType } from "~/features/reservation/domain/ticket"
-import type { SelectedSeat } from "~/features/reservation/domain/draft"
+import { useState, useEffect } from 'react'
+import { apiFetch } from '~/lib/api-client'
+import { useReservationFlow } from '~/components/ReservationFlowProvider'
+import type { TicketType } from '~/features/reservation/domain/ticket'
+import type { SelectedSeat } from '~/features/reservation/domain/draft'
 
 export function useTicketSelection() {
-  const { state, setTickets } = useReservationFlow()
-  const [seats, setSeats] = useState<SelectedSeat[]>(state.selectedSeats ?? [])
-  const [totalPrice, setTotalPrice] = useState(0)
-  const [quoting, setQuoting] = useState(false)
+    const { state, setTickets } = useReservationFlow()
+    const [seats, setSeats] = useState<SelectedSeat[]>(state.selectedSeats ?? [])
+    const [totalPrice, setTotalPrice] = useState(0)
+    const [quoting, setQuoting] = useState(false)
 
-  useEffect(() => {
-    if (!state.scheduleId || seats.length === 0) return
+    useEffect(() => {
+        if (!state.scheduleId || seats.length === 0) return
 
-    const counts = countByType(seats)
-    setQuoting(true)
-    apiFetch<{ totalPrice: number }>("/reservations/quote", {
-      method: "POST",
-      body: JSON.stringify({ scheduleId: state.scheduleId, ticketCounts: counts }),
-    })
-      .then(d => setTotalPrice(d.totalPrice))
-      .catch(() => {})
-      .finally(() => setQuoting(false))
-  }, [seats])
+        const counts = countByType(seats)
+        setQuoting(true)
+        apiFetch<{ totalPrice: number }>('/reservations/quote', {
+            method: 'POST',
+            body: JSON.stringify({ scheduleId: state.scheduleId, ticketCounts: counts }),
+        })
+            .then((d) => setTotalPrice(d.totalPrice))
+            .catch(() => {})
+            .finally(() => setQuoting(false))
+    }, [seats])
 
-  function updateSeatTicketType(seatId: number, type: TicketType) {
-    setSeats(prev => prev.map(s => s.seatId === seatId ? { ...s, ticketType: type } : s))
-  }
+    function updateSeatTicketType(seatId: number, type: TicketType) {
+        setSeats((prev) => prev.map((s) => (s.seatId === seatId ? { ...s, ticketType: type } : s)))
+    }
 
-  function submit() {
-    setTickets(seats, countByType(seats), totalPrice)
-  }
+    function submit() {
+        setTickets(seats, countByType(seats), totalPrice)
+    }
 
-  return { seats, totalPrice, quoting, updateSeatTicketType, submit }
+    return { seats, totalPrice, quoting, updateSeatTicketType, submit }
 }
 
 function countByType(seats: SelectedSeat[]) {
-  const counts = { general: 0, university: 0, highschool: 0, child: 0 }
-  seats.forEach(s => { counts[s.ticketType as keyof typeof counts]++ })
-  return counts
+    const counts = { general: 0, university: 0, highschool: 0, child: 0 }
+    seats.forEach((s) => {
+        counts[s.ticketType as keyof typeof counts]++
+    })
+    return counts
 }

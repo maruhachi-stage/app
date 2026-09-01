@@ -6,5 +6,6 @@ import { successResponse } from '#presentation/response.js'
 export class ConfigController {
   constructor(private readonly configService: ConfigService) {}
 
-  getConfig = (c: Context<AppEnv>) => c.json(successResponse(this.configService.getConfig(), c.get('requestId')))
+  getConfig = (c: Context<AppEnv>) =>
+    c.json(successResponse(this.configService.getConfig(), c.get('requestId')))
 }

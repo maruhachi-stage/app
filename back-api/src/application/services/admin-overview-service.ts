@@ -19,9 +19,10 @@ export class AdminOverviewService {
           seatCount: screen.seatCount,
           layoutId: screen.layoutId,
           layoutVersion: screen.layoutVersion,
-          aspectRatio: screen.aspectRatioWidth && screen.aspectRatioHeight
-            ? `${screen.aspectRatioWidth}/${screen.aspectRatioHeight}`
-            : null,
+          aspectRatio:
+            screen.aspectRatioWidth && screen.aspectRatioHeight
+              ? `${screen.aspectRatioWidth}/${screen.aspectRatioHeight}`
+              : null,
         })),
       },
     }

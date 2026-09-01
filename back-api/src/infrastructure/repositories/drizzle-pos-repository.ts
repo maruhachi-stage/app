@@ -11,7 +11,10 @@ export class DrizzlePosRepository implements PosRepository {
     const rows = await db
       .select()
       .from(posProducts)
-      .orderBy(sql`FIELD(${posProducts.category}, 'food', 'drink', 'set', 'goods')`, asc(posProducts.name))
+      .orderBy(
+        sql`FIELD(${posProducts.category}, 'food', 'drink', 'set', 'goods')`,
+        asc(posProducts.name),
+      )
     return rows.map((row) => ({
       id: row.id,
       slug: row.slug,
@@ -25,11 +28,7 @@ export class DrizzlePosRepository implements PosRepository {
   }
 
   async findSales(limit: number): Promise<PosSale[]> {
-    const rows = await db
-      .select()
-      .from(posSales)
-      .orderBy(desc(posSales.createdAt))
-      .limit(limit)
+    const rows = await db.select().from(posSales).orderBy(desc(posSales.createdAt)).limit(limit)
     return rows.map((row) => ({
       id: row.id,
       saleCode: row.saleCode,
@@ -52,7 +51,8 @@ export class DrizzlePosRepository implements PosRepository {
 
       for (const item of params.items) {
         const product = products.get(item.productId)
-        if (!product || !product.isActive) throw new AppError('VALIDATION_ERROR', 'Product is unavailable')
+        if (!product || !product.isActive)
+          throw new AppError('VALIDATION_ERROR', 'Product is unavailable')
         const stock = product.stockQuantity
         if (stock !== null && stock < item.quantity) {
           throw new AppError('VALIDATION_ERROR', `${product.name} is out of stock`)

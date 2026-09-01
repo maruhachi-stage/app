@@ -14,7 +14,14 @@ const INITIAL_PRODUCTS = [
   ['night-stand', 'ナイトシティ アクリルスタンド', 'goods', 1800, 'night-stand.webp', 35],
   ['moon-file-set', 'ムーンライト クリアファイルセット', 'goods', 600, 'moon-file-set.webp', 60],
   ['black-poster', 'ティザーポスター B3', 'goods', 900, 'black-poster.webp', 42],
-  ['premiere-ticket-holder', 'プレミアチケットホルダー', 'goods', 1200, 'premiere-ticket-holder.webp', 50],
+  [
+    'premiere-ticket-holder',
+    'プレミアチケットホルダー',
+    'goods',
+    1200,
+    'premiere-ticket-holder.webp',
+    50,
+  ],
   ['storyboard-book', 'ミニアートブック', 'goods', 2400, 'storyboard-book.webp', 0],
   ['screen-pin', 'スクリーンピンズ', 'goods', 750, 'screen-pin.webp', 75],
 ] as const

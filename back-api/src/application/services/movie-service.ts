@@ -19,12 +19,16 @@ export class MovieService {
 
   async listMovies(query: ListMoviesQueryDTO): Promise<MovieListResponseDTO> {
     const movies = await this.movieRepository.findMovies(query)
-    const items = await Promise.all(movies.map(async (movie) => ({
-      ...this.toMovieDTO(movie),
-      schedules: query.date
-        ? (await this.movieRepository.findSchedulesByMovieId(movie.id, query.date)).map((schedule) => this.toScheduleDTO(schedule))
-        : [],
-    })))
+    const items = await Promise.all(
+      movies.map(async (movie) => ({
+        ...this.toMovieDTO(movie),
+        schedules: query.date
+          ? (await this.movieRepository.findSchedulesByMovieId(movie.id, query.date)).map(
+              (schedule) => this.toScheduleDTO(schedule),
+            )
+          : [],
+      })),
+    )
     return { items }
   }
 
@@ -33,11 +37,17 @@ export class MovieService {
     return movie ? this.toMovieDTO(movie) : null
   }
 
-  async getMovieSchedules(movieId: number, date?: string): Promise<MovieSchedulesResponseDTO | null> {
+  async getMovieSchedules(
+    movieId: number,
+    date?: string,
+  ): Promise<MovieSchedulesResponseDTO | null> {
     const movie = await this.movieRepository.findMovieById(movieId)
     if (!movie) return null
     const schedules = await this.movieRepository.findSchedulesByMovieId(movieId, date)
-    return { movie: this.toMovieDTO(movie), schedules: schedules.map((schedule) => this.toScheduleDTO(schedule)) }
+    return {
+      movie: this.toMovieDTO(movie),
+      schedules: schedules.map((schedule) => this.toScheduleDTO(schedule)),
+    }
   }
 
   async getSchedule(scheduleId: number): Promise<PublicScheduleDTO | null> {

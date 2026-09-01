@@ -10,5 +10,7 @@ export class InMemorySessionManager implements SessionManager {
     this.sessions.set(id, { data, expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000 })
     return id
   }
-  destroy(sessionId: string): void { this.sessions.delete(sessionId) }
+  destroy(sessionId: string): void {
+    this.sessions.delete(sessionId)
+  }
 }

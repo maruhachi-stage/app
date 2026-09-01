@@ -4,7 +4,15 @@ import { screenSeatLayouts, screens } from '#infrastructure/database/schema.js'
 import type { Screen } from '#domain/entities/screen.js'
 import type { ScreenRepository } from '#domain/interfaces/repositories/screen-repository.js'
 
-type ScreenRow = { id: number; name: string; size: 'large' | 'medium' | 'small'; totalSeats: number; backgroundImageUrl: string | null; aspectRatioWidth: number | null; aspectRatioHeight: number | null }
+type ScreenRow = {
+  id: number
+  name: string
+  size: 'large' | 'medium' | 'small'
+  totalSeats: number
+  backgroundImageUrl: string | null
+  aspectRatioWidth: number | null
+  aspectRatioHeight: number | null
+}
 
 const toScreen = (row: ScreenRow): Screen => ({
   id: row.id,
@@ -27,7 +35,16 @@ export class DrizzleScreenRepository implements ScreenRepository {
     return row ? toScreen(row) : null
   }
   private baseQuery() {
-    return db.select({ id: screens.id, name: screens.name, size: screens.size, totalSeats: screens.totalSeats, backgroundImageUrl: screenSeatLayouts.backgroundImageUrl, aspectRatioWidth: screenSeatLayouts.aspectRatioWidth, aspectRatioHeight: screenSeatLayouts.aspectRatioHeight })
+    return db
+      .select({
+        id: screens.id,
+        name: screens.name,
+        size: screens.size,
+        totalSeats: screens.totalSeats,
+        backgroundImageUrl: screenSeatLayouts.backgroundImageUrl,
+        aspectRatioWidth: screenSeatLayouts.aspectRatioWidth,
+        aspectRatioHeight: screenSeatLayouts.aspectRatioHeight,
+      })
       .from(screens)
       .leftJoin(screenSeatLayouts, eq(screens.id, screenSeatLayouts.screenId))
   }

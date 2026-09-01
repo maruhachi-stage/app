@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env src/index.ts",
     "build": "tsc",
+    "typecheck": "tsc --noEmit",
     "start": "node dist/index.js",
     "db:up": "docker compose -f docker-compose.yml up -d --no-recreate",
     "db:down": "docker compose -f docker-compose.yml down",

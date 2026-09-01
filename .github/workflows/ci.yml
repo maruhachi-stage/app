@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: ${{ matrix.app.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - name: front-web
+            directory: front-web
+          - name: admin-web
+            directory: admin-web
+          - name: back-api
+            directory: back-api
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.app.directory }}
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Node.jsをセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ matrix.app.directory }}/package-lock.json
+
+      - name: 依存関係をインストール
+        run: npm ci
+
+      - name: ビルド
+        run: npm run build
+
+      - name: 型チェック
+        run: npm run typecheck
+
+      # ESLint / Prettier / テスト導入後も同じジョブで実行できるようにする。
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Formatチェック
+        run: npm run format:check --if-present
+
+      - name: テスト
+        run: npm run test --if-present

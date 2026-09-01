@@ -18,10 +18,10 @@ import { schedules, screenings, screens } from '#infrastructure/database/schema.
 
 // ─── 定数 ──────────────────────────────────────────────────────────────────
 
-const DAYS_AHEAD   = 7   // 今日から何日分生成するか
-const HOUR_START   = 9   // 映画の最早開始時刻 (JST)
-const HOUR_END     = 22  // 上映終了の最遅時刻 (JST) — これ以降は開始しない
-const INTERVAL_MIN = 15  // 上映間の最低インターバル（分）
+const DAYS_AHEAD = 7 // 今日から何日分生成するか
+const HOUR_START = 9 // 映画の最早開始時刻 (JST)
+const HOUR_END = 22 // 上映終了の最遅時刻 (JST) — これ以降は開始しない
+const INTERVAL_MIN = 15 // 上映間の最低インターバル（分）
 
 // ─── 簡易シード付き乱数生成 ─────────────────────────────────────────────────
 
@@ -45,7 +45,7 @@ function jstMinToUtcStr(baseDate: Date, jstMin: number): string {
   const d = new Date(baseDate)
   if (utcMin < 0) d.setDate(d.getDate() - 1)
   const dateStr = d.toISOString().slice(0, 10)
-  const h = ((Math.floor((utcMin % 1440 + 1440) / 60)) % 24)
+  const h = Math.floor(((utcMin % 1440) + 1440) / 60) % 24
   const m = ((utcMin % 60) + 60) % 60
   return `${dateStr} ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`
 }
@@ -60,11 +60,13 @@ async function hasSchedule(screenId: number, jstDateStr: string): Promise<boolea
   const [schedule] = await db
     .select({ id: schedules.id })
     .from(schedules)
-    .where(and(
-      eq(schedules.screenId, screenId),
-      eq(schedules.isPublic, true),
-      sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${jstDateStr}`,
-    ))
+    .where(
+      and(
+        eq(schedules.screenId, screenId),
+        eq(schedules.isPublic, true),
+        sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${jstDateStr}`,
+      ),
+    )
     .limit(1)
   return schedule !== undefined
 }
@@ -83,7 +85,9 @@ async function seedMovieSchedules(
   for (const screen of screens) {
     if (await hasSchedule(screen.id, jstDateStr)) continue
 
-    const rand = makeRand(screen.id * 10007 + dayOffset * 997 + targetDate.getMonth() * 31 + targetDate.getDate())
+    const rand = makeRand(
+      screen.id * 10007 + dayOffset * 997 + targetDate.getMonth() * 31 + targetDate.getDate(),
+    )
 
     // 映画リストをシャッフル
     const shuffled = [...movies].sort(() => rand() - 0.5)
@@ -95,9 +99,8 @@ async function seedMovieSchedules(
     for (let loop = 0; loop < 10; loop++) {
       if (curMin >= HOUR_END * 60) break
 
-      const candidates = shuffled.length > 1
-        ? shuffled.filter(m => m.id !== prevMovieId)
-        : shuffled
+      const candidates =
+        shuffled.length > 1 ? shuffled.filter((m) => m.id !== prevMovieId) : shuffled
       const movie = candidates[Math.floor(rand() * candidates.length)]
 
       const endMin = curMin + movie.duration_min
@@ -133,7 +136,7 @@ async function seedStageSchedules(
 ): Promise<number> {
   if (stages.length === 0) return 0
 
-  const largeScreens = screens.filter(s => s.size === 'large')
+  const largeScreens = screens.filter((s) => s.size === 'large')
   if (largeScreens.length === 0) return 0
 
   let inserted = 0
@@ -156,12 +159,14 @@ async function seedStageSchedules(
       .select({ id: schedules.id })
       .from(schedules)
       .innerJoin(screenings, eq(schedules.screeningId, screenings.id))
-      .where(and(
-        eq(schedules.screenId, screen.id),
-        eq(schedules.isPublic, true),
-        eq(screenings.type, 'stage'),
-        sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${jstDateStr}`,
-      ))
+      .where(
+        and(
+          eq(schedules.screenId, screen.id),
+          eq(schedules.isPublic, true),
+          eq(screenings.type, 'stage'),
+          sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${jstDateStr}`,
+        ),
+      )
       .limit(1)
     if (existingStageSchedule === undefined) {
       await db.insert(schedules).values({
@@ -196,7 +201,7 @@ async function seedEventSchedules(
   const isWeekend = dow === 0 || dow === 6
   if (!isWeekend) return 0
 
-  const mediumScreens = screens.filter(s => s.size === 'medium')
+  const mediumScreens = screens.filter((s) => s.size === 'medium')
   if (mediumScreens.length === 0) return 0
 
   const screen = mediumScreens[0]
@@ -213,12 +218,14 @@ async function seedEventSchedules(
     .select({ id: schedules.id })
     .from(schedules)
     .innerJoin(screenings, eq(schedules.screeningId, screenings.id))
-    .where(and(
-      eq(schedules.screenId, screen.id),
-      eq(schedules.isPublic, true),
-      eq(screenings.type, 'event'),
-      sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${jstDateStr}`,
-    ))
+    .where(
+      and(
+        eq(schedules.screenId, screen.id),
+        eq(schedules.isPublic, true),
+        eq(screenings.type, 'event'),
+        sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${jstDateStr}`,
+      ),
+    )
     .limit(1)
   if (existingEventSchedule !== undefined) return 0
 
@@ -247,9 +254,15 @@ export async function seedSchedules(): Promise<void> {
       return
     }
 
-    const movies = allRows.filter(r => r.type === 'movie').map(r => ({ id: r.id, duration_min: r.durationMin }))
-    const stages = allRows.filter(r => r.type === 'stage').map(r => ({ id: r.id, duration_min: r.durationMin }))
-    const events = allRows.filter(r => r.type === 'event').map(r => ({ id: r.id, duration_min: r.durationMin }))
+    const movies = allRows
+      .filter((r) => r.type === 'movie')
+      .map((r) => ({ id: r.id, duration_min: r.durationMin }))
+    const stages = allRows
+      .filter((r) => r.type === 'stage')
+      .map((r) => ({ id: r.id, duration_min: r.durationMin }))
+    const events = allRows
+      .filter((r) => r.type === 'event')
+      .map((r) => ({ id: r.id, duration_min: r.durationMin }))
 
     // スクリーンを取得
     const screenRows = await db
@@ -278,14 +291,32 @@ export async function seedSchedules(): Promise<void> {
 
       // 映画スケジュール生成
       if (movies.length > 0) {
-        totalInserted += await seedMovieSchedules(movies, movieScreens, targetDate, jstDateStr, dayOffset)
+        totalInserted += await seedMovieSchedules(
+          movies,
+          movieScreens,
+          targetDate,
+          jstDateStr,
+          dayOffset,
+        )
       }
 
       // 舞台スケジュール生成
-      totalInserted += await seedStageSchedules(stages, allScreens, targetDate, jstDateStr, dayOffset)
+      totalInserted += await seedStageSchedules(
+        stages,
+        allScreens,
+        targetDate,
+        jstDateStr,
+        dayOffset,
+      )
 
       // イベントスケジュール生成
-      totalInserted += await seedEventSchedules(events, allScreens, targetDate, jstDateStr, dayOffset)
+      totalInserted += await seedEventSchedules(
+        events,
+        allScreens,
+        targetDate,
+        jstDateStr,
+        dayOffset,
+      )
     }
 
     if (totalInserted > 0) {

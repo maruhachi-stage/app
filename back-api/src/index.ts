@@ -54,7 +54,9 @@ api.post('/auth/logout', (c) => c.get('container').authController.logout(c))
 
 api.get('/movies', (c) => c.get('container').movieController.listMovies(c))
 api.get('/movies/:movieId', (c) => c.get('container').movieController.getMovie(c))
-api.get('/movies/:movieId/schedules', (c) => c.get('container').movieController.getMovieSchedules(c))
+api.get('/movies/:movieId/schedules', (c) =>
+  c.get('container').movieController.getMovieSchedules(c),
+)
 api.get('/schedules/:scheduleId', (c) => c.get('container').movieController.getSchedule(c))
 
 api.get('/stages', (c) => c.get('container').stageController.list(c))
@@ -62,11 +64,15 @@ api.get('/stages/:stageId', (c) => c.get('container').stageController.get(c))
 api.get('/stages/:stageId/schedules', (c) => c.get('container').stageController.getSchedules(c))
 
 api.post('/reservations/quote', (c) => c.get('container').reservationController.quote(c))
-api.get('/reservations/schedules/:scheduleId/seats', (c) => c.get('container').reservationController.seats(c))
+api.get('/reservations/schedules/:scheduleId/seats', (c) =>
+  c.get('container').reservationController.seats(c),
+)
 api.post('/reservations/hold', (c) => c.get('container').reservationController.hold(c))
 api.post('/reservations', (c) => c.get('container').reservationController.create(c))
 api.get('/reservations/:reservationCode', (c) => c.get('container').reservationController.get(c))
-api.post('/reservations/:reservationCode/cancel', (c) => c.get('container').reservationController.cancel(c))
+api.post('/reservations/:reservationCode/cancel', (c) =>
+  c.get('container').reservationController.cancel(c),
+)
 
 api.get('/screens', (c) => c.get('container').screenController.list(c))
 api.get('/screens/:screenId', (c) => c.get('container').screenController.get(c))
@@ -82,7 +88,9 @@ api.post('/pos/sales', (c) => c.get('container').posController.createSale(c))
 
 api.get('/admin/overview', (c) => c.get('container').adminController.getOverview(c))
 api.post('/admin/edit-key/verify', (c) => c.get('container').adminController.verifyEditKey(c))
-api.get('/admin/edit-access', requireAdminEditKey, (c) => c.get('container').adminController.getEditAccess(c))
+api.get('/admin/edit-access', requireAdminEditKey, (c) =>
+  c.get('container').adminController.getEditAccess(c),
+)
 
 apiV1.get('/health', (c) => c.json({ status: 'ok' }))
 

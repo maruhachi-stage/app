@@ -10,8 +10,11 @@ export function getQrCodeUrl(code: string): string {
 export function toJstString(d: Date): string {
   return d.toLocaleString('ja-JP', {
     timeZone: 'Asia/Tokyo',
-    year: 'numeric', month: 'long', day: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   })
 }
 

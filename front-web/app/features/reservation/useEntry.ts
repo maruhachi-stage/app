@@ -1,11 +1,11 @@
-import { useReservationFlow } from "~/components/ReservationFlowProvider"
+import { useReservationFlow } from '~/components/ReservationFlowProvider'
 
 export function useEntry() {
-  const { setBookingType } = useReservationFlow()
+    const { setBookingType } = useReservationFlow()
 
-  function selectGuest() {
-    setBookingType("guest")
-  }
+    function selectGuest() {
+        setBookingType('guest')
+    }
 
-  return { selectGuest }
+    return { selectGuest }
 }

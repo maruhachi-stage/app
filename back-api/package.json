@@ -6,6 +6,9 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "start": "node dist/index.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "db:up": "docker compose -f docker-compose.yml up -d --no-recreate",
     "db:down": "docker compose -f docker-compose.yml down",
     "db:logs": "docker compose -f docker-compose.yml logs -f mysql",
@@ -29,10 +32,15 @@
     "#*": "./src/*"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^20.11.17",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
+    "eslint": "^10.9.1",
+    "globals": "^17.11.0",
+    "prettier": "^3.9.6",
     "tsx": "^4.7.1",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.69.0"
   }
 }

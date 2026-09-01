@@ -42,19 +42,27 @@ export const container = {
   movieController: new MovieController(new MovieService(new DrizzleMovieRepository())),
   stageController: new StageController(new StageQueryService(new DrizzleStageRepository())),
   screenController: new ScreenController(new ScreenQueryService(new DrizzleScreenRepository())),
-  authController: new AuthController(new AuthService(
-    new DrizzleMemberRepository(),
-    new DrizzleOtpTokenRepository(),
-    new ResendEmailSender(),
-    new CryptoOtpCodeGenerator(),
-    new InMemoryRateLimiter(),
-    { expiresMin: OTP_CONFIG.EXPIRES_MIN, resendSec: OTP_CONFIG.RESEND_SEC, maxAttempts: OTP_CONFIG.MAX_ATTEMPTS, lockMin: OTP_CONFIG.LOCK_MIN },
-  )),
-  memberController: new MemberController(new MemberService(
-    new DrizzleMemberRepository(),
-    new DrizzleMemberReservationRepository(),
-  )),
-  adminController: new AdminController(new AdminOverviewService(new DrizzleAdminScreenRepository())),
+  authController: new AuthController(
+    new AuthService(
+      new DrizzleMemberRepository(),
+      new DrizzleOtpTokenRepository(),
+      new ResendEmailSender(),
+      new CryptoOtpCodeGenerator(),
+      new InMemoryRateLimiter(),
+      {
+        expiresMin: OTP_CONFIG.EXPIRES_MIN,
+        resendSec: OTP_CONFIG.RESEND_SEC,
+        maxAttempts: OTP_CONFIG.MAX_ATTEMPTS,
+        lockMin: OTP_CONFIG.LOCK_MIN,
+      },
+    ),
+  ),
+  memberController: new MemberController(
+    new MemberService(new DrizzleMemberRepository(), new DrizzleMemberReservationRepository()),
+  ),
+  adminController: new AdminController(
+    new AdminOverviewService(new DrizzleAdminScreenRepository()),
+  ),
   configController: new ConfigController(new ConfigService()),
   productController: new ProductController(new ProductService(new DrizzleProductRepository())),
   posController: new PosController(new PosService(new DrizzlePosRepository())),

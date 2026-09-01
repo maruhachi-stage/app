@@ -12,10 +12,19 @@ export const errorHandler: ErrorHandler<AppEnv> = (err, c) => {
   }
 
   if (err instanceof ZodError) {
-    const details = err.issues.map(issue => ({ field: issue.path.join('.'), reason: issue.message }))
-    return c.json(errorResponse('VALIDATION_ERROR', 'Invalid request parameters', requestId, details), 400)
+    const details = err.issues.map((issue) => ({
+      field: issue.path.join('.'),
+      reason: issue.message,
+    }))
+    return c.json(
+      errorResponse('VALIDATION_ERROR', 'Invalid request parameters', requestId, details),
+      400,
+    )
   }
 
   console.error('[ERROR]', err)
-  return c.json(errorResponse('INTERNAL_SERVER_ERROR', 'An unexpected error occurred', requestId), 500)
+  return c.json(
+    errorResponse('INTERNAL_SERVER_ERROR', 'An unexpected error occurred', requestId),
+    500,
+  )
 }

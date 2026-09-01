@@ -1,7 +1,12 @@
 export type ProductCategory = 'goods' | 'food' | 'drink' | 'set'
 
 export type ProductOption = { id: string; label: string; priceDelta: number }
-export type ProductOptionGroup = { id: string; name: string; required: boolean; options: ProductOption[] }
+export type ProductOptionGroup = {
+  id: string
+  name: string
+  required: boolean
+  options: ProductOption[]
+}
 
 export type Product = {
   id: string

@@ -1,6 +1,11 @@
 import { asc, eq, inArray } from 'drizzle-orm'
 import { db } from '#infrastructure/database/mysqlPool.js'
-import { productNotes, productOptionGroups, productOptions, products } from '#infrastructure/database/schema.js'
+import {
+  productNotes,
+  productOptionGroups,
+  productOptions,
+  products,
+} from '#infrastructure/database/schema.js'
 import type { Product, ProductCategory } from '#domain/entities/product.js'
 import type { ProductRepository } from '#domain/interfaces/repositories/product-repository.js'
 
@@ -31,10 +36,10 @@ export class DrizzleProductRepository implements ProductRepository {
     const groupIds = groups.map((group) => group.id)
     const options = groupIds.length
       ? await db
-        .select()
-        .from(productOptions)
-        .where(inArray(productOptions.groupId, groupIds))
-        .orderBy(asc(productOptions.displayOrder))
+          .select()
+          .from(productOptions)
+          .where(inArray(productOptions.groupId, groupIds))
+          .orderBy(asc(productOptions.displayOrder))
       : []
     const notes = await db
       .select()

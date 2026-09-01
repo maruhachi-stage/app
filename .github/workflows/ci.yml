@@ -84,11 +84,9 @@ jobs:
         working-directory: ${{ matrix.app.directory }}
 
     steps:
-      - name: リポジトリをチェックアウト
-        uses: actions/checkout@v4
-
       - name: 変更有無を判定
         id: scope
+        working-directory: .
         shell: bash
         run: |
           case "${{ matrix.app.filter }}" in
@@ -96,6 +94,10 @@ jobs:
             admin) echo "run=${{ needs.changes.outputs.admin }}" >> "$GITHUB_OUTPUT" ;;
             back) echo "run=${{ needs.changes.outputs.back }}" >> "$GITHUB_OUTPUT" ;;
           esac
+
+      - name: リポジトリをチェックアウト
+        if: steps.scope.outputs.run == 'true'
+        uses: actions/checkout@v4
 
       - name: Node.jsをセットアップ
         if: steps.scope.outputs.run == 'true'

@@ -7,6 +7,24 @@ npm run dev
 open http://localhost:3000
 ```
 
+## Database setup and migrations
+
+初回起動時は、MySQLの起動と未適用Migrationの適用を実行します。
+
+```powershell
+npm.cmd run db:setup
+```
+
+通常のSchema変更は、`src/infrastructure/database/schema.ts`を更新してから、Migrationを生成・確認・適用します。
+
+```powershell
+npm.cmd run db:generate
+npm.cmd run db:check
+npm.cmd run db:migrate
+```
+
+Migrationの命名、適用済み判定、失敗時の扱い、ロールバック方針は[`migrations/README.md`](migrations/README.md)を参照してください。
+
 ## Integration Test
 
 Integration Testは、通常の開発用MySQLと分離したポート`3307`のMySQLをDocker Composeで起動して実行します。

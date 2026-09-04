@@ -41,7 +41,7 @@ DI → Application / Infrastructure
 | `src/di/container.ts`                 | 依存関係の組み立て                   |
 | `src/lib/`                            | DBや環境変数の共通処理               |
 | `src/types/`                          | Bindingなどの共通型                  |
-| `migrations/`                         | D1 migration                         |
+| `migrations/`                         | MySQL migration                      |
 | `test/`                               | Testとfixture                        |
 
 ## 型の境界
@@ -87,4 +87,5 @@ DI → Application / Infrastructure
 - Drizzle schemaは`src/infrastructure/database/schema.ts`に置く。
 - Schema変更時は`migrations/`に新しいSQL fileを追加する。
 - 適用済みのmigrationは変更しない。
+- Migrationの追加・適用ルールは`migrations/README.md`に従う。
 - HTTPの入力処理と業務ルールは書かない。

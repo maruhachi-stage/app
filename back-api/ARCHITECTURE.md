@@ -25,7 +25,8 @@ DI → Application / Infrastructure
 
 | Path                                  | 配置するもの                         |
 | ------------------------------------- | ------------------------------------ |
-| `src/index.ts`                        | Routeとentry point                   |
+| `src/app.ts`                          | HonoアプリとRoute定義                |
+| `src/index.ts`                        | DB初期化とserver entry point         |
 | `src/presentation/controllers/`       | HTTP入力とレスポンス変換             |
 | `src/presentation/middleware/`        | Hono middleware                      |
 | `src/application/services/`           | Application Service                  |

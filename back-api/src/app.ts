@@ -8,6 +8,8 @@ import { errorHandler } from '#presentation/middleware/errorHandler.js'
 import { auditLogMiddleware } from '#presentation/middleware/auditLog.js'
 import { requireAdminEditKey } from '#presentation/middleware/admin-edit-key.js'
 import { container } from '#di/container.js'
+import { swaggerUI } from '@hono/swagger-ui'
+import { openApiDocument } from '#presentation/openapi/document.js'
 
 export const app = new Hono<AppEnv>()
 // Legacy API: keep this prefix stable for the existing frontend.
@@ -89,6 +91,9 @@ api.get('/admin/edit-access', requireAdminEditKey, (c) =>
 )
 
 apiV1.get('/health', (c) => c.json({ status: 'ok' }))
+
+app.get('/api/openapi.json', (c) => c.json(openApiDocument))
+app.get('/api/docs', swaggerUI({ url: '/api/openapi.json' }))
 
 app.route('/api/v1', apiV1)
 app.route('/api', api)

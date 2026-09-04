@@ -30,6 +30,13 @@
       "cwd": "${workspaceFolder}\\back-api"
     },
     {
+      "name": "db:setup",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm.cmd run db:setup",
+      "cwd": "${workspaceFolder}\\back-api"
+    },
+    {
       "name": "db:down",
       "type": "node-terminal",
       "request": "launch",
@@ -54,7 +61,13 @@
   "compounds": [
     {
       "name": "all dev",
-      "configurations": ["db:up", "back-api run", "front-web run", "admin-web run", "image-server run"]
+      "configurations": [
+        "db:setup",
+        "back-api run",
+        "front-web run",
+        "admin-web run",
+        "image-server run"
+      ]
     }
   ]
 }

@@ -43,8 +43,10 @@ copy back-api\.env.example back-api\.env
 
 ```powershell
 cd back-api
-npm.cmd run db:up
+npm.cmd run db:setup
 ```
+
+`db:setup`はMySQLコンテナを起動し、未適用のDrizzle migrationを適用します。既存データを削除する必要はありません。
 
 - MySQL 接続先: `localhost:3306`
 - DB 名（既定値）: `hal_cinema`
@@ -59,6 +61,8 @@ npm.cmd run dev
 ```
 
 - 起動 URL: `http://localhost:3000`
+- Swagger UI: `http://localhost:3000/api/docs`
+- OpenAPI JSON: `http://localhost:3000/api/openapi.json`
 
 ### 3) front-web
 
@@ -98,15 +102,16 @@ npm.cmd run db:reset  # 停止 + データ削除
 
 `.vscode/launch.json` に起動設定を追加済みです。Run and Debug から選択して起動できます。
 
-| 設定名          | 内容                    |
-| --------------- | ----------------------- |
-| `front-web run` | front-web 開発サーバー  |
-| `back-api run`  | back-api 開発サーバー   |
-| `admin-web run` | admin-web 開発サーバー  |
-| `db:up`         | MySQL 起動              |
-| `db:down`       | MySQL 停止              |
-| `db:reset`      | MySQL 停止 + データ削除 |
-| `all dev`       | 上記すべてを一括起動    |
+| 設定名          | 内容                        |
+| --------------- | --------------------------- |
+| `front-web run` | front-web 開発サーバー      |
+| `back-api run`  | back-api 開発サーバー       |
+| `admin-web run` | admin-web 開発サーバー      |
+| `db:up`         | MySQL 起動                  |
+| `db:setup`      | MySQL 起動 + migration 適用 |
+| `db:down`       | MySQL 停止                  |
+| `db:reset`      | MySQL 停止 + データ削除     |
+| `all dev`       | 上記すべてを一括起動        |
 
 ## 推奨拡張 / プラグイン
 

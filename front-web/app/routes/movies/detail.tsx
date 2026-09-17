@@ -275,7 +275,10 @@ export default function MovieDetailPage() {
                     <div className="-mx-4 overflow-x-auto px-4">
                         <div className="flex gap-4 pb-4">
                             {relatedMovies.map((relatedMovie) => (
-                                <div key={relatedMovie.id} className="w-36 shrink-0 md:w-44">
+                                <div
+                                    key={`${relatedMovie.type ?? 'movie'}-${relatedMovie.id}`}
+                                    className="w-36 shrink-0 md:w-44"
+                                >
                                     <ScreeningGridCard
                                         screening={relatedMovie}
                                         selectedDate={selectedDate}

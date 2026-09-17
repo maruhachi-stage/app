@@ -1,23 +1,11 @@
 import { and, asc, desc, eq, sql } from 'drizzle-orm'
 import { db } from '#infrastructure/database/mysqlPool.js'
-import {
-  images,
-  reservationSeats,
-  reservations,
-  schedules,
-  screens,
-  screenings,
-} from '#infrastructure/database/schema.js'
+import { schedules, screens, screenings } from '#infrastructure/database/schema.js'
 import type { Movie } from '#domain/entities/movie.js'
 import type { MovieSchedule } from '#domain/entities/movie-schedule.js'
 import type { PublicSchedule } from '#domain/entities/public-schedule.js'
 import type { MovieRepository } from '#domain/interfaces/repositories/movie-repository.js'
-
-const thumbnailFilename = sql<string | null>`(
-  SELECT file_name FROM images
-  WHERE entity_type = 'screening' AND entity_id = ${screenings.id}
-  ORDER BY display_order LIMIT 1
-)`
+import { screeningThumbnail } from './screening-thumbnail.js'
 
 const remainingSeats = sql<number>`${screens.totalSeats} - COALESCE((
   SELECT COUNT(*) FROM reservation_seats rs
@@ -53,7 +41,7 @@ export class DrizzleMovieRepository implements MovieRepository {
         description: screenings.description,
         durationMin: screenings.durationMin,
         status: screenings.status,
-        thumbnailFilename,
+        thumbnailFilename: screeningThumbnail,
       })
       .from(screenings)
       .where(and(...conditions))
@@ -70,7 +58,7 @@ export class DrizzleMovieRepository implements MovieRepository {
         description: screenings.description,
         durationMin: screenings.durationMin,
         status: screenings.status,
-        thumbnailFilename,
+        thumbnailFilename: screeningThumbnail,
       })
       .from(screenings)
       .where(and(eq(screenings.id, movieId), eq(screenings.type, 'movie')))
@@ -111,7 +99,7 @@ export class DrizzleMovieRepository implements MovieRepository {
         type: screenings.type,
         screeningId: schedules.screeningId,
         title: screenings.title,
-        thumbnailFilename,
+        thumbnailFilename: screeningThumbnail,
         durationMin: screenings.durationMin,
         screenName: screens.name,
         startsAt: schedules.startsAt,

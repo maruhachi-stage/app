@@ -220,7 +220,7 @@ function TimetableTable({
 
                         return (
                             <div
-                                key={screening.id}
+                                key={`${screening.type ?? 'movie'}-${screening.id}`}
                                 className="flex border-b border-border last:border-0"
                             >
                                 <div

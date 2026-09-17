@@ -2,7 +2,6 @@ import { alias } from 'drizzle-orm/mysql-core'
 import { and, asc, desc, eq, ne, sql } from 'drizzle-orm'
 import { db } from '#infrastructure/database/mysqlPool.js'
 import {
-  images,
   reservations,
   reservationSeats,
   schedules,
@@ -15,15 +14,10 @@ import type {
   FindStagesCriteria,
   StageRepository,
 } from '#domain/interfaces/repositories/stage-repository.js'
+import { screeningThumbnail } from './screening-thumbnail.js'
 
 const reservedSeats = alias(reservationSeats, 'reserved_seats')
 const seatReservations = alias(reservations, 'seat_reservations')
-
-const thumbnailUrl = sql<string | null>`(
-  SELECT ${images.fileName} FROM ${images}
-  WHERE ${images.entityType} = 'screening' AND ${images.entityId} = ${screenings.id}
-  ORDER BY ${images.displayOrder} LIMIT 1
-)`
 
 const remainingSeats = sql<number>`${screens.totalSeats} - COALESCE((
   SELECT COUNT(*) FROM ${reservedSeats}
@@ -53,7 +47,7 @@ export class DrizzleStageRepository implements StageRepository {
         title: screenings.title,
         description: screenings.description,
         durationMin: screenings.durationMin,
-        thumbnailUrl,
+        thumbnailUrl: screeningThumbnail,
         status: screenings.status,
         playwright: screenings.playwright,
         director: screenings.director,
@@ -104,7 +98,7 @@ export class DrizzleStageRepository implements StageRepository {
         title: screenings.title,
         description: screenings.description,
         durationMin: screenings.durationMin,
-        thumbnailUrl,
+        thumbnailUrl: screeningThumbnail,
         status: screenings.status,
         playwright: screenings.playwright,
         director: screenings.director,

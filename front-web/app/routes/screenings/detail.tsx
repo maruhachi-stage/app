@@ -282,7 +282,10 @@ export default function ScreeningDetailPage() {
                     <div className="-mx-4 overflow-x-auto px-4">
                         <div className="flex gap-4 pb-4">
                             {relatedItems.map((relatedItem) => (
-                                <div key={relatedItem.id} className="w-36 shrink-0 md:w-44">
+                                <div
+                                    key={`${relatedItem.type ?? 'movie'}-${relatedItem.id}`}
+                                    className="w-36 shrink-0 md:w-44"
+                                >
                                     <ScreeningGridCard
                                         screening={relatedItem}
                                         selectedDate={selectedDate}

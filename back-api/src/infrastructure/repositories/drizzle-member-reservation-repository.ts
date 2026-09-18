@@ -1,24 +1,10 @@
-import { desc, eq, sql } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import { db } from '#infrastructure/database/mysqlPool.js'
-import {
-  images,
-  reservations,
-  schedules,
-  screens,
-  screenings,
-} from '#infrastructure/database/schema.js'
+import { reservations, schedules, screens, screenings } from '#infrastructure/database/schema.js'
 import type { MemberReservation } from '#domain/entities/member-reservation.js'
 import type { MemberReservationRepository } from '#domain/interfaces/repositories/member-reservation-repository.js'
 import { imageUrl } from '#lib/format.js'
-
-const screeningThumbnail = sql<string | null>`(
-  SELECT ${images.fileName}
-  FROM ${images}
-  WHERE ${images.entityType} = 'screening'
-    AND ${images.entityId} = ${screenings.id}
-  ORDER BY ${images.displayOrder}
-  LIMIT 1
-)`
+import { screeningThumbnail } from './screening-thumbnail.js'
 
 export class DrizzleMemberReservationRepository implements MemberReservationRepository {
   async findByMemberId(memberId: number): Promise<MemberReservation[]> {

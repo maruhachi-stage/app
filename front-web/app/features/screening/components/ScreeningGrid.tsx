@@ -49,7 +49,7 @@ export function ScreeningGrid({ screenings, selectedDate, loading, view, error }
             <div className="flex flex-col gap-4">
                 {screenings.map((screening) => (
                     <ScreeningListCard
-                        key={screening.id}
+                        key={`${screening.type ?? 'movie'}-${screening.id}`}
                         screening={screening}
                         selectedDate={selectedDate}
                     />
@@ -62,7 +62,7 @@ export function ScreeningGrid({ screenings, selectedDate, loading, view, error }
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {screenings.map((screening) => (
                 <ScreeningGridCard
-                    key={screening.id}
+                    key={`${screening.type ?? 'movie'}-${screening.id}`}
                     screening={screening}
                     selectedDate={selectedDate}
                 />

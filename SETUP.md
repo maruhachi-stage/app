@@ -2,21 +2,21 @@
 
 ## 必須環境
 
-前提：開発環境は Windows を想定しています。
+- Node.js 22.5 以上（back-apiで標準の `node:sqlite` を使用）
+- npm 10 以上
+- Git for Windows（Windowsの場合）
 
-- [Node.js](https://nodejs.org/) 20 以上（npm 10 以上が同梱されています）
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)（MySQL 用）
-- [Git for Windows](https://git-for-windows.github.io/)
+back-apiのCIはNode.js 26で実行します。ほかのアプリは現在のCI Node.jsバージョンを使用します。
 
 ## プロジェクト構成
 
 - `front-web` : React Router v7 フロントエンド
 - `admin-web` : React Router v7 管理画面
-- `back-api` : Hono API + MySQL（Docker）
+- `back-api` : Hono API + Drizzle ORM + ローカルSQLite
 
 ## 初回セットアップ
 
-PowerShell で `npm` 実行時に実行ポリシーエラーが出る環境では、`npm` の代わりに `npm.cmd` を使ってください。
+PowerShellでnpmの実行ポリシーエラーが出る場合は、`npm` の代わりに `npm.cmd` を使ってください。
 
 ```powershell
 cd front-web
@@ -27,33 +27,14 @@ npm.cmd install
 
 cd ../back-api
 npm.cmd install
+npm.cmd run db:migrate
 ```
 
-各フォルダの `.env.example` をコピーして `.env` を作成します。
+back-apiは `DB_FILE`（既定値 `./data/app.db`）へSQLiteファイルを自動作成します。DB用Dockerや外部DBの起動は不要です。完全初期化する場合は `npm.cmd run db:reset` を実行してください。
 
-```powershell
-copy front-web\.env.example front-web\.env
-copy admin-web\.env.example admin-web\.env
-copy back-api\.env.example back-api\.env
-```
+## 起動方法
 
-## 起動方法（手動）
-
-### 1) MySQL（Docker）
-
-```powershell
-cd back-api
-npm.cmd run db:setup
-```
-
-`db:setup`はMySQLコンテナを起動し、未適用のDrizzle migrationを適用します。既存データを削除する必要はありません。
-
-- MySQL 接続先: `localhost:3306`
-- DB 名（既定値）: `hal_cinema`
-- ユーザー（既定値）: `hal_user`
-- パスワード（既定値）: `hal_pass`
-
-### 2) back-api
+### back-api
 
 ```powershell
 cd back-api
@@ -64,63 +45,36 @@ npm.cmd run dev
 - Swagger UI: `http://localhost:3000/api/docs`
 - OpenAPI JSON: `http://localhost:3000/api/openapi.json`
 
-### 3) front-web
+### front-web / admin-web
+
+各ディレクトリで依存関係をインストールしてから開発サーバーを起動します。
 
 ```powershell
 cd front-web
 npm.cmd run dev
 ```
 
-### 4) admin-web
-
 ```powershell
 cd admin-web
 npm.cmd run dev
 ```
 
-### Integration Test（back-api）
-
-開発用MySQLとは別のテスト用MySQL（`localhost:3307`）を起動し、migration適用後にIntegration Testを実行します。
+### back-api Integration Test
 
 ```powershell
 cd back-api
-npm.cmd run db:test:up
-npm.cmd run db:test:migrate
 npm.cmd run test:integration
-npm.cmd run db:test:down
 ```
 
-## 停止・リセット（MySQL）
+Integration Testは `DB_TEST_FILE`（既定値 `./data/test.db`）を使い、実行前に初期化し、終了後にSQLiteファイルとsidecarを削除します。
 
-```powershell
-cd back-api
-npm.cmd run db:down   # 停止
-npm.cmd run db:reset  # 停止 + データ削除
-```
+## VS Code
 
-## 起動方法（VS Code）
+`.vscode/launch.json` の `front-web run`、`back-api run`、`admin-web run`、`all dev` から起動できます。`db:setup` はback-apiのmigrationとseedを適用します。
 
-`.vscode/launch.json` に起動設定を追加済みです。Run and Debug から選択して起動できます。
-
-| 設定名          | 内容                        |
-| --------------- | --------------------------- |
-| `front-web run` | front-web 開発サーバー      |
-| `back-api run`  | back-api 開発サーバー       |
-| `admin-web run` | admin-web 開発サーバー      |
-| `db:up`         | MySQL 起動                  |
-| `db:setup`      | MySQL 起動 + migration 適用 |
-| `db:down`       | MySQL 停止                  |
-| `db:reset`      | MySQL 停止 + データ削除     |
-| `all dev`       | 上記すべてを一括起動        |
-
-## 推奨拡張 / プラグイン
-
-### VS Code
+## 推奨拡張
 
 - ESLint (`dbaeumer.vscode-eslint`)
 - Prettier (`esbenp.prettier-vscode`)
-- Docker (`ms-azuretools.vscode-docker`)
 - GitLens (`eamodio.gitlens`)
 - EditorConfig (`editorconfig.editorconfig`)
-- SQLTools (`mtxr.sqltools`)
-- SQLTools MySQL/MariaDB (`mtxr.sqltools-driver-mysql`)

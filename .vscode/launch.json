@@ -23,24 +23,10 @@
       "cwd": "${workspaceFolder}\\admin-web"
     },
     {
-      "name": "db:up",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "npm.cmd run db:up",
-      "cwd": "${workspaceFolder}\\back-api"
-    },
-    {
       "name": "db:setup",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run db:setup",
-      "cwd": "${workspaceFolder}\\back-api"
-    },
-    {
-      "name": "db:down",
-      "type": "node-terminal",
-      "request": "launch",
-      "command": "npm.cmd run db:down",
       "cwd": "${workspaceFolder}\\back-api"
     },
     {

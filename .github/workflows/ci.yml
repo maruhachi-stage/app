@@ -71,12 +71,15 @@ jobs:
         app:
           - name: front-web
             directory: front-web
+            node-version: 20
             filter: front
           - name: admin-web
             directory: admin-web
+            node-version: 20
             filter: admin
           - name: back-api
             directory: back-api
+            node-version: 26
             filter: back
 
     defaults:
@@ -103,7 +106,7 @@ jobs:
         if: steps.scope.outputs.run == 'true'
         uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: ${{ matrix.app.node-version }}
           cache: npm
           cache-dependency-path: ${{ matrix.app.directory }}/package-lock.json
 

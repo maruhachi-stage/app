@@ -1,6 +1,6 @@
 // Product catalog seed synchronization. The schema is managed by Drizzle migrations.
 import { and, asc, eq, inArray } from 'drizzle-orm'
-import { db } from '#infrastructure/database/mysqlPool.js'
+import { db } from '#infrastructure/database/sqlite.js'
 import {
   productNotes,
   productOptionGroups,
@@ -302,7 +302,8 @@ export async function ensureProductCatalogSchema(): Promise<void> {
       isSoldOut: product.isSoldOut ?? false,
       displayOrder: index,
     }
-    await db.insert(products).values(productValues).onDuplicateKeyUpdate({
+    await db.insert(products).values(productValues).onConflictDoUpdate({
+      target: products.id,
       set: productValues,
     })
 
@@ -314,9 +315,13 @@ export async function ensureProductCatalogSchema(): Promise<void> {
         required: group.required ?? false,
         displayOrder: groupIndex,
       }
-      await db.insert(productOptionGroups).values(groupValues).onDuplicateKeyUpdate({
-        set: groupValues,
-      })
+      await db
+        .insert(productOptionGroups)
+        .values(groupValues)
+        .onConflictDoUpdate({
+          target: [productOptionGroups.productId, productOptionGroups.groupKey],
+          set: groupValues,
+        })
       const persistedGroup = await db
         .select({ id: productOptionGroups.id })
         .from(productOptionGroups)
@@ -336,9 +341,13 @@ export async function ensureProductCatalogSchema(): Promise<void> {
           priceDelta: option.priceDelta ?? 0,
           displayOrder: optionIndex,
         }
-        await db.insert(productOptions).values(optionValues).onDuplicateKeyUpdate({
-          set: optionValues,
-        })
+        await db
+          .insert(productOptions)
+          .values(optionValues)
+          .onConflictDoUpdate({
+            target: [productOptions.groupId, productOptions.optionKey],
+            set: optionValues,
+          })
       }
     }
 

@@ -12,9 +12,10 @@
  *   イベント: 中スクリーン × 週末 に夜 1 公演 (18:00〜22:00)
  */
 
-import { and, asc, eq, sql } from 'drizzle-orm'
-import { db } from '#infrastructure/database/mysqlPool.js'
+import { and, asc, eq, gte, lt } from 'drizzle-orm'
+import { db } from '#infrastructure/database/sqlite.js'
 import { schedules, screenings, screens } from '#infrastructure/database/schema.js'
+import { jstDateUtcRange } from '#lib/jst-date-range.js'
 
 // ─── 定数 ──────────────────────────────────────────────────────────────────
 
@@ -43,7 +44,7 @@ function jstMinToUtcStr(baseDate: Date, jstMin: number): string {
   const JST_OFFSET = 9 * 60
   const utcMin = jstMin - JST_OFFSET
   const d = new Date(baseDate)
-  if (utcMin < 0) d.setDate(d.getDate() - 1)
+  if (utcMin < 0) d.setUTCDate(d.getUTCDate() - 1)
   const dateStr = d.toISOString().slice(0, 10)
   const h = Math.floor(((utcMin % 1440) + 1440) / 60) % 24
   const m = ((utcMin % 60) + 60) % 60
@@ -57,6 +58,7 @@ function jstMinToUtcDate(baseDate: Date, jstMin: number): Date {
 // ─── 既存チェック ──────────────────────────────────────────────────────────
 
 async function hasSchedule(screenId: number, jstDateStr: string): Promise<boolean> {
+  const { start, end } = jstDateUtcRange(jstDateStr)
   const [schedule] = await db
     .select({ id: schedules.id })
     .from(schedules)
@@ -64,7 +66,8 @@ async function hasSchedule(screenId: number, jstDateStr: string): Promise<boolea
       and(
         eq(schedules.screenId, screenId),
         eq(schedules.isPublic, true),
-        sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${jstDateStr}`,
+        gte(schedules.startsAt, start),
+        lt(schedules.startsAt, end),
       ),
     )
     .limit(1)
@@ -86,7 +89,7 @@ async function seedMovieSchedules(
     if (await hasSchedule(screen.id, jstDateStr)) continue
 
     const rand = makeRand(
-      screen.id * 10007 + dayOffset * 997 + targetDate.getMonth() * 31 + targetDate.getDate(),
+      screen.id * 10007 + dayOffset * 997 + targetDate.getUTCMonth() * 31 + targetDate.getUTCDate(),
     )
 
     // 映画リストをシャッフル
@@ -164,7 +167,8 @@ async function seedStageSchedules(
           eq(schedules.screenId, screen.id),
           eq(schedules.isPublic, true),
           eq(screenings.type, 'stage'),
-          sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${jstDateStr}`,
+          gte(schedules.startsAt, jstDateUtcRange(jstDateStr).start),
+          lt(schedules.startsAt, jstDateUtcRange(jstDateStr).end),
         ),
       )
       .limit(1)
@@ -223,7 +227,8 @@ async function seedEventSchedules(
         eq(schedules.screenId, screen.id),
         eq(schedules.isPublic, true),
         eq(screenings.type, 'event'),
-        sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${jstDateStr}`,
+        gte(schedules.startsAt, jstDateUtcRange(jstDateStr).start),
+        lt(schedules.startsAt, jstDateUtcRange(jstDateStr).end),
       ),
     )
     .limit(1)
@@ -283,7 +288,7 @@ export async function seedSchedules(): Promise<void> {
     for (let dayOffset = 0; dayOffset < DAYS_AHEAD; dayOffset++) {
       const targetDate = new Date()
       targetDate.setUTCHours(0, 0, 0, 0)
-      targetDate.setDate(targetDate.getDate() + dayOffset)
+      targetDate.setUTCDate(targetDate.getUTCDate() + dayOffset)
 
       // JSTの日付文字列
       const jstDate = new Date(targetDate.getTime() + 9 * 60 * 60 * 1000)

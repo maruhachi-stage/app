@@ -15,19 +15,21 @@ concurrency:
 
 jobs:
   changes:
-    name: 変更アプリを判定
+    name: Changes
     runs-on: ubuntu-latest
     outputs:
       front: ${{ steps.filter.outputs.front }}
       admin: ${{ steps.filter.outputs.admin }}
       back: ${{ steps.filter.outputs.back }}
+      image: ${{ steps.filter.outputs.image }}
+
     steps:
       - name: リポジトリをチェックアウト
         uses: actions/checkout@v7
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
-      - name: 変更パスを判定
+      - name: 変更アプリを判定
         id: filter
         shell: bash
         run: |
@@ -35,10 +37,14 @@ jobs:
             echo "front=true" >> "$GITHUB_OUTPUT"
             echo "admin=true" >> "$GITHUB_OUTPUT"
             echo "back=true" >> "$GITHUB_OUTPUT"
+            echo "image=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          files="$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "$GITHUB_SHA")"
+          files="$(git diff --name-only \
+            "${{ github.event.pull_request.base.sha }}" \
+            "${{ github.event.pull_request.head.sha }}")"
+
           shared=false
           while IFS= read -r file; do
             case "$file" in
@@ -48,73 +54,186 @@ jobs:
             esac
           done <<< "$files"
 
-          for app in front admin back; do
+          for app in front admin back image; do
             changed=false
             while IFS= read -r file; do
               case "$app:$file" in
-                front:front-web/*|admin:admin-web/*|back:back-api/*)
-                  changed=true
-                  ;;
+                front:front-web/*) changed=true ;;
+                admin:admin-web/*) changed=true ;;
+                back:back-api/*) changed=true ;;
+                image:image-server/*) changed=true ;;
               esac
             done <<< "$files"
-            if [ "$shared" = "true" ]; then changed=true; fi
+
+            if [ "$shared" = "true" ]; then
+              changed=true
+            fi
+
             echo "$app=$changed" >> "$GITHUB_OUTPUT"
           done
 
-  validate:
-    name: ${{ matrix.app.name }}
+  frontend:
+    name: Frontend
     needs: changes
+    if: needs.changes.outputs.front == 'true'
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        app:
-          - name: front-web
-            directory: front-web
-            filter: front
-          - name: admin-web
-            directory: admin-web
-            filter: admin
-          - name: back-api
-            directory: back-api
-            filter: back
-
     defaults:
       run:
-        working-directory: ${{ matrix.app.directory }}
+        working-directory: front-web
 
     steps:
-      - name: 変更有無を判定
-        id: scope
-        working-directory: .
-        shell: bash
-        run: |
-          case "${{ matrix.app.filter }}" in
-            front) echo "run=${{ needs.changes.outputs.front }}" >> "$GITHUB_OUTPUT" ;;
-            admin) echo "run=${{ needs.changes.outputs.admin }}" >> "$GITHUB_OUTPUT" ;;
-            back) echo "run=${{ needs.changes.outputs.back }}" >> "$GITHUB_OUTPUT" ;;
-          esac
-
       - name: リポジトリをチェックアウト
-        if: steps.scope.outputs.run == 'true'
         uses: actions/checkout@v7
 
       - name: Node.jsをセットアップ
-        if: steps.scope.outputs.run == 'true'
         uses: actions/setup-node@v7
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: ${{ matrix.app.directory }}/package-lock.json
+          cache-dependency-path: front-web/package-lock.json
 
       - name: 依存関係をインストール
-        if: steps.scope.outputs.run == 'true'
-        run: npm install --ignore-scripts --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
-      - name: ビルド
-        if: steps.scope.outputs.run == 'true'
+      - name: Format
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
         run: npm run build
 
-      - name: 型チェック
-        if: steps.scope.outputs.run == 'true'
+  admin:
+    name: Admin
+    needs: changes
+    if: needs.changes.outputs.admin == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin-web
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v7
+
+      - name: Node.jsをセットアップ
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: admin-web/package-lock.json
+
+      - name: 依存関係をインストール
+        run: npm ci --no-audit --no-fund
+
+      - name: Format
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
         run: npm run typecheck
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  api:
+    name: API
+    needs: changes
+    if: needs.changes.outputs.back == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: back-api
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v7
+
+      - name: Node.jsをセットアップ
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: back-api/package-lock.json
+
+      - name: 依存関係をインストール
+        run: npm ci --no-audit --no-fund
+
+      - name: Format
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: テスト用MySQLを起動
+        run: npm run db:test:up
+
+      - name: マイグレーションを適用
+        run: npm run db:test:migrate
+
+      - name: Integration Test
+        env:
+          NODE_ENV: test
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3307
+          DB_NAME: hal_cinema_test
+          DB_USER: hal_user
+          DB_PASSWORD: hal_pass
+        run: npm run test:integration
+
+      - name: テスト用MySQLを停止
+        if: always()
+        run: npm run db:test:down
+
+  image-server:
+    name: Image Server
+    needs: changes
+    if: needs.changes.outputs.image == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: image-server
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v7
+
+      - name: Node.jsをセットアップ
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: image-server/package-lock.json
+
+      - name: 依存関係をインストール
+        run: npm ci --no-audit --no-fund
+
+      - name: Format
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test

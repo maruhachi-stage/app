@@ -46,7 +46,7 @@ cd back-api
 npm.cmd run db:setup
 ```
 
-`db:setup`はMySQLコンテナを起動し、未適用のDrizzle migrationを適用します。既存データを削除する必要はありません。
+`db:setup`はMySQLコンテナを起動し、未適用のDrizzle Migrationだけを適用します。既存データを削除する必要はありません。Migrationを適用せずにコンテナだけ起動する場合は`npm.cmd run db:up`を使用してください。
 
 - MySQL 接続先: `localhost:3306`
 - DB 名（既定値）: `hal_cinema`

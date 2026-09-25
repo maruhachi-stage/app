@@ -20,7 +20,7 @@
     "db:test:down": "docker compose -f docker-compose.test.yml down",
     "db:test:reset": "docker compose -f docker-compose.test.yml down -v",
     "db:test:migrate": "drizzle-kit migrate --config=drizzle.test.config.ts",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "tsx --env-file=.env src/scripts/migrate-with-lock.ts",
     "db:seed": "tsx --env-file=.env src/infrastructure/database/seed.ts",
     "db:migrate-and-seed": "npm run db:migrate && npm run db:seed",
     "db:generate": "drizzle-kit generate",

@@ -93,7 +93,7 @@ jobs:
           cache-dependency-path: front-web/package-lock.json
 
       - name: 依存関係をインストール
-        run: npm ci --no-audit --no-fund
+        run: npm install --ignore-scripts --no-audit --no-fund
 
       - name: Format
         run: npm run format:check
@@ -131,7 +131,7 @@ jobs:
           cache-dependency-path: admin-web/package-lock.json
 
       - name: 依存関係をインストール
-        run: npm ci --no-audit --no-fund
+        run: npm install --ignore-scripts --no-audit --no-fund
 
       - name: Format
         run: npm run format:check
@@ -169,7 +169,7 @@ jobs:
           cache-dependency-path: back-api/package-lock.json
 
       - name: 依存関係をインストール
-        run: npm ci --no-audit --no-fund
+        run: npm install --ignore-scripts --no-audit --no-fund
 
       - name: Format
         run: npm run format:check
@@ -227,7 +227,7 @@ jobs:
           cache-dependency-path: image-server/package-lock.json
 
       - name: 依存関係をインストール
-        run: npm ci --no-audit --no-fund
+        run: npm install --ignore-scripts --no-audit --no-fund
 
       - name: Format
         run: npm run format:check

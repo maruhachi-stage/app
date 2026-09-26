@@ -37,11 +37,10 @@ DI → Application / Infrastructure
 | `src/domain/errors/`                  | Domain Error                         |
 | `src/infrastructure/repositories/`    | Repositoryの実装                     |
 | `src/infrastructure/adapters/`        | Portの実装                           |
-| `src/infrastructure/database/`        | Drizzle schema                       |
+| `src/infrastructure/database/`        | SQLite接続、Drizzle schema、seed     |
 | `src/di/container.ts`                 | 依存関係の組み立て                   |
 | `src/lib/`                            | DBや環境変数の共通処理               |
-| `src/types/`                          | Bindingなどの共通型                  |
-| `migrations/`                         | D1 migration                         |
+| `migrations/`                         | Drizzle SQLite migration             |
 | `test/`                               | Testとfixture                        |
 
 ## 型の境界
@@ -72,7 +71,7 @@ DI → Application / Infrastructure
 
 - Application Serviceはユースケースを実行する。
 - 外部サービスはPortの契約を介して利用する。
-- Hono、D1、外部SDKに依存しない。
+- Hono、SQLite、外部SDKに依存しない。
 
 ### Domain
 
@@ -82,9 +81,10 @@ DI → Application / Infrastructure
 
 ### Infrastructure
 
-- RepositoryはD1の操作とDB rowからEntityへの変換を行う。
+- RepositoryはDrizzle経由でSQLiteを操作し、DB rowからEntityへの変換を行う。
 - AdapterはPortを外部サービスへ接続する。
 - Drizzle schemaは`src/infrastructure/database/schema.ts`に置く。
-- Schema変更時は`migrations/`に新しいSQL fileを追加する。
-- 適用済みのmigrationは変更しない。
+- Schema変更時は`migrations/`に新しいSQLite migrationを生成する。
+- 適用済みmigrationは変更しない。
 - HTTPの入力処理と業務ルールは書かない。
+- ReservationとPOSの書き込みはSQLiteの`BEGIN IMMEDIATE`相当のtransactionで直列化する。

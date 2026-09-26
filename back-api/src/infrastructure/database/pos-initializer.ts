@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { db } from '#infrastructure/database/mysqlPool.js'
+import { db } from '#infrastructure/database/sqlite.js'
 import { posProducts } from '#infrastructure/database/schema.js'
 
 const PRODUCT_IMAGE_DIR = 'products'
@@ -26,7 +26,7 @@ const INITIAL_PRODUCTS = [
   ['screen-pin', 'スクリーンピンズ', 'goods', 750, 'screen-pin.webp', 75],
 ] as const
 
-// The name remains for compatibility with the startup sequence. Schema creation is
+// The name remains for compatibility with the application bootstrap. Schema creation is
 // exclusively handled by Drizzle migrations; this function only seeds the catalog.
 export async function ensurePosSchema(): Promise<void> {
   for (const [slug, name, category, price, imageFile, stockQuantity] of INITIAL_PRODUCTS) {
@@ -37,17 +37,18 @@ export async function ensurePosSchema(): Promise<void> {
         name,
         category,
         price,
-        imageUrl: `${PRODUCT_IMAGE_DIR}/${imageFile}`,
+        imageUrl: PRODUCT_IMAGE_DIR + '/' + imageFile,
         stockQuantity,
         isActive: stockQuantity > 0,
       })
-      .onDuplicateKeyUpdate({
+      .onConflictDoUpdate({
+        target: posProducts.slug,
         // Preserve the operational inventory state of existing catalog entries.
         set: {
-          name: sql`VALUES(${posProducts.name})`,
-          category: sql`VALUES(${posProducts.category})`,
-          price: sql`VALUES(${posProducts.price})`,
-          imageUrl: sql`VALUES(${posProducts.imageUrl})`,
+          name: sql.raw('excluded.name'),
+          category: sql.raw('excluded.category'),
+          price: sql.raw('excluded.price'),
+          imageUrl: sql.raw('excluded.image_url'),
         },
       })
   }

@@ -1,5 +1,5 @@
 import { asc, eq } from 'drizzle-orm'
-import { db } from '#infrastructure/database/mysqlPool.js'
+import { db } from '#infrastructure/database/sqlite.js'
 import { screenSeatLayouts, screens } from '#infrastructure/database/schema.js'
 import type { Screen } from '#domain/entities/screen.js'
 import type { ScreenRepository } from '#domain/interfaces/repositories/screen-repository.js'

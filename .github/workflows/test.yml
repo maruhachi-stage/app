@@ -73,15 +73,19 @@ jobs:
         app:
           - name: front-web
             directory: front-web
+            node-version: 20
             filter: front
           - name: admin-web
             directory: admin-web
+            node-version: 20
             filter: admin
           - name: back-api
             directory: back-api
+            node-version: 26
             filter: back
           - name: image-server
             directory: image-server
+            node-version: 20
             filter: image
 
     defaults:
@@ -109,7 +113,7 @@ jobs:
         if: steps.scope.outputs.run == 'true'
         uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: ${{ matrix.app.node-version }}
           cache: npm
           cache-dependency-path: ${{ matrix.app.directory }}/package-lock.json
 
@@ -124,13 +128,6 @@ jobs:
   integration:
     name: back-api-integration
     runs-on: ubuntu-latest
-    env:
-      NODE_ENV: test
-      DB_HOST: 127.0.0.1
-      DB_PORT: 3307
-      DB_NAME: hal_cinema_test
-      DB_USER: hal_user
-      DB_PASSWORD: hal_pass
     steps:
       - name: リポジトリをチェックアウト
         uses: actions/checkout@v7
@@ -138,7 +135,7 @@ jobs:
       - name: Node.jsをセットアップ
         uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 26
           cache: npm
           cache-dependency-path: back-api/package-lock.json
 
@@ -146,19 +143,6 @@ jobs:
         working-directory: back-api
         run: npm install --ignore-scripts --no-audit --no-fund
 
-      - name: テスト用MySQLを起動
-        working-directory: back-api
-        run: npm run db:test:up
-
-      - name: マイグレーションを適用
-        working-directory: back-api
-        run: npm run db:test:migrate
-
       - name: Integration Test
         working-directory: back-api
         run: npm run test:integration
-
-      - name: テスト用MySQLを停止
-        if: always()
-        working-directory: back-api
-        run: npm run db:test:down

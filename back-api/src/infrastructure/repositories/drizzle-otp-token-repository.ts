@@ -1,6 +1,6 @@
-import { and, desc, eq, gt, sql } from 'drizzle-orm'
+import { and, desc, eq, gt } from 'drizzle-orm'
 import type { OtpPurpose } from '#application/dto/auth.js'
-import { db } from '#infrastructure/database/mysqlPool.js'
+import { db } from '#infrastructure/database/sqlite.js'
 import { otpTokens } from '#infrastructure/database/schema.js'
 import type { OtpToken } from '#domain/entities/otp-token.js'
 import type { OtpTokenRepository } from '#domain/interfaces/repositories/otp-token-repository.js'
@@ -11,6 +11,7 @@ export class DrizzleOtpTokenRepository implements OtpTokenRepository {
     purpose: OtpPurpose,
     sinceSeconds: number,
   ): Promise<OtpToken | null> {
+    const since = new Date(Date.now() - sinceSeconds * 1000)
     const [row] = await db
       .select()
       .from(otpTokens)
@@ -18,12 +19,13 @@ export class DrizzleOtpTokenRepository implements OtpTokenRepository {
         and(
           eq(otpTokens.memberId, memberId),
           eq(otpTokens.purpose, purpose),
-          gt(otpTokens.createdAt, sql`DATE_SUB(NOW(3), INTERVAL ${sinceSeconds} SECOND)`),
+          gt(otpTokens.createdAt, since),
         ),
       )
       .limit(1)
     return row ? this.token(row) : null
   }
+
   async create(
     memberId: number,
     tokenHash: string,
@@ -32,6 +34,7 @@ export class DrizzleOtpTokenRepository implements OtpTokenRepository {
   ): Promise<void> {
     await db.insert(otpTokens).values({ memberId, tokenHash, purpose, expiresAt })
   }
+
   async findLatest(memberId: number, purpose: OtpPurpose): Promise<OtpToken | null> {
     const [row] = await db
       .select()
@@ -41,24 +44,24 @@ export class DrizzleOtpTokenRepository implements OtpTokenRepository {
       .limit(1)
     return row ? this.token(row) : null
   }
+
   async recordFailure(id: number, failedAttempts: number, lockedUntil?: Date): Promise<void> {
     await db
       .update(otpTokens)
       .set(lockedUntil ? { failedAttempts, lockedUntil } : { failedAttempts })
       .where(eq(otpTokens.id, id))
   }
+
   async markUsed(id: number): Promise<void> {
-    await db
-      .update(otpTokens)
-      .set({ usedAt: sql`NOW(3)` })
-      .where(eq(otpTokens.id, id))
+    await db.update(otpTokens).set({ usedAt: new Date() }).where(eq(otpTokens.id, id))
   }
+
   private token(row: typeof otpTokens.$inferSelect): OtpToken {
     return {
       id: row.id,
       memberId: row.memberId,
       tokenHash: row.tokenHash,
-      purpose: row.purpose as OtpPurpose,
+      purpose: row.purpose,
       expiresAt: row.expiresAt,
       usedAt: row.usedAt,
       failedAttempts: row.failedAttempts,

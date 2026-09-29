@@ -1,26 +1,27 @@
-import { and, asc, desc, eq, sql } from 'drizzle-orm'
-import { db } from '#infrastructure/database/mysqlPool.js'
+import { and, asc, desc, eq, gte, lt, sql } from 'drizzle-orm'
+import { db } from '#infrastructure/database/sqlite.js'
 import { schedules, screens, screenings } from '#infrastructure/database/schema.js'
 import type { Movie } from '#domain/entities/movie.js'
 import type { MovieSchedule } from '#domain/entities/movie-schedule.js'
 import type { PublicSchedule } from '#domain/entities/public-schedule.js'
 import type { MovieRepository } from '#domain/interfaces/repositories/movie-repository.js'
+import { jstDateUtcRange } from '#lib/jst-date-range.js'
 import { screeningThumbnail } from './screening-thumbnail.js'
 
-const remainingSeats = sql<number>`${screens.totalSeats} - COALESCE((
+const remainingSeats = (now: Date) => sql<number>`${screens.totalSeats} - COALESCE((
   SELECT COUNT(*) FROM reservation_seats rs
   JOIN reservations r ON r.id = rs.reservation_id
   WHERE rs.schedule_id = ${schedules.id}
-    AND (r.status = 'confirmed' OR (r.status = 'pending' AND r.expires_at > CURRENT_TIMESTAMP(3)))
+    AND (r.status = 'confirmed' OR (r.status = 'pending' AND r.expires_at > ${now.getTime()}))
 ), 0)`
 
-const hasPublicScheduleOn = (date: string) => sql`
-  ${screenings.id} IN (
+const hasPublicScheduleOn = (date: string) => {
+  const { start, end } = jstDateUtcRange(date)
+  return sql`${screenings.id} IN (
     SELECT DISTINCT screening_id FROM schedules
-    WHERE is_public = 1
-      AND DATE(CONVERT_TZ(starts_at, '+00:00', '+09:00')) = ${date}
-  )
-`
+    WHERE is_public = 1 AND starts_at >= ${start.getTime()} AND starts_at < ${end.getTime()}
+  )`
+}
 
 export class DrizzleMovieRepository implements MovieRepository {
   async findMovies({
@@ -68,8 +69,10 @@ export class DrizzleMovieRepository implements MovieRepository {
 
   async findSchedulesByMovieId(movieId: number, date?: string): Promise<MovieSchedule[]> {
     const conditions = [eq(schedules.screeningId, movieId), eq(schedules.isPublic, true)]
-    if (date)
-      conditions.push(sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${date}`)
+    if (date) {
+      const { start, end } = jstDateUtcRange(date)
+      conditions.push(gte(schedules.startsAt, start), lt(schedules.startsAt, end))
+    }
 
     const rows = await db
       .select({
@@ -77,7 +80,7 @@ export class DrizzleMovieRepository implements MovieRepository {
         screenName: screens.name,
         startsAt: schedules.startsAt,
         endsAt: schedules.endsAt,
-        remainingSeats,
+        remainingSeats: remainingSeats(new Date()),
         totalSeats: screens.totalSeats,
       })
       .from(schedules)
@@ -104,7 +107,7 @@ export class DrizzleMovieRepository implements MovieRepository {
         screenName: screens.name,
         startsAt: schedules.startsAt,
         endsAt: schedules.endsAt,
-        remainingSeats,
+        remainingSeats: remainingSeats(new Date()),
         totalSeats: screens.totalSeats,
       })
       .from(schedules)

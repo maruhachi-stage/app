@@ -1,6 +1,6 @@
-import { alias } from 'drizzle-orm/mysql-core'
-import { and, asc, desc, eq, ne, sql } from 'drizzle-orm'
-import { db } from '#infrastructure/database/mysqlPool.js'
+import { alias } from 'drizzle-orm/sqlite-core'
+import { and, asc, desc, eq, gte, lt, ne, sql } from 'drizzle-orm'
+import { db } from '#infrastructure/database/sqlite.js'
 import {
   reservations,
   reservationSeats,
@@ -14,16 +14,17 @@ import type {
   FindStagesCriteria,
   StageRepository,
 } from '#domain/interfaces/repositories/stage-repository.js'
+import { jstDateUtcRange } from '#lib/jst-date-range.js'
 import { screeningThumbnail } from './screening-thumbnail.js'
 
 const reservedSeats = alias(reservationSeats, 'reserved_seats')
 const seatReservations = alias(reservations, 'seat_reservations')
 
-const remainingSeats = sql<number>`${screens.totalSeats} - COALESCE((
+const remainingSeats = (now: Date) => sql<number>`${screens.totalSeats} - COALESCE((
   SELECT COUNT(*) FROM ${reservedSeats}
   JOIN ${seatReservations} ON ${seatReservations.id} = ${reservedSeats.reservationId}
   WHERE ${reservedSeats.scheduleId} = ${schedules.id}
-    AND (${seatReservations.status} = 'confirmed' OR (${seatReservations.status} = 'pending' AND ${seatReservations.expiresAt} > CURRENT_TIMESTAMP(3)))
+    AND (${seatReservations.status} = 'confirmed' OR (${seatReservations.status} = 'pending' AND ${seatReservations.expiresAt} > ${now.getTime()}))
 ), 0)`
 
 const toStage = (row: {
@@ -59,15 +60,17 @@ export class DrizzleStageRepository implements StageRepository {
 
   async findSchedulesByStageId(stageId: number, date?: string): Promise<StageSchedule[]> {
     const conditions = [eq(schedules.screeningId, stageId), eq(schedules.isPublic, true)]
-    if (date)
-      conditions.push(sql`DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${date}`)
+    if (date) {
+      const { start, end } = jstDateUtcRange(date)
+      conditions.push(gte(schedules.startsAt, start), lt(schedules.startsAt, end))
+    }
     const rows = await db
       .select({
         scheduleId: schedules.id,
         screenName: screens.name,
         startsAt: schedules.startsAt,
         endsAt: schedules.endsAt,
-        remainingSeats,
+        remainingSeats: remainingSeats(new Date()),
         totalSeats: screens.totalSeats,
       })
       .from(schedules)
@@ -86,11 +89,13 @@ export class DrizzleStageRepository implements StageRepository {
       criteria.type ? eq(screenings.type, criteria.type) : ne(screenings.type, 'movie'),
     ]
     if (criteria.status) conditions.push(eq(screenings.status, criteria.status))
-    if (criteria.date)
+    if (criteria.date) {
+      const { start, end } = jstDateUtcRange(criteria.date)
       conditions.push(sql`${screenings.id} IN (
-      SELECT DISTINCT ${schedules.screeningId} FROM ${schedules}
-      WHERE ${schedules.isPublic} = true AND DATE(CONVERT_TZ(${schedules.startsAt}, '+00:00', '+09:00')) = ${criteria.date}
-    )`)
+        SELECT DISTINCT ${schedules.screeningId} FROM ${schedules}
+        WHERE ${schedules.isPublic} = true AND ${schedules.startsAt} >= ${start.getTime()} AND ${schedules.startsAt} < ${end.getTime()}
+      )`)
+    }
     const rows = await db
       .select({
         id: screenings.id,

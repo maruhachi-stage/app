@@ -1,5 +1,5 @@
 import { asc, count, eq } from 'drizzle-orm'
-import { db } from '#infrastructure/database/mysqlPool.js'
+import { db } from '#infrastructure/database/sqlite.js'
 import { screenSeatLayouts, screens, seats } from '#infrastructure/database/schema.js'
 import type { AdminScreen } from '#domain/entities/admin-screen.js'
 import type { AdminScreenRepository } from '#domain/interfaces/repositories/admin-screen-repository.js'

@@ -1,67 +1,44 @@
-import { sql } from 'drizzle-orm'
-import {
-  bigint,
-  boolean,
-  char,
-  datetime,
-  decimal,
-  index,
-  int,
-  mysqlEnum,
-  mysqlTable,
-  smallint,
-  text,
-  uniqueIndex,
-  varchar,
-} from 'drizzle-orm/mysql-core'
+import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
-const timestamp = (name: string) =>
-  datetime(name, { fsp: 3, mode: 'date' })
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP(3)`)
+const timestamp = (name: string) => integer(name, { mode: 'timestamp_ms' }).notNull().defaultNow()
 
-const updatedTimestamp = (name: string) =>
-  timestamp(name).$onUpdateFn(() => sql`CURRENT_TIMESTAMP(3)`)
+const updatedTimestamp = (name: string) => timestamp(name).$onUpdateFn(() => new Date())
 
 export const otpPurposeValues = ['login', 'register'] as const
 export const screenSizeValues = ['large', 'medium', 'small'] as const
 export const screeningTypeValues = ['movie', 'stage', 'event'] as const
 export const screeningStatusValues = ['now_showing', 'coming_soon'] as const
 export const reservationBookingTypeValues = ['member', 'guest'] as const
-export const reservationStatus = mysqlEnum('reservation_status', [
-  'pending',
-  'confirmed',
-  'cancelled',
-])
+export const reservationStatusValues = ['pending', 'confirmed', 'cancelled'] as const
 export const ticketTypeValues = ['general', 'university', 'highschool', 'child'] as const
 export const productCategoryValues = ['goods', 'food', 'drink', 'set'] as const
 export const paymentMethodValues = ['cash', 'card', 'qr'] as const
 
-export const members = mysqlTable(
+export const members = sqliteTable(
   'members',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    email: varchar({ length: 254 }).notNull(),
-    name: varchar({ length: 100 }),
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    email: text('email').notNull(),
+    name: text('name'),
     createdAt: timestamp('created_at'),
     updatedAt: updatedTimestamp('updated_at'),
   },
   (table) => [uniqueIndex('uq_members_email').on(table.email)],
 )
 
-export const otpTokens = mysqlTable(
+export const otpTokens = sqliteTable(
   'otp_tokens',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    memberId: bigint('member_id', { mode: 'number', unsigned: true })
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    memberId: integer('member_id')
       .notNull()
       .references(() => members.id, { onDelete: 'cascade' }),
-    tokenHash: char('token_hash', { length: 64 }).notNull(),
-    purpose: mysqlEnum('purpose', otpPurposeValues).notNull(),
-    expiresAt: datetime('expires_at', { fsp: 3, mode: 'date' }).notNull(),
-    usedAt: datetime('used_at', { fsp: 3, mode: 'date' }),
-    failedAttempts: smallint('failed_attempts', { unsigned: true }).notNull().default(0),
-    lockedUntil: datetime('locked_until', { fsp: 3, mode: 'date' }),
+    tokenHash: text('token_hash').notNull(),
+    purpose: text('purpose', { enum: otpPurposeValues }).notNull(),
+    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
+    usedAt: integer('used_at', { mode: 'timestamp_ms' }),
+    failedAttempts: integer('failed_attempts').notNull().default(0),
+    lockedUntil: integer('locked_until', { mode: 'timestamp_ms' }),
     createdAt: timestamp('created_at'),
     updatedAt: updatedTimestamp('updated_at'),
   },
@@ -71,26 +48,26 @@ export const otpTokens = mysqlTable(
   ],
 )
 
-export const screens = mysqlTable('screens', {
-  id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-  name: varchar({ length: 50 }).notNull(),
-  size: mysqlEnum('size', screenSizeValues).notNull(),
-  totalSeats: int('total_seats', { unsigned: true }).notNull(),
+export const screens = sqliteTable('screens', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  name: text('name').notNull(),
+  size: text('size', { enum: screenSizeValues }).notNull(),
+  totalSeats: integer('total_seats').notNull(),
   createdAt: timestamp('created_at'),
   updatedAt: updatedTimestamp('updated_at'),
 })
 
-export const screenings = mysqlTable(
+export const screenings = sqliteTable(
   'screenings',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    type: mysqlEnum('type', screeningTypeValues).notNull(),
-    title: varchar({ length: 200 }).notNull(),
-    description: text().notNull(),
-    durationMin: smallint('duration_min', { unsigned: true }).notNull(),
-    status: mysqlEnum('status', screeningStatusValues).notNull(),
-    playwright: varchar({ length: 100 }),
-    director: varchar({ length: 100 }),
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    type: text('type', { enum: screeningTypeValues }).notNull(),
+    title: text('title').notNull(),
+    description: text('description').notNull(),
+    durationMin: integer('duration_min').notNull(),
+    status: text('status', { enum: screeningStatusValues }).notNull(),
+    playwright: text('playwright'),
+    director: text('director'),
     createdAt: timestamp('created_at'),
     updatedAt: updatedTimestamp('updated_at'),
   },
@@ -102,72 +79,72 @@ export const screenings = mysqlTable(
 )
 
 // This is deliberately a polymorphic association: entityType/entityId have no database FK.
-export const images = mysqlTable(
+export const images = sqliteTable(
   'images',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    entityType: varchar('entity_type', { length: 50 }).notNull(),
-    entityId: bigint('entity_id', { mode: 'number', unsigned: true }).notNull(),
-    fileName: varchar('file_name', { length: 500 }).notNull(),
-    displayOrder: int('display_order', { unsigned: true }).notNull().default(1),
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    entityType: text('entity_type').notNull(),
+    entityId: integer('entity_id').notNull(),
+    fileName: text('file_name').notNull(),
+    displayOrder: integer('display_order').notNull().default(1),
     createdAt: timestamp('created_at'),
   },
   (table) => [index('idx_images_entity').on(table.entityType, table.entityId, table.displayOrder)],
 )
 
-export const schedules = mysqlTable(
+export const schedules = sqliteTable(
   'schedules',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    screeningId: bigint('screening_id', { mode: 'number', unsigned: true })
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    screeningId: integer('screening_id')
       .notNull()
       .references(() => screenings.id, { onDelete: 'restrict' }),
-    screenId: bigint('screen_id', { mode: 'number', unsigned: true })
+    screenId: integer('screen_id')
       .notNull()
       .references(() => screens.id, { onDelete: 'restrict' }),
-    startsAt: datetime('starts_at', { fsp: 3, mode: 'date' }).notNull(),
-    endsAt: datetime('ends_at', { fsp: 3, mode: 'date' }).notNull(),
-    isPublic: boolean('is_public').notNull().default(true),
+    startsAt: integer('starts_at', { mode: 'timestamp_ms' }).notNull(),
+    endsAt: integer('ends_at', { mode: 'timestamp_ms' }).notNull(),
+    isPublic: integer('is_public', { mode: 'boolean' }).notNull().default(true),
     createdAt: timestamp('created_at'),
     updatedAt: updatedTimestamp('updated_at'),
   },
   (table) => [index('idx_schedules_starts_at').on(table.startsAt)],
 )
 
-export const screenSeatLayouts = mysqlTable(
+export const screenSeatLayouts = sqliteTable(
   'screen_seat_layouts',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    screenId: bigint('screen_id', { mode: 'number', unsigned: true })
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    screenId: integer('screen_id')
       .notNull()
       .references(() => screens.id, { onDelete: 'restrict' }),
-    layoutVersion: int('layout_version', { unsigned: true }).notNull().default(1),
-    backgroundImageUrl: varchar('background_image_url', { length: 500 }).notNull(),
-    aspectRatioWidth: smallint('aspect_ratio_width', { unsigned: true }).notNull(),
-    aspectRatioHeight: smallint('aspect_ratio_height', { unsigned: true }).notNull(),
+    layoutVersion: integer('layout_version').notNull().default(1),
+    backgroundImageUrl: text('background_image_url').notNull(),
+    aspectRatioWidth: integer('aspect_ratio_width').notNull(),
+    aspectRatioHeight: integer('aspect_ratio_height').notNull(),
     createdAt: timestamp('created_at'),
     updatedAt: updatedTimestamp('updated_at'),
   },
   (table) => [uniqueIndex('uq_ssl_screen').on(table.screenId)],
 )
 
-export const seats = mysqlTable(
+export const seats = sqliteTable(
   'seats',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    screenId: bigint('screen_id', { mode: 'number', unsigned: true })
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    screenId: integer('screen_id')
       .notNull()
       .references(() => screens.id, { onDelete: 'restrict' }),
-    seatLayoutId: bigint('seat_layout_id', { mode: 'number', unsigned: true })
+    seatLayoutId: integer('seat_layout_id')
       .notNull()
       .references(() => screenSeatLayouts.id, { onDelete: 'cascade' }),
-    rowLabel: varchar('row_label', { length: 2 }).notNull(),
-    colNo: smallint('col_no', { unsigned: true }).notNull(),
-    positionTopPct: decimal('position_top_pct', { precision: 5, scale: 2 }).notNull(),
-    positionLeftPct: decimal('position_left_pct', { precision: 5, scale: 2 }).notNull(),
-    seatWidthPct: decimal('seat_width_pct', { precision: 5, scale: 2 }).notNull(),
-    seatHeightPct: decimal('seat_height_pct', { precision: 5, scale: 2 }).notNull(),
-    hitRadiusPct: decimal('hit_radius_pct', { precision: 5, scale: 2 }),
+    rowLabel: text('row_label').notNull(),
+    colNo: integer('col_no').notNull(),
+    positionTopPct: real('position_top_pct').notNull(),
+    positionLeftPct: real('position_left_pct').notNull(),
+    seatWidthPct: real('seat_width_pct').notNull(),
+    seatHeightPct: real('seat_height_pct').notNull(),
+    hitRadiusPct: real('hit_radius_pct'),
     createdAt: timestamp('created_at'),
   },
   (table) => [
@@ -175,25 +152,23 @@ export const seats = mysqlTable(
   ],
 )
 
-export const reservations = mysqlTable(
+export const reservations = sqliteTable(
   'reservations',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    reservationCode: varchar('reservation_code', { length: 12 }).notNull(),
-    scheduleId: bigint('schedule_id', { mode: 'number', unsigned: true })
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    reservationCode: text('reservation_code').notNull(),
+    scheduleId: integer('schedule_id')
       .notNull()
       .references(() => schedules.id, { onDelete: 'restrict' }),
-    memberId: bigint('member_id', { mode: 'number', unsigned: true }).references(() => members.id, {
-      onDelete: 'restrict',
-    }),
-    bookingType: mysqlEnum('booking_type', reservationBookingTypeValues)
+    memberId: integer('member_id').references(() => members.id, { onDelete: 'restrict' }),
+    bookingType: text('booking_type', { enum: reservationBookingTypeValues })
       .notNull()
       .default('member'),
-    customerName: varchar('customer_name', { length: 100 }),
-    customerEmail: varchar('customer_email', { length: 254 }),
-    status: reservationStatus.notNull().default('confirmed'),
-    expiresAt: datetime('expires_at', { fsp: 3, mode: 'date' }),
-    totalPrice: int('total_price', { unsigned: true }).notNull(),
+    customerName: text('customer_name'),
+    customerEmail: text('customer_email'),
+    status: text('status', { enum: reservationStatusValues }).notNull().default('confirmed'),
+    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }),
+    totalPrice: integer('total_price').notNull(),
     createdAt: timestamp('created_at'),
     updatedAt: updatedTimestamp('updated_at'),
   },
@@ -203,39 +178,39 @@ export const reservations = mysqlTable(
   ],
 )
 
-export const reservationSeats = mysqlTable(
+export const reservationSeats = sqliteTable(
   'reservation_seats',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    reservationId: bigint('reservation_id', { mode: 'number', unsigned: true })
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    reservationId: integer('reservation_id')
       .notNull()
       .references(() => reservations.id, { onDelete: 'cascade' }),
-    scheduleId: bigint('schedule_id', { mode: 'number', unsigned: true })
+    scheduleId: integer('schedule_id')
       .notNull()
       .references(() => schedules.id, { onDelete: 'restrict' }),
-    seatId: bigint('seat_id', { mode: 'number', unsigned: true })
+    seatId: integer('seat_id')
       .notNull()
       .references(() => seats.id, { onDelete: 'restrict' }),
-    ticketType: mysqlEnum('ticket_type', ticketTypeValues).notNull(),
-    price: int({ unsigned: true }).notNull(),
+    ticketType: text('ticket_type', { enum: ticketTypeValues }).notNull(),
+    price: integer('price').notNull(),
     createdAt: timestamp('created_at'),
   },
   (table) => [uniqueIndex('uq_rs_schedule_seat').on(table.scheduleId, table.seatId)],
 )
 
-export const products = mysqlTable(
+export const products = sqliteTable(
   'products',
   {
-    id: varchar({ length: 80 }).primaryKey(),
-    name: varchar({ length: 160 }).notNull(),
-    category: mysqlEnum('category', productCategoryValues).notNull(),
-    price: int({ unsigned: true }).notNull(),
-    description: text(),
-    imageUrl: varchar('image_url', { length: 500 }),
-    movieTitle: varchar('movie_title', { length: 160 }),
-    isNew: boolean('is_new').notNull().default(false),
-    isSoldOut: boolean('is_sold_out').notNull().default(false),
-    displayOrder: int('display_order', { unsigned: true }).notNull().default(0),
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    category: text('category', { enum: productCategoryValues }).notNull(),
+    price: integer('price').notNull(),
+    description: text('description'),
+    imageUrl: text('image_url'),
+    movieTitle: text('movie_title'),
+    isNew: integer('is_new', { mode: 'boolean' }).notNull().default(false),
+    isSoldOut: integer('is_sold_out', { mode: 'boolean' }).notNull().default(false),
+    displayOrder: integer('display_order').notNull().default(0),
     createdAt: timestamp('created_at'),
     updatedAt: updatedTimestamp('updated_at'),
   },
@@ -245,56 +220,56 @@ export const products = mysqlTable(
   ],
 )
 
-export const productOptionGroups = mysqlTable(
+export const productOptionGroups = sqliteTable(
   'product_option_groups',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    productId: varchar('product_id', { length: 80 })
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    productId: text('product_id')
       .notNull()
       .references(() => products.id, { onDelete: 'cascade' }),
-    groupKey: varchar('group_key', { length: 80 }).notNull(),
-    name: varchar({ length: 120 }).notNull(),
-    required: boolean().notNull().default(false),
-    displayOrder: int('display_order', { unsigned: true }).notNull().default(0),
+    groupKey: text('group_key').notNull(),
+    name: text('name').notNull(),
+    required: integer('required', { mode: 'boolean' }).notNull().default(false),
+    displayOrder: integer('display_order').notNull().default(0),
   },
   (table) => [uniqueIndex('uq_product_option_groups_key').on(table.productId, table.groupKey)],
 )
 
-export const productOptions = mysqlTable(
+export const productOptions = sqliteTable(
   'product_options',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    groupId: bigint('group_id', { mode: 'number', unsigned: true })
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    groupId: integer('group_id')
       .notNull()
       .references(() => productOptionGroups.id, { onDelete: 'cascade' }),
-    optionKey: varchar('option_key', { length: 80 }).notNull(),
-    label: varchar({ length: 120 }).notNull(),
-    priceDelta: int('price_delta').notNull().default(0),
-    displayOrder: int('display_order', { unsigned: true }).notNull().default(0),
+    optionKey: text('option_key').notNull(),
+    label: text('label').notNull(),
+    priceDelta: integer('price_delta').notNull().default(0),
+    displayOrder: integer('display_order').notNull().default(0),
   },
   (table) => [uniqueIndex('uq_product_options_key').on(table.groupId, table.optionKey)],
 )
 
-export const productNotes = mysqlTable('product_notes', {
-  id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-  productId: varchar('product_id', { length: 80 })
+export const productNotes = sqliteTable('product_notes', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  productId: text('product_id')
     .notNull()
     .references(() => products.id, { onDelete: 'cascade' }),
-  note: text().notNull(),
-  displayOrder: int('display_order', { unsigned: true }).notNull().default(0),
+  note: text('note').notNull(),
+  displayOrder: integer('display_order').notNull().default(0),
 })
 
-export const posProducts = mysqlTable(
+export const posProducts = sqliteTable(
   'pos_products',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    slug: varchar({ length: 80 }).notNull(),
-    name: varchar({ length: 160 }).notNull(),
-    category: mysqlEnum('category', productCategoryValues).notNull(),
-    price: int({ unsigned: true }).notNull(),
-    imageUrl: varchar('image_url', { length: 500 }),
-    stockQuantity: int('stock_quantity', { unsigned: true }),
-    isActive: boolean('is_active').notNull().default(true),
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    slug: text('slug').notNull(),
+    name: text('name').notNull(),
+    category: text('category', { enum: productCategoryValues }).notNull(),
+    price: integer('price').notNull(),
+    imageUrl: text('image_url'),
+    stockQuantity: integer('stock_quantity'),
+    isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
     createdAt: timestamp('created_at'),
     updatedAt: updatedTimestamp('updated_at'),
   },
@@ -304,13 +279,13 @@ export const posProducts = mysqlTable(
   ],
 )
 
-export const posSales = mysqlTable(
+export const posSales = sqliteTable(
   'pos_sales',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    saleCode: varchar('sale_code', { length: 16 }).notNull(),
-    totalAmount: int('total_amount', { unsigned: true }).notNull(),
-    paymentMethod: mysqlEnum('payment_method', paymentMethodValues).notNull(),
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    saleCode: text('sale_code').notNull(),
+    totalAmount: integer('total_amount').notNull(),
+    paymentMethod: text('payment_method', { enum: paymentMethodValues }).notNull(),
     createdAt: timestamp('created_at'),
   },
   (table) => [
@@ -319,20 +294,20 @@ export const posSales = mysqlTable(
   ],
 )
 
-export const posSaleItems = mysqlTable(
+export const posSaleItems = sqliteTable(
   'pos_sale_items',
   {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    saleId: bigint('sale_id', { mode: 'number', unsigned: true })
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    saleId: integer('sale_id')
       .notNull()
       .references(() => posSales.id, { onDelete: 'cascade' }),
-    productId: bigint('product_id', { mode: 'number', unsigned: true })
+    productId: integer('product_id')
       .notNull()
       .references(() => posProducts.id, { onDelete: 'restrict' }),
-    productName: varchar('product_name', { length: 160 }).notNull(),
-    unitPrice: int('unit_price', { unsigned: true }).notNull(),
-    quantity: int({ unsigned: true }).notNull(),
-    lineTotal: int('line_total', { unsigned: true }).notNull(),
+    productName: text('product_name').notNull(),
+    unitPrice: integer('unit_price').notNull(),
+    quantity: integer('quantity').notNull(),
+    lineTotal: integer('line_total').notNull(),
     createdAt: timestamp('created_at'),
   },
   (table) => [index('idx_pos_sale_items_sale').on(table.saleId)],

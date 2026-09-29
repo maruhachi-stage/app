@@ -1,5 +1,5 @@
 import { desc, eq } from 'drizzle-orm'
-import { db } from '#infrastructure/database/mysqlPool.js'
+import { db } from '#infrastructure/database/sqlite.js'
 import { reservations, schedules, screens, screenings } from '#infrastructure/database/schema.js'
 import type { MemberReservation } from '#domain/entities/member-reservation.js'
 import type { MemberReservationRepository } from '#domain/interfaces/repositories/member-reservation-repository.js'

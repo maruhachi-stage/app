@@ -1,5 +1,5 @@
 import { asc, eq, inArray } from 'drizzle-orm'
-import { db } from '#infrastructure/database/mysqlPool.js'
+import { db } from '#infrastructure/database/sqlite.js'
 import {
   productNotes,
   productOptionGroups,

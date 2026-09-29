@@ -26,3 +26,9 @@ lerna-debug.log*
 
 # misc
 .DS_Store
+
+# Local SQLite database files
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/*.db-journal

@@ -164,7 +164,7 @@ jobs:
       - name: Node.jsをセットアップ
         uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 26
           cache: npm
           cache-dependency-path: back-api/package-lock.json
 
@@ -186,25 +186,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: テスト用MySQLを起動
-        run: npm run db:test:up
-
-      - name: マイグレーションを適用
-        run: npm run db:test:migrate
-
       - name: Integration Test
-        env:
-          NODE_ENV: test
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3307
-          DB_NAME: hal_cinema_test
-          DB_USER: hal_user
-          DB_PASSWORD: hal_pass
         run: npm run test:integration
-
-      - name: テスト用MySQLを停止
-        if: always()
-        run: npm run db:test:down
 
   image-server:
     name: Image Server

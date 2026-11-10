@@ -17,7 +17,7 @@ npm install
 npm run dev
 ```
 
-標準の開発 URL は `http://localhost:5174` です。
+標準の開発 URL は `http://localhost:3040` です。
 
 ## Validation
 

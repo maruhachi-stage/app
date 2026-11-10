@@ -14,7 +14,7 @@ import type { MovieRepository } from '#domain/interfaces/repositories/movie-repo
 export class MovieService {
   constructor(
     private readonly movieRepository: MovieRepository,
-    private readonly imageBaseUrl = process.env.IMAGE_BASE_URL ?? 'http://localhost:3001',
+    private readonly imageBaseUrl = process.env.IMAGE_BASE_URL ?? 'http://localhost:3090',
   ) {}
 
   async listMovies(query: ListMoviesQueryDTO): Promise<MovieListResponseDTO> {

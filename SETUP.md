@@ -41,9 +41,9 @@ cd back-api
 npm.cmd run dev
 ```
 
-- 起動 URL: `http://localhost:3000`
-- Swagger UI: `http://localhost:3000/api/docs`
-- OpenAPI JSON: `http://localhost:3000/api/openapi.json`
+- 起動 URL: `http://localhost:3080`
+- Swagger UI: `http://localhost:3080/api/docs`
+- OpenAPI JSON: `http://localhost:3080/api/openapi.json`
 
 ### front-web / admin-web
 

@@ -25,7 +25,7 @@ export function maskEmail(email: string): string {
   return `${visible}***${email.slice(at)}`
 }
 
-const IMAGE_BASE = process.env.IMAGE_BASE_URL ?? 'http://localhost:3001'
+const IMAGE_BASE = process.env.IMAGE_BASE_URL ?? 'http://localhost:3090'
 
 export function imageUrl(filename: string | null): string | null {
   if (!filename) return null

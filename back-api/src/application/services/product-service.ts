@@ -9,7 +9,7 @@ import type { ProductRepository } from '#domain/interfaces/repositories/product-
 export class ProductService {
   constructor(
     private readonly repository: ProductRepository,
-    private readonly imageBaseUrl = process.env.IMAGE_BASE_URL ?? 'http://localhost:3001',
+    private readonly imageBaseUrl = process.env.IMAGE_BASE_URL ?? 'http://localhost:3090',
   ) {}
   async listProducts(query: ListProductsQueryDTO): Promise<ProductListResponseDTO> {
     return {

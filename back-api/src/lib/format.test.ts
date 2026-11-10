@@ -9,7 +9,7 @@ describe('format helpers', () => {
   })
 
   it('builds image URLs and preserves absolute URLs', () => {
-    expect(imageUrl('poster.png')).toBe('http://localhost:3001/images/poster.png')
+    expect(imageUrl('poster.png')).toBe('http://localhost:3090/images/poster.png')
     expect(imageUrl('https://cdn.example.com/poster.png')).toBe(
       'https://cdn.example.com/poster.png',
     )

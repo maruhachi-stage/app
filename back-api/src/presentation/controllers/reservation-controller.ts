@@ -84,7 +84,7 @@ export class ReservationController {
       seatList,
       totalPrice: result.totalPrice,
       qrCodeUrl,
-      reservationDetailUrl: `${process.env.BASE_URL ?? 'http://localhost:5173'}/reservations/r/${result.reservationCode}`,
+      reservationDetailUrl: `${process.env.BASE_URL ?? 'http://localhost:3030'}/reservations/r/${result.reservationCode}`,
     }).catch((err) => console.error('[EMAIL]', err))
     return c.json(
       successResponse(

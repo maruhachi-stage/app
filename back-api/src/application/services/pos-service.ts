@@ -9,7 +9,7 @@ import type { PosRepository } from '#domain/interfaces/repositories/pos-reposito
 export class PosService {
   constructor(
     private readonly repository: PosRepository,
-    private readonly imageBaseUrl = process.env.IMAGE_BASE_URL ?? 'http://localhost:3001',
+    private readonly imageBaseUrl = process.env.IMAGE_BASE_URL ?? 'http://localhost:3090',
   ) {}
   async listProducts(): Promise<PosProductListResponseDTO> {
     return {

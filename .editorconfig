@@ -20,11 +20,11 @@ indent_size         = 2
 [back-api/**/*.{ts,tsx,js,jsx}]
 indent_size = 2
 
-# front-web / admin-web: 4スペース
+# front-web / staff-app: 4スペース
 [front-web/**/*.{ts,tsx,js,jsx}]
 indent_size = 4
 
-[admin-web/**/*.{ts,tsx,js,jsx}]
+[staff-app/**/*.{ts,tsx,js,jsx}]
 indent_size = 4
 
 # ────────────────────────────────────────────

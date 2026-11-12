@@ -21,6 +21,14 @@ export const OTP_CONFIG = {
   LOCK_MIN: 15,
 } as const
 
+export const STAFF_SESSION_CONFIG = {
+  otpExpiresMin: OTP_CONFIG.EXPIRES_MIN,
+  maxOtpAttempts: OTP_CONFIG.MAX_ATTEMPTS,
+  maxLoginFailures: 5,
+  lockMin: OTP_CONFIG.LOCK_MIN,
+  sessionMaxAgeSec: 8 * 60 * 60,
+} as const
+
 export const RESERVATION_CONFIG = {
   HOLD_EXPIRES_MIN: 15,
 } as const

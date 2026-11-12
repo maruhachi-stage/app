@@ -6,6 +6,7 @@ describe('OpenAPI document', () => {
     expect(openApiDocument.openapi).toBe('3.0.3')
     expect(openApiDocument.paths['/api/v1/health']).toBeDefined()
     expect(openApiDocument.paths['/api/reservations']).toBeDefined()
-    expect(openApiDocument.paths['/api/admin/edit-access']).toBeDefined()
+    expect(openApiDocument.paths['/api/v1/staff/auth/login']).toBeDefined()
+    expect(openApiDocument.paths['/api/v1/staff/overview']).toBeDefined()
   })
 })

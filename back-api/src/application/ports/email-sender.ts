@@ -1,3 +1,4 @@
 export interface EmailSender {
-  sendOtp(to: string, code: string): Promise<void>
+  /** `subject` lets each flow label its own code while sharing the transport. */
+  sendOtp(to: string, code: string, subject?: string): Promise<void>
 }

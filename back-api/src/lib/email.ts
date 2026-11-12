@@ -8,7 +8,7 @@ function getResend(): Resend {
   return new Resend(key)
 }
 
-export async function sendOtpEmail(to: string, code: string): Promise<void> {
+export async function sendOtpEmail(to: string, code: string, purpose?: string): Promise<void> {
   if (!process.env.RESEND_API_KEY) {
     /*
      * =====================================================================
@@ -18,7 +18,7 @@ export async function sendOtpEmail(to: string, code: string): Promise<void> {
      * もし本番相当環境でこのログが出る場合は設定不備として即時対処すること。
      * =====================================================================
      */
-    console.log(`[DEV] OTP for ${to}: ${code}`)
+    console.log(`[DEV] OTP for ${to}${purpose ? ` (${purpose})` : ''}: ${code}`)
     return
   }
   const resend = getResend()

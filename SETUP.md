@@ -11,7 +11,7 @@ back-apiのCIはNode.js 26で実行します。ほかのアプリは現在のCI 
 ## プロジェクト構成
 
 - `front-web` : React Router v7 フロントエンド
-- `admin-web` : React Router v7 管理画面
+- `staff-app` : React Router v7 スタッフ画面
 - `back-api` : Hono API + Drizzle ORM + ローカルSQLite
 
 ## 初回セットアップ
@@ -22,7 +22,7 @@ PowerShellでnpmの実行ポリシーエラーが出る場合は、`npm` の代�
 cd front-web
 npm.cmd install
 
-cd ../admin-web
+cd ../staff-app
 npm.cmd install
 
 cd ../back-api
@@ -31,6 +31,15 @@ npm.cmd run db:migrate
 ```
 
 back-apiは `DB_FILE`（既定値 `./data/app.db`）へSQLiteファイルを自動作成します。DB用Dockerや外部DBの起動は不要です。完全初期化する場合は `npm.cmd run db:reset` を実行してください。
+
+スタッフ画面のログインに使う初期アカウントは、migration適用後に作成します。
+
+```powershell
+cd back-api
+npm.cmd run db:bootstrap-staff
+```
+
+ユーザーID、表示名、メールアドレス、12文字以上のパスワード、ロールID（10:閲覧者 / 20:編集者 / 99:管理者）を入力します。
 
 ## 起動方法
 
@@ -45,7 +54,7 @@ npm.cmd run dev
 - Swagger UI: `http://localhost:3000/api/docs`
 - OpenAPI JSON: `http://localhost:3000/api/openapi.json`
 
-### front-web / admin-web
+### front-web / staff-app
 
 各ディレクトリで依存関係をインストールしてから開発サーバーを起動します。
 
@@ -55,7 +64,7 @@ npm.cmd run dev
 ```
 
 ```powershell
-cd admin-web
+cd staff-app
 npm.cmd run dev
 ```
 
@@ -70,7 +79,7 @@ Integration Testは `DB_TEST_FILE`（既定値 `./data/test.db`）を使い、�
 
 ## VS Code
 
-`.vscode/launch.json` の `front-web run`、`back-api run`、`admin-web run`、`all dev` から起動できます。`db:setup` はback-apiのmigrationとseedを適用します。
+`.vscode/launch.json` の `front-web run`、`back-api run`、`staff-app run`、`all dev` から起動できます。`db:setup` はback-apiのmigrationとseedを適用します。
 
 ## 推奨拡張
 

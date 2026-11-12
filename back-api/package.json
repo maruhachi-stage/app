@@ -21,28 +21,28 @@
     "test:integration": "tsx src/scripts/test-integration.ts"
   },
   "dependencies": {
-    "@hono/node-server": "^2.1.1",
-    "@hono/swagger-ui": "^0.6.1",
-    "drizzle-orm": "^1.0.0-rc.4",
-    "hono": "^4.12.15",
-    "resend": "^6.12.2",
-    "zod": "^4.3.6"
+    "@hono/node-server": "^2.1.6",
+    "@hono/swagger-ui": "^0.6.2",
+    "drizzle-orm": "^1.0.0-rc.5",
+    "hono": "^4.13.17",
+    "resend": "^6.37.0",
+    "zod": "^4.6.7"
   },
   "imports": {
     "#*": "./src/*"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^26.4.0",
-    "dotenv": "^17.4.2",
-    "drizzle-kit": "^1.0.0-rc.4",
-    "eslint": "^10.9.1",
-    "globals": "^17.11.0",
-    "prettier": "^3.9.6",
-    "tsx": "^4.7.1",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.69.0",
-    "vitest": "^4.1.11"
+    "@types/node": "^26.6.6",
+    "dotenv": "^18.0.10",
+    "drizzle-kit": "^1.0.0-rc.5",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.1.0"
   },
   "engines": {
     "node": ">=22.5.0"

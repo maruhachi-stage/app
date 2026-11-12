@@ -21,9 +21,18 @@ import { ScreenController } from '#presentation/controllers/screen-controller.js
 import { ConfigController } from '#presentation/controllers/config-controller.js'
 import { ProductController } from '#presentation/controllers/product-controller.js'
 import { PosController } from '#presentation/controllers/pos-controller.js'
-import { AdminController } from '#presentation/controllers/admin-controller.js'
-import { DrizzleAdminScreenRepository } from '#infrastructure/repositories/drizzle-admin-screen-repository.js'
-import { AdminOverviewService } from '#application/services/admin-overview-service.js'
+import { StaffAuthController } from '#presentation/controllers/staff-auth-controller.js'
+import { StaffOverviewController } from '#presentation/controllers/staff-overview-controller.js'
+import { StaffAuthService } from '#application/services/staff-auth-service.js'
+import { StaffOverviewService } from '#application/services/staff-overview-service.js'
+import { DrizzleStaffAccountRepository } from '#infrastructure/repositories/drizzle-staff-account-repository.js'
+import { DrizzleStaffOtpChallengeRepository } from '#infrastructure/repositories/drizzle-staff-otp-challenge-repository.js'
+import { DrizzleStaffSessionRepository } from '#infrastructure/repositories/drizzle-staff-session-repository.js'
+import { DrizzleStaffAuditLogRepository } from '#infrastructure/repositories/drizzle-staff-audit-log-repository.js'
+import { DrizzleStaffScreenRepository } from '#infrastructure/repositories/drizzle-staff-screen-repository.js'
+import { ScryptPasswordHasher } from '#infrastructure/adapters/scrypt-password-hasher.js'
+import { SecureTokenGenerator } from '#infrastructure/adapters/secure-token-generator.js'
+import { STAFF_SESSION_CONFIG } from '#lib/constants.js'
 import { ConfigService } from '#application/services/config-service.js'
 import { DrizzleProductRepository } from '#infrastructure/repositories/drizzle-product-repository.js'
 import { DrizzlePosRepository } from '#infrastructure/repositories/drizzle-pos-repository.js'
@@ -38,7 +47,23 @@ import { checkRateLimit } from '#lib/rateLimit.js'
  * Composition root dependencies. Feature services are added here as they are
  * migrated, keeping framework and database construction out of application code.
  */
+
+/** Shared by the controller and the session middleware. */
+export const staffAuthService = new StaffAuthService(
+  new DrizzleStaffAccountRepository(),
+  new DrizzleStaffOtpChallengeRepository(),
+  new DrizzleStaffSessionRepository(),
+  new DrizzleStaffAuditLogRepository(),
+  new ScryptPasswordHasher(),
+  new SecureTokenGenerator(),
+  new CryptoOtpCodeGenerator(),
+  new ResendEmailSender(),
+  new InMemoryRateLimiter(),
+  STAFF_SESSION_CONFIG,
+)
+
 export const container = {
+  staffAuthService,
   movieController: new MovieController(new MovieService(new DrizzleMovieRepository())),
   stageController: new StageController(new StageQueryService(new DrizzleStageRepository())),
   screenController: new ScreenController(new ScreenQueryService(new DrizzleScreenRepository())),
@@ -60,8 +85,9 @@ export const container = {
   memberController: new MemberController(
     new MemberService(new DrizzleMemberRepository(), new DrizzleMemberReservationRepository()),
   ),
-  adminController: new AdminController(
-    new AdminOverviewService(new DrizzleAdminScreenRepository()),
+  staffAuthController: new StaffAuthController(staffAuthService),
+  staffOverviewController: new StaffOverviewController(
+    new StaffOverviewService(new DrizzleStaffScreenRepository()),
   ),
   configController: new ConfigController(new ConfigService()),
   productController: new ProductController(new ProductService(new DrizzleProductRepository())),

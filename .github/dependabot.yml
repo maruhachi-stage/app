@@ -12,7 +12,7 @@ updates:
           - "*"
 
   - package-ecosystem: npm
-    directory: /admin-web
+    directory: /staff-app
     schedule:
       interval: weekly
     open-pull-requests-limit: 5

@@ -16,11 +16,11 @@
       "cwd": "${workspaceFolder}\\back-api"
     },
     {
-      "name": "admin-web run",
+      "name": "staff-app run",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run dev",
-      "cwd": "${workspaceFolder}\\admin-web"
+      "cwd": "${workspaceFolder}\\staff-app"
     },
     {
       "name": "db:setup",
@@ -51,7 +51,7 @@
         "db:setup",
         "back-api run",
         "front-web run",
-        "admin-web run",
+        "staff-app run",
         "image-server run"
       ]
     }

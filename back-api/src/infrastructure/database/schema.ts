@@ -13,6 +13,7 @@ export const reservationStatusValues = ['pending', 'confirmed', 'cancelled'] as 
 export const ticketTypeValues = ['general', 'university', 'highschool', 'child'] as const
 export const productCategoryValues = ['goods', 'food', 'drink', 'set'] as const
 export const paymentMethodValues = ['cash', 'card', 'qr'] as const
+export const staffAccountStatusValues = ['active', 'suspended'] as const
 
 export const members = sqliteTable(
   'members',
@@ -56,6 +57,91 @@ export const screens = sqliteTable('screens', {
   createdAt: timestamp('created_at'),
   updatedAt: updatedTimestamp('updated_at'),
 })
+
+/**
+ * Internal operators. Role definitions live in src/domain/entities/staff-account.ts
+ * because they are business rules rather than database rows.
+ */
+export const staffAccounts = sqliteTable(
+  'staff_accounts',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    userId: text('user_id').notNull(),
+    displayName: text('display_name').notNull(),
+    email: text('email').notNull(),
+    passwordHash: text('password_hash').notNull(),
+    roleId: integer('role_id').notNull(),
+    status: text('status', { enum: staffAccountStatusValues }).notNull().default('active'),
+    failedLoginCount: integer('failed_login_count').notNull().default(0),
+    lockedUntil: integer('locked_until', { mode: 'timestamp_ms' }),
+    lastLoginAt: integer('last_login_at', { mode: 'timestamp_ms' }),
+    createdAt: timestamp('created_at'),
+    updatedAt: updatedTimestamp('updated_at'),
+  },
+  (table) => [
+    uniqueIndex('uq_staff_accounts_user_id').on(table.userId),
+    uniqueIndex('uq_staff_accounts_email').on(table.email),
+  ],
+)
+
+export const staffOtpChallenges = sqliteTable(
+  'staff_otp_challenges',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    challengeTokenHash: text('challenge_token_hash').notNull(),
+    staffAccountId: integer('staff_account_id')
+      .notNull()
+      .references(() => staffAccounts.id, { onDelete: 'cascade' }),
+    otpHash: text('otp_hash').notNull(),
+    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
+    usedAt: integer('used_at', { mode: 'timestamp_ms' }),
+    failedAttempts: integer('failed_attempts').notNull().default(0),
+    createdAt: timestamp('created_at'),
+  },
+  (table) => [
+    uniqueIndex('uq_staff_otp_challenge_token').on(table.challengeTokenHash),
+    index('idx_staff_otp_account').on(table.staffAccountId, table.createdAt),
+  ],
+)
+
+export const staffSessions = sqliteTable(
+  'staff_sessions',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    tokenHash: text('token_hash').notNull(),
+    staffAccountId: integer('staff_account_id')
+      .notNull()
+      .references(() => staffAccounts.id, { onDelete: 'cascade' }),
+    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
+    revokedAt: integer('revoked_at', { mode: 'timestamp_ms' }),
+    lastSeenAt: integer('last_seen_at', { mode: 'timestamp_ms' }),
+    ipAddress: text('ip_address'),
+    userAgent: text('user_agent'),
+    createdAt: timestamp('created_at'),
+  },
+  (table) => [
+    uniqueIndex('uq_staff_session_token').on(table.tokenHash),
+    index('idx_staff_session_account').on(table.staffAccountId, table.expiresAt),
+  ],
+)
+
+export const staffAuditLogs = sqliteTable(
+  'staff_audit_logs',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    staffAccountId: integer('staff_account_id').references(() => staffAccounts.id, {
+      onDelete: 'set null',
+    }),
+    action: text('action').notNull(),
+    targetType: text('target_type'),
+    targetId: text('target_id'),
+    requestId: text('request_id'),
+    ipAddress: text('ip_address'),
+    metadata: text('metadata'),
+    createdAt: timestamp('created_at'),
+  },
+  (table) => [index('idx_staff_audit_account').on(table.staffAccountId, table.createdAt)],
+)
 
 export const screenings = sqliteTable(
   'screenings',

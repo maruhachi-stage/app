@@ -8,7 +8,7 @@ await seedSchedules()
 await ensureProductCatalogSchema()
 await ensurePosSchema()
 
-const port = Number(process.env.PORT ?? 3000)
+const port = Number(process.env.PORT ?? 3080)
 
 serve({ fetch: app.fetch, port }, (info) => {
   console.log(`Server is running on http://localhost:${info.port}`)

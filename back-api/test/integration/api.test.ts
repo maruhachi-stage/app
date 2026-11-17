@@ -427,7 +427,7 @@ describe('back-api SQLite integration', () => {
       headers: {
         'Content-Type': 'application/json',
         Cookie: sessionCookie!.split(';')[0],
-        Origin: 'http://localhost:5173',
+        Origin: 'http://localhost:3030',
       },
       body: JSON.stringify({
         userId: 'integration-viewer',
@@ -447,7 +447,7 @@ describe('back-api SQLite integration', () => {
         headers: {
           'Content-Type': 'application/json',
           Cookie: sessionCookie!.split(';')[0],
-          Origin: 'http://localhost:5173',
+          Origin: 'http://localhost:3030',
         },
         body: JSON.stringify({ displayName: 'Integration Viewer Updated' }),
       },
@@ -458,7 +458,7 @@ describe('back-api SQLite integration', () => {
       method: 'POST',
       headers: {
         Cookie: sessionCookie!.split(';')[0],
-        Origin: 'http://localhost:5173',
+        Origin: 'http://localhost:3030',
       },
     })
     expect(logoutResponse.status).toBe(200)

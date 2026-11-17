@@ -15,7 +15,7 @@ npm install
 npm run dev
 ```
 
-標準の開発 URL は `http://localhost:5174` です。バックエンドは `http://localhost:3000` で起動してください。
+標準の開発 URL は `http://localhost:3040` です。バックエンドは `http://localhost:3080` で起動してください。
 
 ## 認証
 

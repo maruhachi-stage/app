@@ -33,4 +33,4 @@ Integration Testは `DB_TEST_FILE`（既定値 `./data/test.db`）を使用し�
 
 ## API docs
 
-サーバー起動中はSwagger UIを `http://localhost:3000/api/docs`、OpenAPI JSONを `http://localhost:3000/api/openapi.json` で確認できます。
+サーバー起動中はSwagger UIを `http://localhost:3080/api/docs`、OpenAPI JSONを `http://localhost:3080/api/openapi.json` で確認できます。

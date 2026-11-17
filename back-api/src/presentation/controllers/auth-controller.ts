@@ -43,16 +43,16 @@ export class AuthController {
     const requestId = c.get('requestId')
     try {
       const result = await this.service.verifyOtp(input, this.clientIp(c))
-      createSession(c, { memberId: result.memberId })
+      await createSession(c, { memberId: result.memberId })
       return c.json(successResponse(result, requestId), 200)
     } catch (error) {
       throw this.toAppError(error)
     }
   }
-  logout = (c: Context<AppEnv>) => {
+  logout = async (c: Context<AppEnv>) => {
     const session = c.get('session')
     if (!session) throw new AppError('UNAUTHORIZED', 'Not authenticated')
-    destroySession(c)
+    await destroySession(c)
     return c.json(successResponse({ loggedOut: true }, c.get('requestId')), 200)
   }
   private clientIp(c: Context<AppEnv>): string {

@@ -1,12 +1,14 @@
 import { eq } from 'drizzle-orm'
-import { db } from '#infrastructure/database/sqlite.js'
+import type { Database } from '#infrastructure/database/database.js'
 import { members } from '#infrastructure/database/schema.js'
 import type { Member } from '#domain/entities/member.js'
 import type { MemberRepository } from '#domain/interfaces/repositories/member-repository.js'
 
 export class DrizzleMemberRepository implements MemberRepository {
+  constructor(private readonly db: Database) {}
+
   async findByEmail(email: string): Promise<Member | null> {
-    const [row] = await db
+    const [row] = await this.db
       .select({ id: members.id, email: members.email, name: members.name })
       .from(members)
       .where(eq(members.email, email))
@@ -14,7 +16,7 @@ export class DrizzleMemberRepository implements MemberRepository {
     return row ? this.member(row) : null
   }
   async findById(id: number): Promise<Member | null> {
-    const [row] = await db
+    const [row] = await this.db
       .select({ id: members.id, email: members.email, name: members.name })
       .from(members)
       .where(eq(members.id, id))
@@ -22,7 +24,7 @@ export class DrizzleMemberRepository implements MemberRepository {
     return row ? this.member(row) : null
   }
   async create(email: string, name: string | null): Promise<Member> {
-    const created = await db
+    const created = await this.db
       .insert(members)
       .values({ email, name })
       .returning({ id: members.id })
@@ -33,7 +35,11 @@ export class DrizzleMemberRepository implements MemberRepository {
   async getOrCreateByEmail(email: string): Promise<number> {
     const existing = await this.findByEmail(email)
     if (existing) return existing.id
-    const created = await db.insert(members).values({ email }).returning({ id: members.id }).get()
+    const created = await this.db
+      .insert(members)
+      .values({ email })
+      .returning({ id: members.id })
+      .get()
     if (!created) throw new Error('Failed to create member')
     return created.id
   }

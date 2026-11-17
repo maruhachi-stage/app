@@ -1,6 +1,6 @@
 import { alias } from 'drizzle-orm/sqlite-core'
 import { and, asc, desc, eq, gte, lt, ne, sql } from 'drizzle-orm'
-import { db } from '#infrastructure/database/sqlite.js'
+import type { Database } from '#infrastructure/database/database.js'
 import {
   reservations,
   reservationSeats,
@@ -40,8 +40,10 @@ const toStage = (row: {
 }): Stage => row
 
 export class DrizzleStageRepository implements StageRepository {
+  constructor(private readonly db: Database) {}
+
   async findById(stageId: number): Promise<Stage | null> {
-    const [row] = await db
+    const [row] = await this.db
       .select({
         id: screenings.id,
         type: screenings.type,
@@ -64,7 +66,7 @@ export class DrizzleStageRepository implements StageRepository {
       const { start, end } = jstDateUtcRange(date)
       conditions.push(gte(schedules.startsAt, start), lt(schedules.startsAt, end))
     }
-    const rows = await db
+    const rows = await this.db
       .select({
         scheduleId: schedules.id,
         screenName: screens.name,
@@ -96,7 +98,7 @@ export class DrizzleStageRepository implements StageRepository {
         WHERE ${schedules.isPublic} = true AND ${schedules.startsAt} >= ${start.getTime()} AND ${schedules.startsAt} < ${end.getTime()}
       )`)
     }
-    const rows = await db
+    const rows = await this.db
       .select({
         id: screenings.id,
         type: screenings.type,

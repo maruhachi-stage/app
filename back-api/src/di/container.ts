@@ -1,3 +1,5 @@
+import type { Env } from '#types.js'
+import { createDatabase } from '#infrastructure/database/database.js'
 import { DrizzleMovieRepository } from '#infrastructure/repositories/drizzle-movie-repository.js'
 import { MovieService } from '#application/services/movie-service.js'
 import { DrizzleStageRepository } from '#infrastructure/repositories/drizzle-stage-repository.js'
@@ -10,9 +12,12 @@ import { DrizzleOtpTokenRepository } from '#infrastructure/repositories/drizzle-
 import { ResendEmailSender } from '#infrastructure/adapters/resend-email-sender.js'
 import { CryptoOtpCodeGenerator } from '#infrastructure/adapters/crypto-otp-code-generator.js'
 import { InMemoryRateLimiter } from '#infrastructure/adapters/in-memory-rate-limiter.js'
+import { DrizzleSessionManager } from '#infrastructure/adapters/drizzle-session-manager.js'
+import { R2ImageStorage } from '#infrastructure/adapters/r2-image-storage.js'
 import { AuthService } from '#application/services/auth-service.js'
 import { MemberService } from '#application/services/member-service.js'
 import { OTP_CONFIG } from '#lib/constants.js'
+import { DEFAULT_IMAGE_BASE_URL } from '#lib/format.js'
 import { AuthController } from '#presentation/controllers/auth-controller.js'
 import { MemberController } from '#presentation/controllers/member-controller.js'
 import { MovieController } from '#presentation/controllers/movie-controller.js'
@@ -44,56 +49,96 @@ import { ReservationController } from '#presentation/controllers/reservation-con
 import { checkRateLimit } from '#lib/rateLimit.js'
 
 /**
+ * Rate limiting keeps its counters in the isolate, so the limiter has to be
+ * shared by every request the isolate handles instead of being rebuilt with
+ * the rest of the container.
+ */
+const rateLimiter = new InMemoryRateLimiter()
+
+/**
  * Composition root dependencies. Feature services are added here as they are
  * migrated, keeping framework and database construction out of application code.
  */
+export function createContainer(env: Env) {
+  const db = createDatabase(env)
+  const imageBaseUrl = env.IMAGE_BASE_URL ?? DEFAULT_IMAGE_BASE_URL
 
-/** Shared by the controller and the session middleware. */
-export const staffAuthService = new StaffAuthService(
-  new DrizzleStaffAccountRepository(),
-  new DrizzleStaffOtpChallengeRepository(),
-  new DrizzleStaffSessionRepository(),
-  new DrizzleStaffAuditLogRepository(),
-  new ScryptPasswordHasher(),
-  new SecureTokenGenerator(),
-  new CryptoOtpCodeGenerator(),
-  new ResendEmailSender(),
-  new InMemoryRateLimiter(),
-  STAFF_SESSION_CONFIG,
-)
+  /** Shared by the controller and the session middleware. */
+  const staffAuthService = new StaffAuthService(
+    new DrizzleStaffAccountRepository(db),
+    new DrizzleStaffOtpChallengeRepository(db),
+    new DrizzleStaffSessionRepository(db),
+    new DrizzleStaffAuditLogRepository(db),
+    new ScryptPasswordHasher(),
+    new SecureTokenGenerator(),
+    new CryptoOtpCodeGenerator(),
+    new ResendEmailSender(),
+    rateLimiter,
+    STAFF_SESSION_CONFIG,
+  )
 
-export const container = {
-  staffAuthService,
-  movieController: new MovieController(new MovieService(new DrizzleMovieRepository())),
-  stageController: new StageController(new StageQueryService(new DrizzleStageRepository())),
-  screenController: new ScreenController(new ScreenQueryService(new DrizzleScreenRepository())),
-  authController: new AuthController(
-    new AuthService(
-      new DrizzleMemberRepository(),
-      new DrizzleOtpTokenRepository(),
-      new ResendEmailSender(),
-      new CryptoOtpCodeGenerator(),
-      new InMemoryRateLimiter(),
-      {
-        expiresMin: OTP_CONFIG.EXPIRES_MIN,
-        resendSec: OTP_CONFIG.RESEND_SEC,
-        maxAttempts: OTP_CONFIG.MAX_ATTEMPTS,
-        lockMin: OTP_CONFIG.LOCK_MIN,
-      },
+  return {
+    staffAuthService,
+    sessionManager: new DrizzleSessionManager(db),
+    imageStorage: new R2ImageStorage(env.IMAGES),
+    movieController: new MovieController(
+      new MovieService(new DrizzleMovieRepository(db), imageBaseUrl),
     ),
-  ),
-  memberController: new MemberController(
-    new MemberService(new DrizzleMemberRepository(), new DrizzleMemberReservationRepository()),
-  ),
-  staffAuthController: new StaffAuthController(staffAuthService),
-  staffOverviewController: new StaffOverviewController(
-    new StaffOverviewService(new DrizzleStaffScreenRepository()),
-  ),
-  configController: new ConfigController(new ConfigService()),
-  productController: new ProductController(new ProductService(new DrizzleProductRepository())),
-  posController: new PosController(new PosService(new DrizzlePosRepository())),
-  reservationController: new ReservationController(
-    new ReservationService(new DrizzleReservationRepository()),
-    checkRateLimit,
-  ),
+    stageController: new StageController(
+      new StageQueryService(new DrizzleStageRepository(db)),
+      imageBaseUrl,
+    ),
+    screenController: new ScreenController(new ScreenQueryService(new DrizzleScreenRepository(db))),
+    authController: new AuthController(
+      new AuthService(
+        new DrizzleMemberRepository(db),
+        new DrizzleOtpTokenRepository(db),
+        new ResendEmailSender(),
+        new CryptoOtpCodeGenerator(),
+        rateLimiter,
+        {
+          expiresMin: OTP_CONFIG.EXPIRES_MIN,
+          resendSec: OTP_CONFIG.RESEND_SEC,
+          maxAttempts: OTP_CONFIG.MAX_ATTEMPTS,
+          lockMin: OTP_CONFIG.LOCK_MIN,
+        },
+      ),
+    ),
+    memberController: new MemberController(
+      new MemberService(
+        new DrizzleMemberRepository(db),
+        new DrizzleMemberReservationRepository(db, imageBaseUrl),
+      ),
+    ),
+    staffAuthController: new StaffAuthController(staffAuthService),
+    staffOverviewController: new StaffOverviewController(
+      new StaffOverviewService(new DrizzleStaffScreenRepository(db)),
+    ),
+    configController: new ConfigController(new ConfigService()),
+    productController: new ProductController(
+      new ProductService(new DrizzleProductRepository(db), imageBaseUrl),
+    ),
+    posController: new PosController(new PosService(new DrizzlePosRepository(db), imageBaseUrl)),
+    reservationController: new ReservationController(
+      new ReservationService(new DrizzleReservationRepository(db)),
+      checkRateLimit,
+      imageBaseUrl,
+    ),
+  }
+}
+
+export type Container = ReturnType<typeof createContainer>
+
+/**
+ * D1 bindings are stable across requests inside a Worker isolate, so the
+ * container is built once per binding instead of once per request.
+ */
+const containers = new WeakMap<Env['DB'], Container>()
+
+export function getContainer(env: Env): Container {
+  const cached = containers.get(env.DB)
+  if (cached) return cached
+  const container = createContainer(env)
+  containers.set(env.DB, container)
+  return container
 }

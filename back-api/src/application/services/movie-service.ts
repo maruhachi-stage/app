@@ -10,11 +10,12 @@ import type { Movie } from '#domain/entities/movie.js'
 import type { MovieSchedule } from '#domain/entities/movie-schedule.js'
 import type { PublicSchedule } from '#domain/entities/public-schedule.js'
 import type { MovieRepository } from '#domain/interfaces/repositories/movie-repository.js'
+import { DEFAULT_IMAGE_BASE_URL } from '#lib/format.js'
 
 export class MovieService {
   constructor(
     private readonly movieRepository: MovieRepository,
-    private readonly imageBaseUrl = process.env.IMAGE_BASE_URL ?? 'http://localhost:3090',
+    private readonly imageBaseUrl: string = DEFAULT_IMAGE_BASE_URL,
   ) {}
 
   async listMovies(query: ListMoviesQueryDTO): Promise<MovieListResponseDTO> {

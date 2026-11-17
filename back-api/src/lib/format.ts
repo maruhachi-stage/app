@@ -25,10 +25,14 @@ export function maskEmail(email: string): string {
   return `${visible}***${email.slice(at)}`
 }
 
-const IMAGE_BASE = process.env.IMAGE_BASE_URL ?? 'http://localhost:3090'
+/** Image origin used when no IMAGE_BASE_URL is configured (local image-server). */
+export const DEFAULT_IMAGE_BASE_URL = 'http://localhost:3090'
 
-export function imageUrl(filename: string | null): string | null {
+export function imageUrl(
+  filename: string | null,
+  baseUrl: string = DEFAULT_IMAGE_BASE_URL,
+): string | null {
   if (!filename) return null
   if (filename.startsWith('http')) return filename
-  return `${IMAGE_BASE}/images/${filename}`
+  return `${baseUrl.replace(/\/+$/, '')}/images/${filename}`
 }

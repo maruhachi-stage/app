@@ -1,0 +1,7 @@
+name = "hal-cinema-web"
+compatibility_date = "2025-11-01"
+pages_build_output_dir = "build/client"
+
+[vars]
+# デプロイ後に Workers の実際のオリジンへ置き換える
+API_ORIGIN = "https://hal-cinema-api.example.workers.dev"

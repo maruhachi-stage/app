@@ -1,5 +1,5 @@
 import { asc, eq, inArray } from 'drizzle-orm'
-import { db } from '#infrastructure/database/sqlite.js'
+import type { Database } from '#infrastructure/database/database.js'
 import {
   productNotes,
   productOptionGroups,
@@ -10,8 +10,10 @@ import type { Product, ProductCategory } from '#domain/entities/product.js'
 import type { ProductRepository } from '#domain/interfaces/repositories/product-repository.js'
 
 export class DrizzleProductRepository implements ProductRepository {
+  constructor(private readonly db: Database) {}
+
   async findAll(category?: ProductCategory): Promise<Product[]> {
-    const rows = await db
+    const rows = await this.db
       .select()
       .from(products)
       .where(category ? eq(products.category, category) : undefined)
@@ -20,7 +22,7 @@ export class DrizzleProductRepository implements ProductRepository {
   }
 
   async findById(productId: string): Promise<Product | null> {
-    const rows = await db.select().from(products).where(eq(products.id, productId))
+    const rows = await this.db.select().from(products).where(eq(products.id, productId))
     return rows[0] ? (await this.hydrate(rows))[0] : null
   }
 
@@ -28,20 +30,20 @@ export class DrizzleProductRepository implements ProductRepository {
     if (!rows.length) return []
 
     const ids = rows.map((row) => row.id)
-    const groups = await db
+    const groups = await this.db
       .select()
       .from(productOptionGroups)
       .where(inArray(productOptionGroups.productId, ids))
       .orderBy(asc(productOptionGroups.displayOrder))
     const groupIds = groups.map((group) => group.id)
     const options = groupIds.length
-      ? await db
+      ? await this.db
           .select()
           .from(productOptions)
           .where(inArray(productOptions.groupId, groupIds))
           .orderBy(asc(productOptions.displayOrder))
       : []
-    const notes = await db
+    const notes = await this.db
       .select()
       .from(productNotes)
       .where(inArray(productNotes.productId, ids))

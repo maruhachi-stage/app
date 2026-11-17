@@ -5,11 +5,12 @@ import type {
   PosSaleListResponseDTO,
 } from '#application/dto/pos-dto.js'
 import type { PosRepository } from '#domain/interfaces/repositories/pos-repository.js'
+import { DEFAULT_IMAGE_BASE_URL } from '#lib/format.js'
 
 export class PosService {
   constructor(
     private readonly repository: PosRepository,
-    private readonly imageBaseUrl = process.env.IMAGE_BASE_URL ?? 'http://localhost:3090',
+    private readonly imageBaseUrl: string = DEFAULT_IMAGE_BASE_URL,
   ) {}
   async listProducts(): Promise<PosProductListResponseDTO> {
     return {

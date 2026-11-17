@@ -13,7 +13,7 @@
  */
 
 import { and, asc, eq, gte, lt } from 'drizzle-orm'
-import { db } from '#infrastructure/database/sqlite.js'
+import type { Database } from '#infrastructure/database/database.js'
 import { schedules, screenings, screens } from '#infrastructure/database/schema.js'
 import { jstDateUtcRange } from '#lib/jst-date-range.js'
 
@@ -57,7 +57,7 @@ function jstMinToUtcDate(baseDate: Date, jstMin: number): Date {
 
 // ─── 既存チェック ──────────────────────────────────────────────────────────
 
-async function hasSchedule(screenId: number, jstDateStr: string): Promise<boolean> {
+async function hasSchedule(db: Database, screenId: number, jstDateStr: string): Promise<boolean> {
   const { start, end } = jstDateUtcRange(jstDateStr)
   const [schedule] = await db
     .select({ id: schedules.id })
@@ -77,6 +77,7 @@ async function hasSchedule(screenId: number, jstDateStr: string): Promise<boolea
 // ─── 映画スケジュール生成 ────────────────────────────────────────────────────
 
 async function seedMovieSchedules(
+  db: Database,
   movies: { id: number; duration_min: number }[],
   screens: { id: number; size: string }[],
   targetDate: Date,
@@ -86,7 +87,7 @@ async function seedMovieSchedules(
   let inserted = 0
 
   for (const screen of screens) {
-    if (await hasSchedule(screen.id, jstDateStr)) continue
+    if (await hasSchedule(db, screen.id, jstDateStr)) continue
 
     const rand = makeRand(
       screen.id * 10007 + dayOffset * 997 + targetDate.getUTCMonth() * 31 + targetDate.getUTCDate(),
@@ -131,6 +132,7 @@ async function seedMovieSchedules(
 // 大スクリーン (size='large') に 夕方〜夜 1〜2 公演
 
 async function seedStageSchedules(
+  db: Database,
   stages: { id: number; duration_min: number }[],
   screens: { id: number; size: string }[],
   targetDate: Date,
@@ -191,6 +193,7 @@ async function seedStageSchedules(
 // 週末 (土・日) のみ、中スクリーンに夜 1 公演
 
 async function seedEventSchedules(
+  db: Database,
   events: { id: number; duration_min: number }[],
   screens: { id: number; size: string }[],
   targetDate: Date,
@@ -246,7 +249,7 @@ async function seedEventSchedules(
 
 // ─── メイン処理 ─────────────────────────────────────────────────────────────
 
-export async function seedSchedules(): Promise<void> {
+export async function seedSchedules(db: Database): Promise<void> {
   try {
     // now_showing の上映アイテムを種別ごとに取得
     const allRows = await db
@@ -297,6 +300,7 @@ export async function seedSchedules(): Promise<void> {
       // 映画スケジュール生成
       if (movies.length > 0) {
         totalInserted += await seedMovieSchedules(
+          db,
           movies,
           movieScreens,
           targetDate,
@@ -307,6 +311,7 @@ export async function seedSchedules(): Promise<void> {
 
       // 舞台スケジュール生成
       totalInserted += await seedStageSchedules(
+        db,
         stages,
         allScreens,
         targetDate,
@@ -316,6 +321,7 @@ export async function seedSchedules(): Promise<void> {
 
       // イベントスケジュール生成
       totalInserted += await seedEventSchedules(
+        db,
         events,
         allScreens,
         targetDate,

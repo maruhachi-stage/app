@@ -49,6 +49,17 @@ export const otpTokens = sqliteTable(
   ],
 )
 
+/** Customer sessions live in D1 because a Worker isolate can be discarded at any time. */
+export const sessions = sqliteTable(
+  'sessions',
+  {
+    id: text('id').primaryKey(),
+    data: text('data').notNull(),
+    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
+  },
+  (table) => [index('idx_sessions_expires').on(table.expiresAt)],
+)
+
 export const screens = sqliteTable('screens', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),

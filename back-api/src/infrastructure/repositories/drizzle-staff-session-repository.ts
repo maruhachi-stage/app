@@ -1,10 +1,12 @@
 import { and, eq, gt, isNull } from 'drizzle-orm'
-import { db } from '#infrastructure/database/sqlite.js'
+import type { Database } from '#infrastructure/database/database.js'
 import { staffAccounts, staffSessions } from '#infrastructure/database/schema.js'
 import type { StaffSessionContext } from '#domain/entities/staff-account.js'
 import type { StaffSessionRepository } from '#domain/interfaces/repositories/staff-session-repository.js'
 
 export class DrizzleStaffSessionRepository implements StaffSessionRepository {
+  constructor(private readonly db: Database) {}
+
   async create(input: {
     tokenHash: string
     staffAccountId: number
@@ -12,11 +14,11 @@ export class DrizzleStaffSessionRepository implements StaffSessionRepository {
     ipAddress: string | null
     userAgent: string | null
   }): Promise<void> {
-    await db.insert(staffSessions).values(input)
+    await this.db.insert(staffSessions).values(input)
   }
 
   async findActiveByTokenHash(tokenHash: string, now: Date): Promise<StaffSessionContext | null> {
-    const [row] = await db
+    const [row] = await this.db
       .select({
         id: staffAccounts.id,
         roleId: staffAccounts.roleId,
@@ -39,7 +41,7 @@ export class DrizzleStaffSessionRepository implements StaffSessionRepository {
   }
 
   async revokeByTokenHash(tokenHash: string, revokedAt: Date): Promise<void> {
-    await db
+    await this.db
       .update(staffSessions)
       .set({ revokedAt })
       .where(and(eq(staffSessions.tokenHash, tokenHash), isNull(staffSessions.revokedAt)))

@@ -5,11 +5,12 @@ import type {
 } from '#application/dto/product-dto.js'
 import type { Product } from '#domain/entities/product.js'
 import type { ProductRepository } from '#domain/interfaces/repositories/product-repository.js'
+import { DEFAULT_IMAGE_BASE_URL } from '#lib/format.js'
 
 export class ProductService {
   constructor(
     private readonly repository: ProductRepository,
-    private readonly imageBaseUrl = process.env.IMAGE_BASE_URL ?? 'http://localhost:3090',
+    private readonly imageBaseUrl: string = DEFAULT_IMAGE_BASE_URL,
   ) {}
   async listProducts(query: ListProductsQueryDTO): Promise<ProductListResponseDTO> {
     return {

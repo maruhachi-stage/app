@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, gte, lt, sql } from 'drizzle-orm'
-import { db } from '#infrastructure/database/sqlite.js'
+import type { Database } from '#infrastructure/database/database.js'
 import { schedules, screens, screenings } from '#infrastructure/database/schema.js'
 import type { Movie } from '#domain/entities/movie.js'
 import type { MovieSchedule } from '#domain/entities/movie-schedule.js'
@@ -24,6 +24,8 @@ const hasPublicScheduleOn = (date: string) => {
 }
 
 export class DrizzleMovieRepository implements MovieRepository {
+  constructor(private readonly db: Database) {}
+
   async findMovies({
     status,
     date,
@@ -35,7 +37,7 @@ export class DrizzleMovieRepository implements MovieRepository {
     if (status) conditions.push(eq(screenings.status, status))
     if (date) conditions.push(hasPublicScheduleOn(date))
 
-    const rows = await db
+    const rows = await this.db
       .select({
         id: screenings.id,
         title: screenings.title,
@@ -52,7 +54,7 @@ export class DrizzleMovieRepository implements MovieRepository {
   }
 
   async findMovieById(movieId: number): Promise<Movie | null> {
-    const [row] = await db
+    const [row] = await this.db
       .select({
         id: screenings.id,
         title: screenings.title,
@@ -74,7 +76,7 @@ export class DrizzleMovieRepository implements MovieRepository {
       conditions.push(gte(schedules.startsAt, start), lt(schedules.startsAt, end))
     }
 
-    const rows = await db
+    const rows = await this.db
       .select({
         scheduleId: schedules.id,
         screenName: screens.name,
@@ -96,7 +98,7 @@ export class DrizzleMovieRepository implements MovieRepository {
   }
 
   async findPublicScheduleById(scheduleId: number): Promise<PublicSchedule | null> {
-    const [row] = await db
+    const [row] = await this.db
       .select({
         scheduleId: schedules.id,
         type: screenings.type,

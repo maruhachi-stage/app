@@ -8,7 +8,13 @@ import {
 import type { ReservationService } from '#application/services/reservation-service.js'
 import { ReservationError } from '#domain/errors/reservation-error.js'
 import { AppError } from '#lib/errors.js'
-import { getQrCodeUrl, imageUrl, maskEmail, toJstString } from '#lib/format.js'
+import {
+  DEFAULT_IMAGE_BASE_URL,
+  getQrCodeUrl,
+  imageUrl,
+  maskEmail,
+  toJstString,
+} from '#lib/format.js'
 import { sendReservationEmail } from '#lib/email.js'
 import { TICKET_LABELS, TICKET_PRICES } from '#lib/constants.js'
 import { successResponse } from '#presentation/response.js'
@@ -19,6 +25,7 @@ export class ReservationController {
   constructor(
     private readonly service: ReservationService,
     private readonly rateLimit: (key: string, max: number, windowMs: number) => boolean,
+    private readonly imageBaseUrl: string = DEFAULT_IMAGE_BASE_URL,
   ) {}
   quote = async (c: Context<AppEnv>) => {
     const body = await c.req.json().catch(() => {
@@ -84,7 +91,7 @@ export class ReservationController {
       seatList,
       totalPrice: result.totalPrice,
       qrCodeUrl,
-      reservationDetailUrl: `${process.env.BASE_URL ?? 'http://localhost:3030'}/reservations/r/${result.reservationCode}`,
+      reservationDetailUrl: `${c.env.BASE_URL ?? 'http://localhost:3030'}/reservations/r/${result.reservationCode}`,
     }).catch((err) => console.error('[EMAIL]', err))
     return c.json(
       successResponse(
@@ -111,7 +118,7 @@ export class ReservationController {
           canCancel: r.canCancel,
           movie: {
             title: r.screeningTitle,
-            thumbnailUrl: imageUrl(r.thumbnailUrl),
+            thumbnailUrl: imageUrl(r.thumbnailUrl, this.imageBaseUrl),
             type: r.screeningType,
           },
           schedule: { startsAt: r.startsAt, endsAt: r.endsAt, screenName: r.screenName },

@@ -6,7 +6,7 @@ A modern, production-ready template for building full-stack React applications u
 
 ## Features
 
-- 🚀 Server-side rendering
+- 🚀 SPA モード（Cloudflare Pages で静的配信）
 - ⚡️ Hot Module Replacement (HMR)
 - 📦 Asset bundling and optimization
 - 🔄 Data loading and mutations
@@ -44,39 +44,19 @@ npm run build
 
 ## Deployment
 
-### Docker Deployment
-
-To build and run using Docker:
+このアプリは Cloudflare Pages へ静的配信します。`npm run build` は `build/client` に SPA を生成します。
 
 ```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+npm run build
+npx wrangler pages deploy
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+- `wrangler.toml` の `pages_build_output_dir` は `build/client`
+- `public/_redirects` の `/* /index.html 200` で SPA フォールバック
+- `public/_routes.json` で Pages Functions を `/api/*` だけに絞る
+- `functions/api/[[path]].ts` は `/api/*` を API Worker（`API_ORIGIN`）へ転送し、ブラウザから見ると同一オリジンのままにする（`SameSite=Lax` のセッション Cookie を維持するため）
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
+デプロイ前に `wrangler.toml` の `API_ORIGIN` を実際の Worker オリジンへ変更してください。
 
 ## Styling
 

@@ -1,5 +1,6 @@
 import { and, asc, eq, gt, inArray, lte, ne, or } from 'drizzle-orm'
-import { db } from '#infrastructure/database/sqlite.js'
+import type { BatchItem } from 'drizzle-orm/batch'
+import type { Database } from '#infrastructure/database/database.js'
 import {
   images,
   reservationSeats,
@@ -30,9 +31,23 @@ const ticketPrices: Record<TicketType, number> = {
   child: 1000,
 }
 
+/**
+ * Seat rows are protected by a unique index, so a concurrent hold surfaces as a
+ * constraint violation that the API reports as a seat conflict.
+ */
+function toSeatError(err: unknown): Error {
+  const message = err instanceof Error ? err.message : String(err)
+  if (message.includes('UNIQUE constraint failed')) {
+    return new AppError('SEAT_ALREADY_RESERVED', 'One or more seats are already reserved or held')
+  }
+  return err instanceof Error ? err : new Error(message)
+}
+
 export class DrizzleReservationRepository implements ReservationRepository {
+  constructor(private readonly db: Database) {}
+
   async findPublicSchedule(id: number) {
-    const [row] = await db
+    const [row] = await this.db
       .select({
         screenId: schedules.screenId,
         title: screenings.title,
@@ -56,7 +71,7 @@ export class DrizzleReservationRepository implements ReservationRepository {
   }
 
   async findLayout(screenId: number): Promise<SeatLayout | null> {
-    const [row] = await db
+    const [row] = await this.db
       .select()
       .from(screenSeatLayouts)
       .where(eq(screenSeatLayouts.screenId, screenId))
@@ -73,7 +88,7 @@ export class DrizzleReservationRepository implements ReservationRepository {
 
   async findSeats(scheduleId: number, screenId: number): Promise<SeatPosition[]> {
     const now = new Date()
-    const rows = await db
+    const rows = await this.db
       .select({
         seatId: seats.id,
         row: seats.rowLabel,
@@ -122,7 +137,7 @@ export class DrizzleReservationRepository implements ReservationRepository {
 
   async findSeatsInScreen(ids: number[], screenId: number) {
     if (!ids.length) return new Map<number, { row: string; col: number }>()
-    const rows = await db
+    const rows = await this.db
       .select({ id: seats.id, row: seats.rowLabel, col: seats.colNo })
       .from(seats)
       .where(and(inArray(seats.id, ids), eq(seats.screenId, screenId)))
@@ -130,7 +145,7 @@ export class DrizzleReservationRepository implements ReservationRepository {
   }
 
   async reservationCodeExists(code: string) {
-    const [row] = await db
+    const [row] = await this.db
       .select({ id: reservations.id })
       .from(reservations)
       .where(eq(reservations.reservationCode, code))
@@ -139,7 +154,7 @@ export class DrizzleReservationRepository implements ReservationRepository {
   }
 
   async findDetail(code: string): Promise<ReservationDetail | null> {
-    const [row] = await db
+    const [row] = await this.db
       .select({
         id: reservations.id,
         reservationCode: reservations.reservationCode,
@@ -160,13 +175,13 @@ export class DrizzleReservationRepository implements ReservationRepository {
       .innerJoin(screens, eq(screens.id, schedules.screenId))
       .where(eq(reservations.reservationCode, code))
     if (!row) return null
-    const [image] = await db
+    const [image] = await this.db
       .select({ fileName: images.fileName })
       .from(images)
       .where(and(eq(images.entityType, 'screening'), eq(images.entityId, row.screeningId)))
       .orderBy(asc(images.displayOrder))
       .limit(1)
-    const seatRows = await db
+    const seatRows = await this.db
       .select({
         row: seats.rowLabel,
         col: seats.colNo,
@@ -194,7 +209,7 @@ export class DrizzleReservationRepository implements ReservationRepository {
   }
 
   async findForCancel(code: string): Promise<Reservation | null> {
-    const [row] = await db
+    const [row] = await this.db
       .select({
         id: reservations.id,
         reservationCode: reservations.reservationCode,
@@ -221,85 +236,49 @@ export class DrizzleReservationRepository implements ReservationRepository {
   }
 
   async cancel(id: number) {
-    await db.update(reservations).set({ status: 'cancelled' }).where(eq(reservations.id, id))
+    // Releasing the seat rows keeps them bookable again, which the unique index
+    // on (schedule_id, seat_id) otherwise forbids.
+    await this.db.batch([
+      this.db.update(reservations).set({ status: 'cancelled' }).where(eq(reservations.id, id)),
+      this.db.delete(reservationSeats).where(eq(reservationSeats.reservationId, id)),
+    ])
   }
 
-  async hold(scheduleId: number, ids: number[], expiresAt: Date, code: string) {
-    return db.transaction(
-      (tx) => {
-        const now = new Date()
-        if (ids.length) {
-          const inactiveReservations = tx
-            .select({ id: reservations.id })
-            .from(reservations)
-            .where(
-              or(
-                eq(reservations.status, 'cancelled'),
-                and(eq(reservations.status, 'pending'), lte(reservations.expiresAt, now)),
-              ),
-            )
-          tx.delete(reservationSeats)
-            .where(
-              and(
-                eq(reservationSeats.scheduleId, scheduleId),
-                inArray(reservationSeats.seatId, ids),
-                inArray(reservationSeats.reservationId, inactiveReservations),
-              ),
-            )
-            .run()
+  async hold(scheduleId: number, ids: number[], expiresAt: Date, code: string): Promise<void> {
+    const now = new Date()
+    await this.ensureSeatsAvailable(scheduleId, ids, now)
 
-          const occupied = tx
-            .select({ seatId: reservationSeats.seatId })
-            .from(reservationSeats)
-            .innerJoin(reservations, eq(reservations.id, reservationSeats.reservationId))
-            .where(
-              and(
-                eq(reservationSeats.scheduleId, scheduleId),
-                inArray(reservationSeats.seatId, ids),
-                or(
-                  eq(reservations.status, 'confirmed'),
-                  and(eq(reservations.status, 'pending'), gt(reservations.expiresAt, now)),
-                ),
-              ),
-            )
-            .all()
-          if (occupied.length) {
-            throw new AppError(
-              'SEAT_ALREADY_RESERVED',
-              'One or more seats are already reserved or held',
-            )
-          }
-        }
+    const inserted = await this.db
+      .insert(reservations)
+      .values({
+        reservationCode: code,
+        scheduleId,
+        status: 'pending',
+        expiresAt,
+        totalPrice: 0,
+      })
+      .returning({ id: reservations.id })
+      .get()
+    if (!inserted) throw new Error('Failed to create reservation hold')
 
-        const inserted = tx
-          .insert(reservations)
-          .values({
-            reservationCode: code,
+    if (ids.length) {
+      try {
+        await this.db.insert(reservationSeats).values(
+          ids.map((seatId) => ({
+            reservationId: inserted.id,
             scheduleId,
-            status: 'pending',
-            expiresAt,
-            totalPrice: 0,
-          })
-          .returning({ id: reservations.id })
-          .get()
-        if (!inserted) throw new Error('Failed to create reservation hold')
-
-        if (ids.length) {
-          tx.insert(reservationSeats)
-            .values(
-              ids.map((seatId) => ({
-                reservationId: inserted.id,
-                scheduleId,
-                seatId,
-                ticketType: 'general' as const,
-                price: 0,
-              })),
-            )
-            .run()
-        }
-      },
-      { behavior: 'immediate' },
-    )
+            seatId,
+            ticketType: 'general' as const,
+            price: 0,
+          })),
+        )
+      } catch (err) {
+        // The hold row is useless without its seats, so it is removed before the
+        // unique constraint violation is surfaced to the caller.
+        await this.db.delete(reservations).where(eq(reservations.id, inserted.id))
+        throw toSeatError(err)
+      }
+    }
   }
 
   async finalize(input: {
@@ -311,120 +290,143 @@ export class DrizzleReservationRepository implements ReservationRepository {
     tickets: { seatId: number; ticketType: TicketType }[]
     totalPrice: number
     generatedCode: string
-  }) {
+  }): Promise<{ reservationId: number; reservationCode: string }> {
+    const now = new Date()
     const ids = input.tickets.map((ticket) => ticket.seatId)
-    return db.transaction(
-      (tx) => {
-        const now = new Date()
-        if (ids.length) {
-          const inactiveReservations = tx
-            .select({ id: reservations.id })
-            .from(reservations)
-            .where(
-              or(
-                eq(reservations.status, 'cancelled'),
-                and(eq(reservations.status, 'pending'), lte(reservations.expiresAt, now)),
-              ),
-            )
-          tx.delete(reservationSeats)
-            .where(
-              and(
-                eq(reservationSeats.scheduleId, input.scheduleId),
-                inArray(reservationSeats.seatId, ids),
-                inArray(reservationSeats.reservationId, inactiveReservations),
-              ),
-            )
-            .run()
+    await this.ensureSeatsAvailable(input.scheduleId, ids, now, input.reservationCode)
 
-          const conditions = [
-            eq(reservationSeats.scheduleId, input.scheduleId),
-            inArray(reservationSeats.seatId, ids),
-            or(
-              eq(reservations.status, 'confirmed'),
-              and(eq(reservations.status, 'pending'), gt(reservations.expiresAt, now)),
-            ),
-          ]
-          if (input.reservationCode) {
-            conditions.push(ne(reservations.reservationCode, input.reservationCode))
-          }
-          const occupied = tx
-            .select({ seatId: reservationSeats.seatId })
-            .from(reservationSeats)
-            .innerJoin(reservations, eq(reservations.id, reservationSeats.reservationId))
-            .where(and(...conditions))
-            .all()
-          if (occupied.length) {
-            throw new AppError(
-              'SEAT_ALREADY_RESERVED',
-              'One or more seats are already reserved or held',
-            )
-          }
-        }
+    const reservationCode = input.reservationCode ?? input.generatedCode
+    const seatRows = (reservationId: number) =>
+      input.tickets.map((ticket) => ({
+        reservationId,
+        scheduleId: input.scheduleId,
+        seatId: ticket.seatId,
+        ticketType: ticket.ticketType,
+        price: ticketPrices[ticket.ticketType],
+      }))
 
-        const reservationCode = input.reservationCode ?? input.generatedCode
-        let reservationId: number
-        if (input.reservationCode) {
-          const held = tx
-            .select({ id: reservations.id })
-            .from(reservations)
-            .where(
-              and(
-                eq(reservations.reservationCode, input.reservationCode),
-                eq(reservations.status, 'pending'),
-                eq(reservations.scheduleId, input.scheduleId),
-                gt(reservations.expiresAt, now),
-              ),
-            )
-            .all()
-          if (!held[0]) throw new AppError('NOT_FOUND', 'Valid tentative reservation not found')
-          reservationId = held[0].id
-          tx.update(reservations)
-            .set({
-              status: 'confirmed',
-              expiresAt: null,
-              memberId: input.memberId,
-              bookingType: input.bookingType,
-              customerName: null,
-              customerEmail: input.customerEmail,
-              totalPrice: input.totalPrice,
-            })
-            .where(eq(reservations.id, reservationId))
-            .run()
-          tx.delete(reservationSeats).where(eq(reservationSeats.reservationId, reservationId)).run()
-        } else {
-          const inserted = tx
-            .insert(reservations)
-            .values({
-              reservationCode,
-              scheduleId: input.scheduleId,
-              memberId: input.memberId,
-              bookingType: input.bookingType,
-              customerName: null,
-              customerEmail: input.customerEmail,
-              totalPrice: input.totalPrice,
-            })
-            .returning({ id: reservations.id })
-            .get()
-          if (!inserted) throw new Error('Failed to create reservation')
-          reservationId = inserted.id
-        }
+    if (input.reservationCode) {
+      const held = await this.db
+        .select({ id: reservations.id })
+        .from(reservations)
+        .where(
+          and(
+            eq(reservations.reservationCode, input.reservationCode),
+            eq(reservations.status, 'pending'),
+            eq(reservations.scheduleId, input.scheduleId),
+            gt(reservations.expiresAt, now),
+          ),
+        )
+        .get()
+      if (!held) throw new AppError('NOT_FOUND', 'Valid tentative reservation not found')
+      const reservationId = held.id
 
-        if (input.tickets.length) {
-          tx.insert(reservationSeats)
-            .values(
-              input.tickets.map((ticket) => ({
-                reservationId,
-                scheduleId: input.scheduleId,
-                seatId: ticket.seatId,
-                ticketType: ticket.ticketType,
-                price: ticketPrices[ticket.ticketType],
-              })),
-            )
-            .run()
-        }
-        return { reservationId, reservationCode }
-      },
-      { behavior: 'immediate' },
-    )
+      // D1 has no interactive transactions, so the confirmation and the seat
+      // hand-over are sent as one atomic batch.
+      const statements: BatchItem<'sqlite'>[] = [
+        this.db
+          .update(reservations)
+          .set({
+            status: 'confirmed',
+            expiresAt: null,
+            memberId: input.memberId,
+            bookingType: input.bookingType,
+            customerName: null,
+            customerEmail: input.customerEmail,
+            totalPrice: input.totalPrice,
+          })
+          .where(eq(reservations.id, reservationId)),
+        this.db.delete(reservationSeats).where(eq(reservationSeats.reservationId, reservationId)),
+      ]
+      if (input.tickets.length) {
+        statements.push(this.db.insert(reservationSeats).values(seatRows(reservationId)))
+      }
+
+      try {
+        await this.db.batch(statements as [BatchItem<'sqlite'>, ...BatchItem<'sqlite'>[]])
+      } catch (err) {
+        throw toSeatError(err)
+      }
+      return { reservationId, reservationCode }
+    }
+
+    const inserted = await this.db
+      .insert(reservations)
+      .values({
+        reservationCode,
+        scheduleId: input.scheduleId,
+        memberId: input.memberId,
+        bookingType: input.bookingType,
+        customerName: null,
+        customerEmail: input.customerEmail,
+        totalPrice: input.totalPrice,
+      })
+      .returning({ id: reservations.id })
+      .get()
+    if (!inserted) throw new Error('Failed to create reservation')
+
+    if (input.tickets.length) {
+      try {
+        await this.db.insert(reservationSeats).values(seatRows(inserted.id))
+      } catch (err) {
+        await this.db.delete(reservations).where(eq(reservations.id, inserted.id))
+        throw toSeatError(err)
+      }
+    }
+    return { reservationId: inserted.id, reservationCode }
+  }
+
+  /**
+   * Releases seat rows left behind by cancelled or expired holds, then rejects
+   * the request when any of the requested seats is still taken.
+   */
+  private async ensureSeatsAvailable(
+    scheduleId: number,
+    ids: number[],
+    now: Date,
+    excludeReservationCode?: string,
+  ): Promise<void> {
+    if (ids.length === 0) return
+
+    const inactiveReservations = this.db
+      .select({ id: reservations.id })
+      .from(reservations)
+      .where(
+        or(
+          eq(reservations.status, 'cancelled'),
+          and(eq(reservations.status, 'pending'), lte(reservations.expiresAt, now)),
+        ),
+      )
+    await this.db
+      .delete(reservationSeats)
+      .where(
+        and(
+          eq(reservationSeats.scheduleId, scheduleId),
+          inArray(reservationSeats.seatId, ids),
+          inArray(reservationSeats.reservationId, inactiveReservations),
+        ),
+      )
+
+    const conditions = [
+      eq(reservationSeats.scheduleId, scheduleId),
+      inArray(reservationSeats.seatId, ids),
+      or(
+        eq(reservations.status, 'confirmed'),
+        and(eq(reservations.status, 'pending'), gt(reservations.expiresAt, now)),
+      ),
+    ]
+    if (excludeReservationCode) {
+      conditions.push(ne(reservations.reservationCode, excludeReservationCode))
+    }
+
+    const occupied = await this.db
+      .select({ seatId: reservationSeats.seatId })
+      .from(reservationSeats)
+      .innerJoin(reservations, eq(reservations.id, reservationSeats.reservationId))
+      .where(and(...conditions))
+      .all()
+    if (occupied.length > 0) {
+      throw new AppError('SEAT_ALREADY_RESERVED', 'One or more seats are already reserved or held')
+    }
   }
 }

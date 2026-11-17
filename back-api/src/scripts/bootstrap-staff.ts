@@ -1,20 +1,25 @@
 import 'dotenv/config'
 import { createInterface } from 'node:readline/promises'
 import { stdin as input, stdout as output } from 'node:process'
-import { eq } from 'drizzle-orm'
-import { db, closeDatabase } from '#infrastructure/database/sqlite.js'
-import { staffAccounts } from '#infrastructure/database/schema.js'
 import { getStaffRole, STAFF_ROLES } from '#domain/entities/staff-account.js'
 import { ScryptPasswordHasher } from '#infrastructure/adapters/scrypt-password-hasher.js'
 
 /**
- * Creates the first administrator account. Input can be provided through
- * STAFF_BOOTSTRAP_* environment variables so the script also works in CI.
+ * Prints the SQL that creates the first administrator account. D1 has no way to
+ * run Drizzle queries from Node, so the statement is executed with
+ * `wrangler d1 execute <database> --remote --command "<SQL>"`.
+ *
+ * Input can be provided through STAFF_BOOTSTRAP_* environment variables so the
+ * script also works in CI.
  */
+function sqlString(value: string): string {
+  return `'${value.replaceAll("'", "''")}'`
+}
+
 const rl = createInterface({ input, output })
 
 try {
-  console.log('初期スタッフ管理者を作成します。')
+  console.log('初期スタッフ管理者の登録SQLを生成します。')
   const userId = (process.env.STAFF_BOOTSTRAP_USER_ID ?? (await rl.question('ユーザーID: '))).trim()
   const displayName = (
     process.env.STAFF_BOOTSTRAP_DISPLAY_NAME ?? (await rl.question('表示名: '))
@@ -43,23 +48,19 @@ try {
     throw new Error('入力値が不正です')
   }
 
-  const existing = await db
-    .select({ id: staffAccounts.id })
-    .from(staffAccounts)
-    .where(eq(staffAccounts.userId, userId))
-    .limit(1)
-    .get()
-  if (existing) throw new Error(`スタッフ ${userId} は既に存在します`)
+  const passwordHash = await new ScryptPasswordHasher().hash(password)
+  const sql = [
+    'INSERT INTO staff_accounts (user_id, display_name, email, password_hash, role_id, status)',
+    `VALUES (${sqlString(userId)}, ${sqlString(displayName)}, ${sqlString(email)}, ${sqlString(passwordHash)}, ${roleId}, 'active')`,
+    'ON CONFLICT(user_id) DO NOTHING;',
+  ].join(' ')
 
-  await db.insert(staffAccounts).values({
-    userId,
-    displayName,
-    email,
-    passwordHash: await new ScryptPasswordHasher().hash(password),
-    roleId,
-  })
-  console.log(`スタッフ ${userId} を作成しました。`)
+  console.log('\n--- SQL ---')
+  console.log(sql)
+  console.log('--- SQL ---')
+  console.log(
+    `\n適用例: npx wrangler d1 execute hal-cinema --remote --command "${sql.replaceAll('"', '\\"')}"`,
+  )
 } finally {
   rl.close()
-  closeDatabase()
 }

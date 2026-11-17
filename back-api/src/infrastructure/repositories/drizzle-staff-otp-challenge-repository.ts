@@ -1,24 +1,26 @@
 import { and, eq, gt, isNull } from 'drizzle-orm'
-import { db } from '#infrastructure/database/sqlite.js'
+import type { Database } from '#infrastructure/database/database.js'
 import { staffOtpChallenges } from '#infrastructure/database/schema.js'
 import type { StaffOtpChallenge } from '#domain/entities/staff-account.js'
 import type { StaffOtpChallengeRepository } from '#domain/interfaces/repositories/staff-otp-challenge-repository.js'
 
 export class DrizzleStaffOtpChallengeRepository implements StaffOtpChallengeRepository {
+  constructor(private readonly db: Database) {}
+
   async create(input: {
     challengeTokenHash: string
     staffAccountId: number
     otpHash: string
     expiresAt: Date
   }): Promise<void> {
-    await db.insert(staffOtpChallenges).values(input)
+    await this.db.insert(staffOtpChallenges).values(input)
   }
 
   async findActiveByTokenHash(
     challengeTokenHash: string,
     now: Date,
   ): Promise<StaffOtpChallenge | null> {
-    const [row] = await db
+    const [row] = await this.db
       .select()
       .from(staffOtpChallenges)
       .where(
@@ -41,15 +43,18 @@ export class DrizzleStaffOtpChallengeRepository implements StaffOtpChallengeRepo
   }
 
   async recordFailure(id: number, failedAttempts: number): Promise<void> {
-    await db.update(staffOtpChallenges).set({ failedAttempts }).where(eq(staffOtpChallenges.id, id))
+    await this.db
+      .update(staffOtpChallenges)
+      .set({ failedAttempts })
+      .where(eq(staffOtpChallenges.id, id))
   }
 
   async markUsed(id: number, usedAt: Date): Promise<void> {
-    await db.update(staffOtpChallenges).set({ usedAt }).where(eq(staffOtpChallenges.id, id))
+    await this.db.update(staffOtpChallenges).set({ usedAt }).where(eq(staffOtpChallenges.id, id))
   }
 
   async invalidateActive(staffAccountId: number, usedAt: Date): Promise<void> {
-    await db
+    await this.db
       .update(staffOtpChallenges)
       .set({ usedAt })
       .where(

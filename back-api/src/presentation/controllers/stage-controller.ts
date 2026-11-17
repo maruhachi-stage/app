@@ -2,13 +2,16 @@ import type { Context } from 'hono'
 import type { StageQueryService } from '#application/services/stage-query-service.js'
 import type { AppEnv } from '#types.js'
 import { AppError } from '#lib/errors.js'
-import { imageUrl } from '#lib/format.js'
+import { DEFAULT_IMAGE_BASE_URL, imageUrl } from '#lib/format.js'
 import { successResponse } from '#presentation/response.js'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export class StageController {
-  constructor(private readonly stageQueryService: StageQueryService) {}
+  constructor(
+    private readonly stageQueryService: StageQueryService,
+    private readonly imageBaseUrl: string = DEFAULT_IMAGE_BASE_URL,
+  ) {}
 
   list = async (c: Context<AppEnv>) => {
     const requestId = c.get('requestId')
@@ -35,7 +38,7 @@ export class StageController {
         title: stage.title,
         description: stage.description,
         durationMin: stage.durationMin,
-        thumbnailUrl: imageUrl(stage.thumbnailUrl),
+        thumbnailUrl: imageUrl(stage.thumbnailUrl, this.imageBaseUrl),
         status: stage.status,
         playwright: stage.playwright,
         director: stage.director,
@@ -52,7 +55,7 @@ export class StageController {
     const stageId = parsePositiveInteger(c.req.param('stageId'), 'stageId')
     const stage = await this.stageQueryService.getById(stageId)
     if (!stage) throw new AppError('NOT_FOUND', 'Stage not found')
-    return c.json(successResponse(toStageResponse(stage), requestId))
+    return c.json(successResponse(toStageResponse(stage, this.imageBaseUrl), requestId))
   }
 
   getSchedules = async (c: Context<AppEnv>) => {
@@ -66,7 +69,7 @@ export class StageController {
     return c.json(
       successResponse(
         {
-          stage: toStageResponse(result.stage),
+          stage: toStageResponse(result.stage, this.imageBaseUrl),
           schedules: result.schedules.map(toScheduleResponse),
         },
         requestId,
@@ -82,7 +85,10 @@ function parsePositiveInteger(value: string | undefined, fieldName: string): num
   return id
 }
 
-function toStageResponse(stage: Awaited<ReturnType<StageQueryService['getById']>> & {}) {
+function toStageResponse(
+  stage: Awaited<ReturnType<StageQueryService['getById']>> & {},
+  imageBaseUrl: string,
+) {
   if (!stage) throw new Error('Stage is required')
   return {
     id: stage.id,
@@ -90,7 +96,7 @@ function toStageResponse(stage: Awaited<ReturnType<StageQueryService['getById']>
     title: stage.title,
     description: stage.description,
     durationMin: stage.durationMin,
-    thumbnailUrl: imageUrl(stage.thumbnailUrl),
+    thumbnailUrl: imageUrl(stage.thumbnailUrl, imageBaseUrl),
     status: stage.status,
     playwright: stage.playwright,
     director: stage.director,

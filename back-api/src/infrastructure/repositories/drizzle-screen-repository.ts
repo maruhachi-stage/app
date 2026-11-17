@@ -1,5 +1,5 @@
 import { asc, eq } from 'drizzle-orm'
-import { db } from '#infrastructure/database/sqlite.js'
+import type { Database } from '#infrastructure/database/database.js'
 import { screenSeatLayouts, screens } from '#infrastructure/database/schema.js'
 import type { Screen } from '#domain/entities/screen.js'
 import type { ScreenRepository } from '#domain/interfaces/repositories/screen-repository.js'
@@ -25,6 +25,8 @@ const toScreen = (row: ScreenRow): Screen => ({
 })
 
 export class DrizzleScreenRepository implements ScreenRepository {
+  constructor(private readonly db: Database) {}
+
   async findAll(): Promise<Screen[]> {
     const rows = await this.baseQuery().orderBy(asc(screens.id))
     return rows.map(toScreen)
@@ -35,7 +37,7 @@ export class DrizzleScreenRepository implements ScreenRepository {
     return row ? toScreen(row) : null
   }
   private baseQuery() {
-    return db
+    return this.db
       .select({
         id: screens.id,
         name: screens.name,

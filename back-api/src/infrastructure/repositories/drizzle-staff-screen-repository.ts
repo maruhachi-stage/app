@@ -1,5 +1,5 @@
 import { asc, count, eq } from 'drizzle-orm'
-import { db } from '#infrastructure/database/sqlite.js'
+import type { Database } from '#infrastructure/database/database.js'
 import { screenSeatLayouts, screens, seats } from '#infrastructure/database/schema.js'
 import type { StaffScreen } from '#domain/entities/staff-screen.js'
 import type { StaffScreenRepository } from '#domain/interfaces/repositories/staff-screen-repository.js'
@@ -29,8 +29,10 @@ const toStaffScreen = (row: StaffScreenRow): StaffScreen => ({
 })
 
 export class DrizzleStaffScreenRepository implements StaffScreenRepository {
+  constructor(private readonly db: Database) {}
+
   async findAll(): Promise<StaffScreen[]> {
-    const rows = await db
+    const rows = await this.db
       .select({
         id: screens.id,
         name: screens.name,

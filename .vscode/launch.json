@@ -30,10 +30,10 @@
       "cwd": "${workspaceFolder}\\back-api"
     },
     {
-      "name": "db:reset",
+      "name": "db:migrations:local",
       "type": "node-terminal",
       "request": "launch",
-      "command": "npm.cmd run db:reset",
+      "command": "npm.cmd run db:migrations:local",
       "cwd": "${workspaceFolder}\\back-api"
     },
     {

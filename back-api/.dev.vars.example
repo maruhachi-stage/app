@@ -1,0 +1,3 @@
+# ローカル開発用のシークレット。`wrangler dev` が読み込む（コミットしない）。
+# 通常の変数は wrangler.jsonc の [vars] で管理し、本番のシークレットは `wrangler secret put` で登録する。
+RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxx"

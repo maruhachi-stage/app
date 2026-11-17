@@ -34,6 +34,22 @@ npm run db:bootstrap-staff
 
 `VITE_API_VERSION` で API 接頭辞を切り替えます。既定は `v1`（`/api/v1`）で、`legacy` を指定すると `/api` を使用します。
 
+## Deployment
+
+Cloudflare Pages へ **SPA として** 静的配信します（`react-router.config.ts` は `ssr: false`）。
+
+```bash
+npm run build
+npx wrangler pages deploy
+```
+
+- `wrangler.toml` の `pages_build_output_dir` は `build/client`
+- `public/_redirects` の `/* /index.html 200` で SPA フォールバック
+- `public/_routes.json` で Pages Functions を `/api/*` だけに絞る
+- `functions/api/[[path]].ts` は `/api/*` を API Worker（`API_ORIGIN`）へ転送し、ブラウザから見ると同一オリジンのままにする（`SameSite=Lax` のセッション Cookie を維持するため）
+
+デプロイ前に `wrangler.toml` の `API_ORIGIN` を実際の Worker オリジンへ変更してください。
+
 ## Validation
 
 ```bash

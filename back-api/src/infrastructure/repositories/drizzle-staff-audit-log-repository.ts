@@ -1,4 +1,4 @@
-import { db } from '#infrastructure/database/sqlite.js'
+import type { Database } from '#infrastructure/database/database.js'
 import { staffAuditLogs } from '#infrastructure/database/schema.js'
 import type {
   StaffAuditLogInput,
@@ -6,8 +6,10 @@ import type {
 } from '#domain/interfaces/repositories/staff-audit-log-repository.js'
 
 export class DrizzleStaffAuditLogRepository implements StaffAuditLogRepository {
+  constructor(private readonly db: Database) {}
+
   async record(input: StaffAuditLogInput): Promise<void> {
-    await db.insert(staffAuditLogs).values({
+    await this.db.insert(staffAuditLogs).values({
       staffAccountId: input.staffAccountId,
       action: input.action,
       targetType: input.targetType ?? null,

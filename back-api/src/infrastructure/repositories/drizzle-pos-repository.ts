@@ -1,5 +1,6 @@
-import { asc, desc, eq, inArray, sql } from 'drizzle-orm'
-import { db } from '#infrastructure/database/sqlite.js'
+import { and, asc, desc, eq, gte, inArray, sql } from 'drizzle-orm'
+import type { BatchItem } from 'drizzle-orm/batch'
+import type { Database } from '#infrastructure/database/database.js'
 import { posProducts, posSaleItems, posSales } from '#infrastructure/database/schema.js'
 import { AppError } from '#domain/errors/appError.js'
 import type { CreatedPosSale, PosSale } from '#domain/entities/pos-sale.js'
@@ -7,8 +8,10 @@ import type { PosProduct } from '#domain/entities/pos-product.js'
 import type { PosRepository } from '#domain/interfaces/repositories/pos-repository.js'
 
 export class DrizzlePosRepository implements PosRepository {
+  constructor(private readonly db: Database) {}
+
   async findProducts(): Promise<PosProduct[]> {
-    const rows = await db
+    const rows = await this.db
       .select()
       .from(posProducts)
       .orderBy(
@@ -30,7 +33,11 @@ export class DrizzlePosRepository implements PosRepository {
   }
 
   async findSales(limit: number): Promise<PosSale[]> {
-    const rows = await db.select().from(posSales).orderBy(desc(posSales.createdAt)).limit(limit)
+    const rows = await this.db
+      .select()
+      .from(posSales)
+      .orderBy(desc(posSales.createdAt))
+      .limit(limit)
     return rows.map((row) => ({
       id: row.id,
       saleCode: row.saleCode,
@@ -43,72 +50,79 @@ export class DrizzlePosRepository implements PosRepository {
   async createSale(params: Parameters<PosRepository['createSale']>[0]): Promise<CreatedPosSale> {
     const ids = [...new Set(params.items.map((item) => item.productId))]
 
-    return db.transaction(
-      (tx) => {
-        const rows = ids.length
-          ? tx.select().from(posProducts).where(inArray(posProducts.id, ids)).all()
-          : []
-        const products = new Map(rows.map((row) => [row.id, row]))
-        const requestedQuantities = new Map<number, number>()
-        for (const item of params.items) {
-          requestedQuantities.set(
-            item.productId,
-            (requestedQuantities.get(item.productId) ?? 0) + item.quantity,
-          )
+    const rows = ids.length
+      ? await this.db.select().from(posProducts).where(inArray(posProducts.id, ids))
+      : []
+    const products = new Map(rows.map((row) => [row.id, row]))
+    const requestedQuantities = new Map<number, number>()
+    for (const item of params.items) {
+      requestedQuantities.set(
+        item.productId,
+        (requestedQuantities.get(item.productId) ?? 0) + item.quantity,
+      )
+    }
+
+    let totalAmount = 0
+    for (const item of params.items) {
+      const product = products.get(item.productId)
+      if (!product || !product.isActive) {
+        throw new AppError('VALIDATION_ERROR', 'Product is unavailable')
+      }
+      totalAmount += product.price * item.quantity
+    }
+
+    for (const [productId, quantity] of requestedQuantities) {
+      const product = products.get(productId)!
+      if (product.stockQuantity !== null && product.stockQuantity < quantity) {
+        throw new AppError('VALIDATION_ERROR', product.name + ' is out of stock')
+      }
+    }
+
+    // Stock is decremented with a conditional UPDATE and sent as one atomic
+    // batch, so two concurrent sales cannot oversell the same inventory.
+    const stockUpdates: BatchItem<'sqlite'>[] = []
+    for (const [productId, quantity] of requestedQuantities) {
+      const product = products.get(productId)!
+      if (product.stockQuantity === null) continue
+      stockUpdates.push(
+        this.db
+          .update(posProducts)
+          .set({ stockQuantity: sql`${posProducts.stockQuantity} - ${quantity}` })
+          .where(and(eq(posProducts.id, productId), gte(posProducts.stockQuantity, quantity))),
+      )
+    }
+
+    if (stockUpdates.length > 0) {
+      const results = await this.db.batch(
+        stockUpdates as [BatchItem<'sqlite'>, ...BatchItem<'sqlite'>[]],
+      )
+      const soldOut = results.some((result) => (result?.meta?.changes ?? 0) === 0)
+      if (soldOut) throw new AppError('VALIDATION_ERROR', 'Product is out of stock')
+    }
+
+    const saleCode = 'R' + Date.now().toString().slice(-8)
+    const sale = await this.db
+      .insert(posSales)
+      .values({ saleCode, totalAmount, paymentMethod: params.paymentMethod })
+      .returning({ id: posSales.id })
+      .get()
+    if (!sale) throw new Error('Failed to create POS sale')
+
+    await this.db.insert(posSaleItems).values(
+      params.items.map((item) => {
+        const product = products.get(item.productId)!
+        const unitPrice = product.price
+        return {
+          saleId: sale.id,
+          productId: item.productId,
+          productName: product.name,
+          unitPrice,
+          quantity: item.quantity,
+          lineTotal: unitPrice * item.quantity,
         }
-
-        let totalAmount = 0
-        for (const item of params.items) {
-          const product = products.get(item.productId)
-          if (!product || !product.isActive) {
-            throw new AppError('VALIDATION_ERROR', 'Product is unavailable')
-          }
-          totalAmount += product.price * item.quantity
-        }
-
-        for (const [productId, quantity] of requestedQuantities) {
-          const product = products.get(productId)!
-          if (product.stockQuantity !== null && product.stockQuantity < quantity) {
-            throw new AppError('VALIDATION_ERROR', product.name + ' is out of stock')
-          }
-        }
-
-        const saleCode = 'R' + Date.now().toString().slice(-8)
-        const sale = tx
-          .insert(posSales)
-          .values({ saleCode, totalAmount, paymentMethod: params.paymentMethod })
-          .returning({ id: posSales.id })
-          .get()
-        if (!sale) throw new Error('Failed to create POS sale')
-
-        for (const item of params.items) {
-          const product = products.get(item.productId)!
-          const unitPrice = product.price
-          tx.insert(posSaleItems)
-            .values({
-              saleId: sale.id,
-              productId: item.productId,
-              productName: product.name,
-              unitPrice,
-              quantity: item.quantity,
-              lineTotal: unitPrice * item.quantity,
-            })
-            .run()
-        }
-
-        for (const [productId, quantity] of requestedQuantities) {
-          const product = products.get(productId)!
-          if (product.stockQuantity !== null) {
-            tx.update(posProducts)
-              .set({ stockQuantity: product.stockQuantity - quantity })
-              .where(eq(posProducts.id, productId))
-              .run()
-          }
-        }
-
-        return { saleCode, totalAmount }
-      },
-      { behavior: 'immediate' },
+      }),
     )
+
+    return { saleCode, totalAmount }
   }
 }

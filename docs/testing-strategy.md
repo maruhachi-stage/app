@@ -39,6 +39,17 @@
 
 新機能や不具合修正では、まずUnitまたはIntegrationテストで再現条件を固定し、必要な場合にE2Eテストを追加します。
 
+## Workers ランタイム上の結合テスト
+
+`back-api` は Cloudflare Workers（D1 / R2）で動作するため、ルートからレスポンスまでの結合テストは Workers ランタイム上で実行します。
+
+- 実行: `cd back-api; npm run test:integration`（`vitest.workers.config.ts`）
+- ランナー: `@cloudflare/vitest-plugin`。`wrangler.jsonc` のバインディングをそのまま読み込むため、本番と同じ D1 方言・R2 バインディングで検証できます。
+- DB: 各テストは独立した D1 を持ち、`test/workers/setup.ts` が `d1/migrations` を適用して `d1/seed.sql` を投入します。スキーマは本番と同じ migration を唯一の正とします。
+- リクエスト: `SELF.fetch` を使い、実際の Worker エントリポイント（`fetch` ハンドラ）へ HTTP 相当のリクエストを送ります。
+- 対象: 公開 API の契約（ステータスコード・レスポンス形）、予約の座席競合、管理者ログインの失敗経路、`/images/*` の 404 など。
+- D1 に固有の挙動（`batch` の原子性、一意制約）は実 DB で検証し、モックでは代替しません。
+
 ## 実行方法
 
 各アプリのディレクトリで実行します。

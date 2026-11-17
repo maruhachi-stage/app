@@ -17,7 +17,7 @@ export const app = new Hono<AppEnv>()
 const api = new Hono<AppEnv>()
 // Versioned API hosts the staff endpoints. The customer API stays on /api for now.
 const apiV1 = new Hono<AppEnv>()
-const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
+const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:3030')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean)

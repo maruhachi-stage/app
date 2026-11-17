@@ -43,6 +43,15 @@ npm.cmd run db:bootstrap-staff
 
 ## 起動方法
 
+### 開発用ポート
+
+| アプリ | ポート | URL |
+| --- | --- | --- |
+| front-web | 3030 | `http://localhost:3030` |
+| staff-app | 3040 | `http://localhost:3040` |
+| back-api | 3080 | `http://localhost:3080` |
+| image-server | 3090 | `http://localhost:3090` |
+
 ### back-api
 
 ```powershell
@@ -50,9 +59,9 @@ cd back-api
 npm.cmd run dev
 ```
 
-- 起動 URL: `http://localhost:3000`
-- Swagger UI: `http://localhost:3000/api/docs`
-- OpenAPI JSON: `http://localhost:3000/api/openapi.json`
+- 起動 URL: `http://localhost:3080`
+- Swagger UI: `http://localhost:3080/api/docs`
+- OpenAPI JSON: `http://localhost:3080/api/openapi.json`
 
 ### front-web / staff-app
 

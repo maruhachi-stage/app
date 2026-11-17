@@ -9,13 +9,16 @@ export default defineConfig({
     },
     server: {
         host: '0.0.0.0',
+        port: 3040,
+        strictPort: true,
+        allowedHosts: ['.ts.net'],
         proxy: {
             '/api': {
-                target: 'http://localhost:3000',
+                target: 'http://localhost:3080',
                 changeOrigin: true,
             },
             '/img-proxy': {
-                target: 'http://localhost:3001',
+                target: 'http://localhost:3090',
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/img-proxy/, ''),
             },

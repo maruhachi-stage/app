@@ -21,7 +21,6 @@ jobs:
       front: ${{ steps.filter.outputs.front }}
       staff: ${{ steps.filter.outputs.staff }}
       back: ${{ steps.filter.outputs.back }}
-      image: ${{ steps.filter.outputs.image }}
 
     steps:
       - name: リポジトリをチェックアウト
@@ -37,7 +36,6 @@ jobs:
             echo "front=true" >> "$GITHUB_OUTPUT"
             echo "staff=true" >> "$GITHUB_OUTPUT"
             echo "back=true" >> "$GITHUB_OUTPUT"
-            echo "image=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -54,14 +52,13 @@ jobs:
             esac
           done <<< "$files"
 
-          for app in front staff back image; do
+          for app in front staff back; do
             changed=false
             while IFS= read -r file; do
               case "$app:$file" in
                 front:front-web/*) changed=true ;;
                 staff:staff-app/*) changed=true ;;
                 back:back-api/*) changed=true ;;
-                image:image-server/*) changed=true ;;
               esac
             done <<< "$files"
 
@@ -180,43 +177,8 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Unit Test
+      - name: Test
         run: npm test
 
       - name: Build
         run: npm run build
-
-      - name: Integration Test
-        run: npm run test:integration
-
-  image-server:
-    name: Image Server
-    needs: changes
-    if: needs.changes.outputs.image == 'true'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: image-server
-
-    steps:
-      - name: リポジトリをチェックアウト
-        uses: actions/checkout@v7
-
-      - name: Node.jsをセットアップ
-        uses: actions/setup-node@v7
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: image-server/package-lock.json
-
-      - name: 依存関係をインストール
-        run: npm install --ignore-scripts --no-audit --no-fund
-
-      - name: Format
-        run: npm run format:check
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm test

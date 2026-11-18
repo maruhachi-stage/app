@@ -8,7 +8,6 @@ import { ScreeningGridCard } from '~/components/ScreeningCard'
 import { DateSelector } from '~/components/DateSelector'
 import { ScheduleGrid } from '~/components/ScheduleGrid'
 import { ProductCard } from '~/components/ProductCard'
-import { proxyImageUrl } from '~/lib/image'
 
 const MOCK_META = {
     director: '山田 太郎',
@@ -127,7 +126,7 @@ export default function MovieDetailPage() {
                                 {movie.thumbnailUrl ? (
                                     <img
                                         ref={imgRef}
-                                        src={proxyImageUrl(movie.thumbnailUrl)}
+                                        src={movie.thumbnailUrl}
                                         alt={movie.title}
                                         crossOrigin="anonymous"
                                         onLoad={handleImageLoad}

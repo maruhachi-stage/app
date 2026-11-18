@@ -3,14 +3,11 @@ import type { Database } from '#infrastructure/database/database.js'
 import { reservations, schedules, screens, screenings } from '#infrastructure/database/schema.js'
 import type { MemberReservation } from '#domain/entities/member-reservation.js'
 import type { MemberReservationRepository } from '#domain/interfaces/repositories/member-reservation-repository.js'
-import { DEFAULT_IMAGE_BASE_URL, imageUrl } from '#lib/format.js'
+import { imageUrl } from '#lib/format.js'
 import { screeningThumbnail } from './screening-thumbnail.js'
 
 export class DrizzleMemberReservationRepository implements MemberReservationRepository {
-  constructor(
-    private readonly db: Database,
-    private readonly imageBaseUrl: string = DEFAULT_IMAGE_BASE_URL,
-  ) {}
+  constructor(private readonly db: Database) {}
 
   async findByMemberId(memberId: number): Promise<MemberReservation[]> {
     const rows = await this.db
@@ -38,7 +35,7 @@ export class DrizzleMemberReservationRepository implements MemberReservationRepo
       totalPrice: row.totalPrice,
       createdAt: row.createdAt,
       movieTitle: row.title,
-      thumbnailUrl: imageUrl(row.thumbnailUrl, this.imageBaseUrl),
+      thumbnailUrl: imageUrl(row.thumbnailUrl),
       startsAt: row.startsAt,
       endsAt: row.endsAt,
       screenName: row.screenName,

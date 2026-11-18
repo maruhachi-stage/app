@@ -1,7 +1,6 @@
 import { Link } from 'react-router'
 import type { Screening } from '~/features/screening/domain/screening'
 import { formatDateJst, todayJst } from '~/lib/date'
-import { proxyImageUrl } from '~/lib/image'
 import { ScheduleGrid } from './ScheduleGrid'
 
 type Props = {
@@ -28,7 +27,7 @@ export function ScreeningGridCard({ screening, selectedDate }: Props) {
                 <Link to={detailUrl} className="absolute inset-0">
                     {screening.thumbnailUrl ? (
                         <img
-                            src={proxyImageUrl(screening.thumbnailUrl)}
+                            src={screening.thumbnailUrl}
                             alt={screening.title}
                             className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-60"
                         />
@@ -84,7 +83,7 @@ export function ScreeningListCard({ screening, selectedDate }: Props) {
                 <div className="aspect-2/3 sm:aspect-auto sm:h-full bg-secondary">
                     {screening.thumbnailUrl ? (
                         <img
-                            src={proxyImageUrl(screening.thumbnailUrl)}
+                            src={screening.thumbnailUrl}
                             alt={screening.title}
                             className="h-full w-full object-cover"
                         />

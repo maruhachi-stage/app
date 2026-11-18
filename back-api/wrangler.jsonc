@@ -7,11 +7,14 @@
   "observability": {
     "enabled": true,
   },
+  // ローカル開発時の待ち受けポート。front-web / staff-app の Vite proxy と SETUP.md の
+  // 記述に揃えるため、`npm run dev` も `npm run dev:scheduled` もここで指定した 3080 を使う。
+  "dev": {
+    "port": 3080,
+  },
   "vars": {
-    "ENVIRONMENT": "development",
-    "CORS_ORIGIN": "http://localhost:3030,http://localhost:3040",
-    "IMAGE_BASE_URL": "http://localhost:3090",
-    "BASE_URL": "http://localhost:3030",
+    "ENVIRONMENT": "production",
+    "CORS_ORIGIN": "https://hal-cinema-web.pages.dev,https://hal-cinema-staff.pages.dev",
     "RESEND_FROM_EMAIL": "no-reply@hal-cinema.example.jp",
   },
   "d1_databases": [

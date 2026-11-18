@@ -5,13 +5,10 @@ import type {
 } from '#application/dto/product-dto.js'
 import type { Product } from '#domain/entities/product.js'
 import type { ProductRepository } from '#domain/interfaces/repositories/product-repository.js'
-import { DEFAULT_IMAGE_BASE_URL } from '#lib/format.js'
+import { imageUrl } from '#lib/format.js'
 
 export class ProductService {
-  constructor(
-    private readonly repository: ProductRepository,
-    private readonly imageBaseUrl: string = DEFAULT_IMAGE_BASE_URL,
-  ) {}
+  constructor(private readonly repository: ProductRepository) {}
   async listProducts(query: ListProductsQueryDTO): Promise<ProductListResponseDTO> {
     return {
       items: (await this.repository.findAll(query.category)).map((product) => this.toDTO(product)),
@@ -22,14 +19,14 @@ export class ProductService {
     return product ? this.toDTO(product) : null
   }
   private toDTO(product: Product): ProductDTO {
-    const imageUrl = this.imageUrl(product.imagePath)
+    const image = imageUrl(product.imagePath)
     return {
       id: product.id,
       name: product.name,
       category: product.category,
       price: product.price,
       ...(product.description ? { description: product.description } : {}),
-      ...(imageUrl ? { imageUrl } : {}),
+      ...(image ? { imageUrl: image } : {}),
       ...(product.movieTitle ? { movieTitle: product.movieTitle } : {}),
       ...(product.isNew ? { isNew: true } : {}),
       ...(product.isSoldOut ? { isSoldOut: true } : {}),
@@ -49,11 +46,5 @@ export class ProductService {
         : {}),
       ...(product.notes.length ? { notes: product.notes } : {}),
     }
-  }
-  private imageUrl(path: string | null): string | undefined {
-    if (!path) return undefined
-    return path.startsWith('http')
-      ? path
-      : `${this.imageBaseUrl}/images/${path.replace(/^\/+/, '')}`
   }
 }

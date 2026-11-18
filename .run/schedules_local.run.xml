@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="db:up" type="js.build_tools.npm" factoryName="npm">
+  <configuration default="false" name="schedules:local" type="js.build_tools.npm" factoryName="npm">
     <package-json value="$PROJECT_DIR$/back-api/package.json" />
     <command value="run" />
     <scripts>
-      <script value="db:up" />
+      <script value="schedules:local" />
     </scripts>
     <node-interpreter value="project" />
     <envs />

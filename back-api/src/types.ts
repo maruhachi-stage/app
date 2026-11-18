@@ -13,8 +13,6 @@ export type Env = {
   DB: D1Database
   IMAGES: R2Bucket
   CORS_ORIGIN?: string
-  IMAGE_BASE_URL?: string
-  BASE_URL?: string
   RESEND_API_KEY?: string
   RESEND_FROM_EMAIL?: string
   ENVIRONMENT?: 'development' | 'production'

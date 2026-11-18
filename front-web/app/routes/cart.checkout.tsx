@@ -2,7 +2,6 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { formatProductPrice } from '~/features/product/domain/product'
 import { useCart } from '~/components/CartProvider'
-import { proxyImageUrl } from '~/lib/image'
 import { Button } from '~/components/Button'
 
 type FormErrors = {
@@ -257,7 +256,7 @@ export default function CartCheckoutPage() {
                                 <div className="h-16 w-16 shrink-0 overflow-hidden rounded bg-muted">
                                     {item.imageUrl && (
                                         <img
-                                            src={proxyImageUrl(item.imageUrl)}
+                                            src={item.imageUrl}
                                             alt=""
                                             className="h-full w-full object-cover"
                                         />

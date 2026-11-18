@@ -12,7 +12,6 @@ import {
 } from '~/features/product/domain/product'
 import { useCart } from '~/components/CartProvider'
 import { useProduct } from '~/features/product/useProducts'
-import { proxyImageUrl } from '~/lib/image'
 import { Button } from '~/components/Button'
 
 type Props = {
@@ -98,7 +97,7 @@ export function ProductDetailPage({ scope }: Props) {
                 <div className="overflow-hidden rounded-lg border border-border bg-muted">
                     {product.imageUrl ? (
                         <img
-                            src={proxyImageUrl(product.imageUrl)}
+                            src={product.imageUrl}
                             alt={product.name}
                             className="aspect-square w-full object-cover"
                         />

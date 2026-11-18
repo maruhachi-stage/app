@@ -2,7 +2,6 @@ import { useRef } from 'react'
 import { Link } from 'react-router'
 import type { Screening } from '~/features/screening/domain/screening'
 import { formatTimeJst } from '~/lib/date'
-import { proxyImageUrl } from '~/lib/image'
 
 type Props = {
     screenings: Screening[]
@@ -76,7 +75,7 @@ function ScreeningLabel({
     const detailUrl = buildDetailUrl(screening, selectedDate)
     const image = screening.thumbnailUrl ? (
         <img
-            src={proxyImageUrl(screening.thumbnailUrl)}
+            src={screening.thumbnailUrl}
             alt={compact ? screening.title : ''}
             className="h-full w-full object-cover"
             loading="lazy"

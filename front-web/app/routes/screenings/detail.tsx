@@ -8,7 +8,6 @@ import { DateSelector } from '~/components/DateSelector'
 import { ScheduleGrid } from '~/components/ScheduleGrid'
 import { ScreeningGridCard } from '~/components/ScreeningCard'
 import { ProductCard } from '~/components/ProductCard'
-import { proxyImageUrl } from '~/lib/image'
 
 function extractColor(img: HTMLImageElement): { r: number; g: number; b: number } | null {
     try {
@@ -168,7 +167,7 @@ export default function ScreeningDetailPage() {
                                 {item.thumbnailUrl ? (
                                     <img
                                         ref={imgRef}
-                                        src={proxyImageUrl(item.thumbnailUrl)}
+                                        src={item.thumbnailUrl}
                                         alt={item.title}
                                         crossOrigin="anonymous"
                                         onLoad={handleImageLoad}

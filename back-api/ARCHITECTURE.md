@@ -38,7 +38,7 @@ DI → Application / Infrastructure
 | `src/domain/errors/`                  | Domain Error                              |
 | `src/infrastructure/repositories/`    | Repositoryの実装                          |
 | `src/infrastructure/adapters/`        | Portの実装                                |
-| `src/infrastructure/database/`        | D1接続、Drizzle schema、seed              |
+| `src/infrastructure/database/`        | D1接続、Drizzle schema、マスタ定義        |
 | `src/di/container.ts`                 | 依存関係の組み立て                        |
 | `src/lib/`                            | DBや環境変数の共通処理                    |
 | `migrations/`                         | Drizzle Kitの出力（正）                   |
@@ -62,6 +62,7 @@ DI → Application / Infrastructure
 - 必要なdirectoryだけ作る。
 - 1fileに1つの責務を持たせる。
 - 循環依存を作らない。
+- ローカルと本番で実装を分けない。環境差分は`wrangler.jsonc`の`[vars]`（本番値）と`.dev.vars`（ローカルのみ）で表現し、コードに`localhost`や`NODE_ENV`による分岐を書かない。
 
 ## 各層のルール
 
@@ -98,6 +99,7 @@ DI → Application / Infrastructure
 - D1には対話型transactionがないため、Reservationの確定とPOS会計は`db.batch()`（原子的）と一意制約で直列化する。座席は`reservation_seats(schedule_id, seat_id)`の一意制約で二重予約を拒否する。
 - セッションはD1の`sessions`テーブルへ保存する。isolateのメモリはリクエストをまたいで保証されない。
 - 画像は非公開のR2バケットへ置き、Workerの`GET /images/*`だけが配信する。R2の公開URLは使わない。
+- APIが返す画像URLは`/images/<filename>`の相対パスとする。フロントは同一オリジンのまま配信でき、ローカル（MiniflareのR2）と本番（R2）で同じコードが動く。
 - スケジュールの自動生成は`src/worker.ts`の`scheduled`ハンドラ（Cron Triggers、15:00 UTC = 0:00 JST）から実行する。
 - レート制限はisolate単位のメモリで動作するため、分散環境では実効的な制限が緩くなる（将来D1またはDurable Objectへ移行）。
 - モジュールスコープで`setInterval`等のタイマーを張らない。

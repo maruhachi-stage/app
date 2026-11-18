@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { proxyImageUrl } from '~/lib/image'
 
 type Props = {
     title: string
@@ -12,11 +11,7 @@ export function ScreeningHeroBanner({ title, posterUrl, meta }: Props) {
         <div className="flex items-center gap-4 rounded-app border border-border bg-card shadow-sm p-4 mb-8">
             <div className="shrink-0 w-16 aspect-[2/3] rounded-app overflow-hidden bg-secondary">
                 {posterUrl ? (
-                    <img
-                        src={proxyImageUrl(posterUrl)}
-                        alt={title}
-                        className="h-full w-full object-cover"
-                    />
+                    <img src={posterUrl} alt={title} className="h-full w-full object-cover" />
                 ) : (
                     <div className="flex h-full items-center justify-center text-muted-foreground text-2xl">
                         🎬

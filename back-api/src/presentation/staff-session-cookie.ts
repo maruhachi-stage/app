@@ -9,22 +9,23 @@ import type { AppEnv } from '#types.js'
 export const STAFF_SESSION_COOKIE = 'hal_staff_session'
 export const STAFF_CHALLENGE_COOKIE = 'hal_staff_challenge'
 
-const isProduction = () => process.env.NODE_ENV === 'production'
+/** Production flag comes from the binding so local and deployed runs share one rule. */
+const isProduction = (c: Context<AppEnv>) => c.env.ENVIRONMENT === 'production'
 
-const cookieOptions = (maxAge: number) => ({
+const cookieOptions = (c: Context<AppEnv>, maxAge: number) => ({
   httpOnly: true,
   sameSite: 'Lax' as const,
   path: '/',
   maxAge,
-  secure: isProduction(),
+  secure: isProduction(c),
 })
 
 export function setStaffSessionCookie(c: Context<AppEnv>, token: string, maxAge: number): void {
-  setCookie(c, STAFF_SESSION_COOKIE, token, cookieOptions(maxAge))
+  setCookie(c, STAFF_SESSION_COOKIE, token, cookieOptions(c, maxAge))
 }
 
 export function setStaffChallengeCookie(c: Context<AppEnv>, token: string, maxAge: number): void {
-  setCookie(c, STAFF_CHALLENGE_COOKIE, token, cookieOptions(maxAge))
+  setCookie(c, STAFF_CHALLENGE_COOKIE, token, cookieOptions(c, maxAge))
 }
 
 export function clearStaffSessionCookie(c: Context<AppEnv>): void {

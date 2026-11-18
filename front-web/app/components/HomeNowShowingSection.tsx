@@ -1,16 +1,11 @@
 import { Link } from 'react-router'
 import type { Screening } from '~/features/screening/domain/screening'
 import { AppConfig } from '~/config/app'
-import { proxyImageUrl } from '~/lib/image'
 
 type Props = {
     movies: Screening[]
     loading: boolean
     error: string
-}
-
-function movieImageUrl(thumbnailUrl: string | null): string | null {
-    return proxyImageUrl(thumbnailUrl) ?? null
 }
 
 function movieDetailPath(movieId: number): string {
@@ -25,7 +20,7 @@ function moviesListPath(params?: { status?: string; date?: string }): string {
 }
 
 function HeroMain({ movie }: { movie: Screening }) {
-    const imgUrl = movieImageUrl(movie.thumbnailUrl)
+    const imgUrl = movie.thumbnailUrl
     return (
         <Link
             to={movieDetailPath(movie.id)}
@@ -68,7 +63,7 @@ function HeroMain({ movie }: { movie: Screening }) {
 }
 
 function HeroSub({ movie }: { movie: Screening }) {
-    const imgUrl = movieImageUrl(movie.thumbnailUrl)
+    const imgUrl = movie.thumbnailUrl
     return (
         <Link
             to={movieDetailPath(movie.id)}

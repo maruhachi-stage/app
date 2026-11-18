@@ -1,15 +1,23 @@
 import { Resend } from 'resend'
 
-const FROM = process.env.RESEND_FROM_EMAIL ?? 'no-reply@hal-cinema.example.jp'
-
-function getResend(): Resend {
-  const key = process.env.RESEND_API_KEY
-  if (!key) throw new Error('RESEND_API_KEY is not set')
-  return new Resend(key)
+/** Credentials come from the Worker bindings, so nothing is read from `process.env`. */
+export type EmailConfig = {
+  apiKey?: string
+  from: string
 }
 
-export async function sendOtpEmail(to: string, code: string, purpose?: string): Promise<void> {
-  if (!process.env.RESEND_API_KEY) {
+function getResend(config: EmailConfig): Resend {
+  if (!config.apiKey) throw new Error('RESEND_API_KEY is not set')
+  return new Resend(config.apiKey)
+}
+
+export async function sendOtpEmail(
+  config: EmailConfig,
+  to: string,
+  code: string,
+  purpose?: string,
+): Promise<void> {
+  if (!config.apiKey) {
     /*
      * =====================================================================
      * ⚠⚠⚠ DEVELOPMENT DEBUG LOG (INTENTIONAL) ⚠⚠⚠
@@ -21,9 +29,9 @@ export async function sendOtpEmail(to: string, code: string, purpose?: string): 
     console.log(`[DEV] OTP for ${to}${purpose ? ` (${purpose})` : ''}: ${code}`)
     return
   }
-  const resend = getResend()
+  const resend = getResend(config)
   await resend.emails.send({
-    from: FROM,
+    from: config.from,
     to,
     subject: '【HALシネマ】認証コードのお知らせ',
     text: [
@@ -49,8 +57,11 @@ export type ReservationEmailParams = {
   reservationDetailUrl: string
 }
 
-export async function sendReservationEmail(params: ReservationEmailParams): Promise<void> {
-  if (!process.env.RESEND_API_KEY) {
+export async function sendReservationEmail(
+  config: EmailConfig,
+  params: ReservationEmailParams,
+): Promise<void> {
+  if (!config.apiKey) {
     console.log(`[DEV] Reservation email for ${params.to}: ${params.reservationCode}`)
     return
   }
@@ -88,9 +99,9 @@ export async function sendReservationEmail(params: ReservationEmailParams): Prom
     `※このメールは送信専用です。返信はお受けできません。`,
   ].join('\n')
 
-  const resend = getResend()
+  const resend = getResend(config)
   await resend.emails.send({
-    from: FROM,
+    from: config.from,
     to: params.to,
     subject: '【HALシネマ】ご予約完了のお知らせ',
     text,

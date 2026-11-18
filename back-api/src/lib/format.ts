@@ -25,14 +25,14 @@ export function maskEmail(email: string): string {
   return `${visible}***${email.slice(at)}`
 }
 
-/** Image origin used when no IMAGE_BASE_URL is configured (local image-server). */
-export const DEFAULT_IMAGE_BASE_URL = 'http://localhost:3090'
-
-export function imageUrl(
-  filename: string | null,
-  baseUrl: string = DEFAULT_IMAGE_BASE_URL,
-): string | null {
+/**
+ * Builds the URL of an image. Images are served by this Worker from
+ * `GET /images/*` (R2 backed), so the URL stays relative to whichever origin
+ * the browser used — the same value works in local development, on Pages and
+ * on the production Worker.
+ */
+export function imageUrl(filename: string | null | undefined): string | null {
   if (!filename) return null
   if (filename.startsWith('http')) return filename
-  return `${baseUrl.replace(/\/+$/, '')}/images/${filename}`
+  return `/images/${filename.replace(/^\/+/, '')}`
 }

@@ -1,5 +1,5 @@
--- 自動生成ファイル: scripts/export-d1-seed.mjs がローカル SQLite から出力します。
--- 手で編集しないでください。マスタデータを変更したらスクリプトを再実行します。
+-- 自動生成ファイル: npm run db:seed:export が src/infrastructure/database/seed-data.ts から出力します。
+-- 手で編集しないでください。マスタを変えるときは seed-data.ts を編集して再生成します。
 
 -- images (47 rows)
 INSERT OR IGNORE INTO "images" ("id", "entity_type", "entity_id", "file_name", "display_order", "created_at") VALUES (1, 'screening', 1, 'movie_1_01.jpg', 0, 1794289991104);

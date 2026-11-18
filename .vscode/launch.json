@@ -37,22 +37,27 @@
       "cwd": "${workspaceFolder}\\back-api"
     },
     {
-      "name": "image-server run",
+      "name": "images:local",
       "type": "node-terminal",
       "request": "launch",
-      "command": "node server.js",
-      "cwd": "${workspaceFolder}\\image-server"
+      "command": "npm.cmd run images:local",
+      "cwd": "${workspaceFolder}\\back-api"
+    },
+    {
+      "name": "schedules:local",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm.cmd run schedules:local",
+      "cwd": "${workspaceFolder}\\back-api"
     }
   ],
   "compounds": [
     {
       "name": "all dev",
       "configurations": [
-        "db:setup",
         "back-api run",
         "front-web run",
-        "staff-app run",
-        "image-server run"
+        "staff-app run"
       ]
     }
   ]

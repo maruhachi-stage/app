@@ -10,13 +10,10 @@ import type { Movie } from '#domain/entities/movie.js'
 import type { MovieSchedule } from '#domain/entities/movie-schedule.js'
 import type { PublicSchedule } from '#domain/entities/public-schedule.js'
 import type { MovieRepository } from '#domain/interfaces/repositories/movie-repository.js'
-import { DEFAULT_IMAGE_BASE_URL } from '#lib/format.js'
+import { imageUrl } from '#lib/format.js'
 
 export class MovieService {
-  constructor(
-    private readonly movieRepository: MovieRepository,
-    private readonly imageBaseUrl: string = DEFAULT_IMAGE_BASE_URL,
-  ) {}
+  constructor(private readonly movieRepository: MovieRepository) {}
 
   async listMovies(query: ListMoviesQueryDTO): Promise<MovieListResponseDTO> {
     const movies = await this.movieRepository.findMovies(query)
@@ -62,7 +59,7 @@ export class MovieService {
       title: movie.title,
       description: movie.description,
       durationMin: movie.durationMin,
-      thumbnailUrl: this.imageUrl(movie.thumbnailFilename),
+      thumbnailUrl: imageUrl(movie.thumbnailFilename),
       status: movie.status,
     }
   }
@@ -80,7 +77,7 @@ export class MovieService {
       stageTitle: schedule.stageTitle,
       title: schedule.movieTitle ?? schedule.stageTitle,
       type: schedule.type,
-      thumbnailUrl: this.imageUrl(schedule.thumbnailFilename),
+      thumbnailUrl: imageUrl(schedule.thumbnailFilename),
       durationMin: schedule.durationMin,
       screenName: schedule.screenName,
       startsAt: schedule.startsAt,
@@ -88,11 +85,5 @@ export class MovieService {
       remainingSeats: schedule.remainingSeats,
       totalSeats: schedule.totalSeats,
     }
-  }
-
-  private imageUrl(filename: string | null): string | null {
-    if (!filename) return null
-    if (filename.startsWith('http')) return filename
-    return `${this.imageBaseUrl}/images/${filename}`
   }
 }

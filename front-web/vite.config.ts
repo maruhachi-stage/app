@@ -13,16 +13,14 @@ export default defineConfig({
         strictPort: true,
         allowedHosts: ['.ts.net'],
         proxy: {
+            // API・画像は wrangler dev（API Worker）が同一経路で提供する
             '/api': {
                 target: 'http://localhost:3080',
                 changeOrigin: true,
             },
-            // 画像プロキシ: モバイルから localhost:3090 に直接アクセスできないため代理
-            // モバイル不要なら下4行をコメントアウト
-            '/img-proxy': {
-                target: 'http://localhost:3090',
+            '/images': {
+                target: 'http://localhost:3080',
                 changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/img-proxy/, ''),
             },
         },
     },

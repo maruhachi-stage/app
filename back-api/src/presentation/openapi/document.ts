@@ -473,7 +473,7 @@ export const openApiDocument = {
     version: '1.0.0',
     description: 'back-apiの実装ルートから生成したAPI仕様です。',
   },
-  servers: [{ url: 'http://localhost:3080', description: 'ローカル開発環境' }],
+  servers: [{ url: '/', description: '同一オリジン（Pages / wrangler dev）' }],
   tags: [
     { name: 'Health', description: 'ヘルスチェック' },
     { name: 'Auth', description: '認証' },

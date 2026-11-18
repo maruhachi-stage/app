@@ -1,7 +1,6 @@
 // Application: ホーム画面のデータ取得
 import { useState, useEffect } from 'react'
 import { apiFetch, ApiError } from '~/lib/api-client'
-import { proxyImageUrl } from '~/lib/image'
 import { todayJst } from '~/lib/date'
 import type { Screening as Movie } from '~/features/screening/domain/screening'
 
@@ -20,7 +19,7 @@ export function useHomeScreenings() {
                 const moviesData = await apiFetch<{ items: Movie[] }>('/movies')
 
                 const imageUrls = moviesData.items
-                    .map((movie) => proxyImageUrl(movie.thumbnailUrl))
+                    .map((movie) => movie.thumbnailUrl)
                     .filter(Boolean) as string[]
 
                 await Promise.all(

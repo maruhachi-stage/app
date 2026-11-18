@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { Route } from './+types/goods'
 import { useProducts } from '~/features/product/useProducts'
-import { proxyImageUrl } from '~/lib/image'
 import { ProductCard } from '~/components/ProductCard'
 
 export function meta(_: Route.MetaArgs) {
@@ -36,7 +35,7 @@ export default function Goods() {
                                 }`}
                             >
                                 <img
-                                    src={proxyImageUrl(product.imageUrl)}
+                                    src={product.imageUrl}
                                     alt=""
                                     className="h-full w-full object-cover"
                                 />

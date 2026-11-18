@@ -5,25 +5,25 @@ import type {
   PosSaleListResponseDTO,
 } from '#application/dto/pos-dto.js'
 import type { PosRepository } from '#domain/interfaces/repositories/pos-repository.js'
-import { DEFAULT_IMAGE_BASE_URL } from '#lib/format.js'
+import { imageUrl } from '#lib/format.js'
 
 export class PosService {
-  constructor(
-    private readonly repository: PosRepository,
-    private readonly imageBaseUrl: string = DEFAULT_IMAGE_BASE_URL,
-  ) {}
+  constructor(private readonly repository: PosRepository) {}
   async listProducts(): Promise<PosProductListResponseDTO> {
     return {
-      items: (await this.repository.findProducts()).map((product) => ({
-        id: product.id,
-        slug: product.slug,
-        name: product.name,
-        category: product.category,
-        price: product.price,
-        ...(this.imageUrl(product.imagePath) ? { imageUrl: this.imageUrl(product.imagePath) } : {}),
-        stockQuantity: product.stockQuantity,
-        isActive: product.isActive,
-      })),
+      items: (await this.repository.findProducts()).map((product) => {
+        const image = imageUrl(product.imagePath)
+        return {
+          id: product.id,
+          slug: product.slug,
+          name: product.name,
+          category: product.category,
+          price: product.price,
+          ...(image ? { imageUrl: image } : {}),
+          stockQuantity: product.stockQuantity,
+          isActive: product.isActive,
+        }
+      }),
     }
   }
   async listSales(limit: number): Promise<PosSaleListResponseDTO> {
@@ -39,11 +39,5 @@ export class PosService {
   }
   async createSale(request: CreatePosSaleRequestDTO): Promise<CreatePosSaleResponseDTO> {
     return this.repository.createSale(request)
-  }
-  private imageUrl(path: string | null): string | undefined {
-    if (!path) return undefined
-    return path.startsWith('http')
-      ? path
-      : `${this.imageBaseUrl}/images/${path.replace(/^\/+/, '')}`
   }
 }

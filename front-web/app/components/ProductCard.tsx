@@ -5,7 +5,6 @@ import {
     type Product,
     type ProductCategory,
 } from '~/features/product/domain/product'
-import { proxyImageUrl } from '~/lib/image'
 
 type Props = {
     product: Product
@@ -25,7 +24,7 @@ export function ProductCard({ product, compact = false }: Props) {
             >
                 {product.imageUrl ? (
                     <img
-                        src={proxyImageUrl(product.imageUrl)}
+                        src={product.imageUrl}
                         alt={product.name}
                         loading="lazy"
                         className="h-full w-full object-cover transition duration-300 group-hover:scale-105"

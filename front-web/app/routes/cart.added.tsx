@@ -2,7 +2,6 @@ import { Link, useSearchParams } from 'react-router'
 import { formatProductPrice, type Product } from '~/features/product/domain/product'
 import { useCart } from '~/components/CartProvider'
 import { useProducts } from '~/features/product/useProducts'
-import { proxyImageUrl } from '~/lib/image'
 import { Button } from '~/components/Button'
 import { ProductCard } from '~/components/ProductCard'
 
@@ -38,7 +37,7 @@ export default function CartAddedPage() {
                                     <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
                                         {addedItem.imageUrl && (
                                             <img
-                                                src={proxyImageUrl(addedItem.imageUrl)}
+                                                src={addedItem.imageUrl}
                                                 alt=""
                                                 className="h-full w-full object-cover"
                                             />

@@ -17,7 +17,6 @@ import { R2ImageStorage } from '#infrastructure/adapters/r2-image-storage.js'
 import { AuthService } from '#application/services/auth-service.js'
 import { MemberService } from '#application/services/member-service.js'
 import { OTP_CONFIG } from '#lib/constants.js'
-import { DEFAULT_IMAGE_BASE_URL } from '#lib/format.js'
 import { AuthController } from '#presentation/controllers/auth-controller.js'
 import { MemberController } from '#presentation/controllers/member-controller.js'
 import { MovieController } from '#presentation/controllers/movie-controller.js'
@@ -61,7 +60,12 @@ const rateLimiter = new InMemoryRateLimiter()
  */
 export function createContainer(env: Env) {
   const db = createDatabase(env)
-  const imageBaseUrl = env.IMAGE_BASE_URL ?? DEFAULT_IMAGE_BASE_URL
+
+  /** Mail transport shared by every flow; credentials come from the bindings. */
+  const emailSender = new ResendEmailSender({
+    apiKey: env.RESEND_API_KEY,
+    from: env.RESEND_FROM_EMAIL ?? 'no-reply@hal-cinema.example.jp',
+  })
 
   /** Shared by the controller and the session middleware. */
   const staffAuthService = new StaffAuthService(
@@ -72,28 +76,25 @@ export function createContainer(env: Env) {
     new ScryptPasswordHasher(),
     new SecureTokenGenerator(),
     new CryptoOtpCodeGenerator(),
-    new ResendEmailSender(),
+    emailSender,
     rateLimiter,
     STAFF_SESSION_CONFIG,
   )
 
   return {
     staffAuthService,
+    /** Same transport instance the controllers use, so flows never rebuild it. */
+    emailSender,
     sessionManager: new DrizzleSessionManager(db),
     imageStorage: new R2ImageStorage(env.IMAGES),
-    movieController: new MovieController(
-      new MovieService(new DrizzleMovieRepository(db), imageBaseUrl),
-    ),
-    stageController: new StageController(
-      new StageQueryService(new DrizzleStageRepository(db)),
-      imageBaseUrl,
-    ),
+    movieController: new MovieController(new MovieService(new DrizzleMovieRepository(db))),
+    stageController: new StageController(new StageQueryService(new DrizzleStageRepository(db))),
     screenController: new ScreenController(new ScreenQueryService(new DrizzleScreenRepository(db))),
     authController: new AuthController(
       new AuthService(
         new DrizzleMemberRepository(db),
         new DrizzleOtpTokenRepository(db),
-        new ResendEmailSender(),
+        emailSender,
         new CryptoOtpCodeGenerator(),
         rateLimiter,
         {
@@ -107,7 +108,7 @@ export function createContainer(env: Env) {
     memberController: new MemberController(
       new MemberService(
         new DrizzleMemberRepository(db),
-        new DrizzleMemberReservationRepository(db, imageBaseUrl),
+        new DrizzleMemberReservationRepository(db),
       ),
     ),
     staffAuthController: new StaffAuthController(staffAuthService),
@@ -115,14 +116,11 @@ export function createContainer(env: Env) {
       new StaffOverviewService(new DrizzleStaffScreenRepository(db)),
     ),
     configController: new ConfigController(new ConfigService()),
-    productController: new ProductController(
-      new ProductService(new DrizzleProductRepository(db), imageBaseUrl),
-    ),
-    posController: new PosController(new PosService(new DrizzlePosRepository(db), imageBaseUrl)),
+    productController: new ProductController(new ProductService(new DrizzleProductRepository(db))),
+    posController: new PosController(new PosService(new DrizzlePosRepository(db))),
     reservationController: new ReservationController(
       new ReservationService(new DrizzleReservationRepository(db)),
       checkRateLimit,
-      imageBaseUrl,
     ),
   }
 }

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="staff-app run" type="js.build_tools.npm" factoryName="npm">
-    <package-json value="$PROJECT_DIR$/staff-app/package.json" />
+  <configuration default="false" name="api dev" type="js.build_tools.npm" factoryName="npm">
+    <package-json value="$PROJECT_DIR$/api/package.json" />
     <command value="run" />
     <scripts>
       <script value="dev" />

@@ -7,27 +7,27 @@
 - Git for Windows（Windowsの場合）
 - Cloudflare へデプロイする場合は Cloudflare アカウント（`npx wrangler login`）
 
-back-apiのCIはNode.js 26で実行します。ほかのアプリは現在のCI Node.jsバージョンを使用します。
+apiのCIはNode.js 26で実行します。ほかのアプリは現在のCI Node.jsバージョンを使用します。
 
 ## プロジェクト構成
 
-- `front-web` : React Router v7 フロントエンド（Cloudflare Pages / SPA）
-- `staff-app` : React Router v7 スタッフ画面（Cloudflare Pages / SPA）
-- `back-api` : Hono API + Drizzle ORM（Cloudflare Workers + D1 + R2）
-- 画像 : R2（`back-api/assets/images` を `scripts/images.mjs` で同期し、API Worker の `/images/*` が配信）
+- `user` : React Router v7 フロントエンド（Cloudflare Pages / SPA）
+- `staff` : React Router v7 スタッフ画面（Cloudflare Pages / SPA）
+- `api` : Hono API + Drizzle ORM（Cloudflare Workers + D1 + R2）
+- 画像 : R2（`api/assets/images` を `scripts/images.mjs` で同期し、API Worker の `/images/*` が配信）
 
 ## 初回セットアップ
 
 PowerShellでnpmの実行ポリシーエラーが出る場合は、`npm` の代わりに `npm.cmd` を使ってください。
 
 ```powershell
-cd front-web
+cd user
 npm.cmd install
 
-cd ../staff-app
+cd ../staff
 npm.cmd install
 
-cd ../back-api
+cd ../api
 npm.cmd install
 npm.cmd run db:setup
 npm.cmd run images:local
@@ -42,7 +42,7 @@ npm.cmd run images:local
 スタッフ画面のログインに使う初期アカウントは、migration適用後に作成します。
 
 ```powershell
-cd back-api
+cd api
 npm.cmd run db:bootstrap-staff
 ```
 
@@ -54,9 +54,9 @@ npm.cmd run db:bootstrap-staff
 
 | アプリ | ポート | URL |
 | --- | --- | --- |
-| front-web | 3030 | `http://localhost:3030` |
-| staff-app | 3040 | `http://localhost:3040` |
-| back-api | 3080 | `http://localhost:3080` |
+| user | 3030 | `http://localhost:3030` |
+| staff | 3040 | `http://localhost:3040` |
+| api | 3080 | `http://localhost:3080` |
 
 画像（`/images/*`）も API Worker が提供するため、ローカルで開くアプリはこの3つだけです。
 
@@ -65,17 +65,17 @@ npm.cmd run db:bootstrap-staff
 Tailscale 経由で公開する場合は、3つのポートをそれぞれ `tailscale serve` で公開します（Vite の `allowedHosts` に `.ts.net` を含めてあるため、そのまま開けます）。
 
 ```powershell
-tailscale serve --bg --https=443  http://127.0.0.1:3030   # front-web
-tailscale serve --bg --https=8443 http://127.0.0.1:3040   # staff-app
-tailscale serve --bg --https=9443 http://127.0.0.1:3080   # back-api（/api/docs など）
+tailscale serve --bg --https=443  http://127.0.0.1:3030   # user
+tailscale serve --bg --https=8443 http://127.0.0.1:3040   # staff
+tailscale serve --bg --https=9443 http://127.0.0.1:3080   # api（/api/docs など）
 ```
 
-`https://<host>.<tailnet>.ts.net/` を開けば front-web、`:8443` で staff-app、`:9443` で API のドキュメントを確認できます。`/api/*` と `/images/*` は Vite の proxy で 3080 に転送されるため、追加設定は不要です。
+`https://<host>.<tailnet>.ts.net/` を開けば user、`:8443` で staff、`:9443` で API のドキュメントを確認できます。`/api/*` と `/images/*` は Vite の proxy で 3080 に転送されるため、追加設定は不要です。
 
-### back-api
+### api
 
 ```powershell
-cd back-api
+cd api
 npm.cmd run dev
 ```
 
@@ -89,28 +89,28 @@ npm.cmd run dev
 上映スケジュールはマスタではなく実行時生成のデータなので、初回は次のコマンドで生成します（未実行だと一覧が空に見えます）。本番では Cron Triggers が毎日 0:00 JST に同じ処理を実行します。
 
 ```powershell
-# 別ターミナルで（back-api が起動している状態で）
+# 別ターミナルで（api が起動している状態で）
 npm.cmd run schedules:local
 ```
 
-### front-web / staff-app
+### user / staff
 
 各ディレクトリで依存関係をインストールしてから開発サーバーを起動します。Vite の proxy 設定により `/api` と `/images` は `http://localhost:3080` へ転送されるため、画像も本番と同じように API Worker から配信されます。
 
 ```powershell
-cd front-web
+cd user
 npm.cmd run dev
 ```
 
 ```powershell
-cd staff-app
+cd staff
 npm.cmd run dev
 ```
 
-### back-api Test
+### api Test
 
 ```powershell
-cd back-api
+cd api
 npm.cmd test
 ```
 
@@ -123,7 +123,7 @@ npm.cmd test
 ### 1. リソース作成
 
 ```powershell
-cd back-api
+cd api
 npx wrangler login
 
 # D1
@@ -137,7 +137,7 @@ npx wrangler r2 bucket create hal-cinema-images
 ### 2. スキーマ適用
 
 ```powershell
-cd back-api
+cd api
 npm.cmd run db:generate          # schema.ts を変更したときのみ
 npm.cmd run db:migrations:export # drizzle-kit の出力を d1/migrations へ
 npx wrangler d1 migrations apply hal-cinema --remote
@@ -180,7 +180,7 @@ npx wrangler secret put RESEND_API_KEY
 R2 の S3 API トークン（アクセスキー / シークレット）を用意し、環境変数で渡します。既存キーはスキップされるため、何度実行しても安全です。
 
 ```powershell
-cd back-api
+cd api
 $env:R2_ACCOUNT_ID="<account-id>"
 $env:R2_ACCESS_KEY_ID="<access-key>"
 $env:R2_SECRET_ACCESS_KEY="<secret-key>"
@@ -188,25 +188,25 @@ $env:R2_BUCKET_NAME="hal-cinema-images"
 npm.cmd run images:push
 ```
 
-`images:push` は `back-api/assets/images` を R2 へアップロードします（既存キーはスキップ）。画像の実体は Git 管理外なので、環境を作り直すときは `npm.cmd run images:pull` で R2 から取得できます。
+`images:push` は `api/assets/images` を R2 へアップロードします（既存キーはスキップ）。画像の実体は Git 管理外なので、環境を作り直すときは `npm.cmd run images:pull` で R2 から取得できます。
 
 ### 7. デプロイ
 
 ```powershell
 # API Worker
-cd back-api
+cd api
 npm.cmd run deploy
 
-# front-web
-cd ../front-web
+# user
+cd ../user
 npx wrangler pages deploy
 
-# staff-app
-cd ../staff-app
+# staff
+cd ../staff
 npx wrangler pages deploy
 ```
 
-`front-web` / `staff-app` の `wrangler.toml` にある `API_ORIGIN` は、デプロイした Worker のオリジンへ置き換えてから Pages をデプロイしてください。各 Pages の `/api/*` と `/images/*` は Pages Functions が同一オリジンのまま Worker へ転送するため、セッション Cookie は `SameSite=Lax` のまま機能し、画像も Pages のオリジンから配信されます。
+`user` / `staff` の `wrangler.toml` にある `API_ORIGIN` は、デプロイした Worker のオリジンへ置き換えてから Pages をデプロイしてください。各 Pages の `/api/*` と `/images/*` は Pages Functions が同一オリジンのまま Worker へ転送するため、セッション Cookie は `SameSite=Lax` のまま機能し、画像も Pages のオリジンから配信されます。
 
 ### 8. スモークテスト
 
@@ -229,26 +229,26 @@ npx wrangler pages deploy
 `.run/` に共有用の実行構成を置いています。初回は次の順で実行してください。
 
 1. `setup (db + images)` … 初回のみ。migration + seed の適用と `assets/images` のローカル R2 投入をまとめて実行
-2. `all dev` … `back-api run` / `front-web run` / `staff-app run` をまとめて起動
-3. `schedules:local` … 上映スケジュールを生成（`back-api run` 起動中に実行）
+2. `all dev` … `api dev` / `user dev` / `staff dev` をまとめて起動
+3. `schedules:local` … 上映スケジュールを生成（`api dev` 起動中に実行）
 
 | 実行構成 | 内容 |
 | --- | --- |
 | `setup (db + images)` | `npm run setup`（`db:setup` + `images:local`、初回のみ） |
 | `all dev` | 3アプリの開発サーバーを同時起動（compound） |
-| `back-api run` | `npm run dev`（`wrangler dev` + ローカル D1 / R2、`http://localhost:3080`） |
-| `front-web run` | `npm run dev`（`http://localhost:3030`） |
-| `staff-app run` | `npm run dev`（`http://localhost:3040`） |
+| `api dev` | `npm run dev`（`wrangler dev` + ローカル D1 / R2、`http://localhost:3080`） |
+| `user dev` | `npm run dev`（`http://localhost:3030`） |
+| `staff dev` | `npm run dev`（`http://localhost:3040`） |
 | `db:setup` | `npm run db:setup`（generate → migrations export → local apply → seed） |
 | `images:local` | `npm run images:local`（`assets/images` → ローカル R2） |
 | `schedules:local` | `npm run schedules:local`（Cron ハンドラを手動実行） |
-| `back-api test` | `npm test`（Workers ランタイム上のユニット + 結合） |
+| `api test` | `npm test`（Workers ランタイム上のユニット + 結合） |
 
 画像配信は API Worker の `/images/*`（R2）に一本化したため、`image-server` の実行構成は削除しました。`db:up` / `db:down` / `db:reset` も、ローカル D1（`wrangler dev` が起動する Miniflare）に置き換わったため廃止しています。
 
 ### VS Code
 
-`.vscode/launch.json` の `front-web run`、`back-api run`、`staff-app run`、`all dev` から起動できます。`db:setup` はback-apiのmigrationとseedを適用し、`images:local` は画像をローカル R2 へ投入します。`schedules:local` は上映スケジュールを生成します（`back-api run` 起動中に実行）。
+`.vscode/launch.json` の `user dev`、`api dev`、`staff dev`、`all dev` から起動できます。`db:setup` はapiのmigrationとseedを適用し、`images:local` は画像をローカル R2 へ投入します。`schedules:local` は上映スケジュールを生成します（`api dev` 起動中に実行）。
 
 ## 推奨拡張
 

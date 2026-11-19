@@ -2,7 +2,7 @@
 
 ## 概要
 
-`back-api`はPresentation、Application、Domain、Infrastructureの4層で責務を分ける。
+`api`はPresentation、Application、Domain、Infrastructureの4層で責務を分ける。
 
 ## 4層と依存方向
 

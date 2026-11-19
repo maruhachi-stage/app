@@ -1,5 +1,5 @@
 {
-  "name": "back-api",
+  "name": "hal-cinema-api",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",

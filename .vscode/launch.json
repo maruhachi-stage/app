@@ -2,63 +2,59 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "front-web run",
+      "name": "user dev",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run dev",
-      "cwd": "${workspaceFolder}\\front-web"
+      "cwd": "${workspaceFolder}\\user"
     },
     {
-      "name": "back-api run",
+      "name": "api dev",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run dev",
-      "cwd": "${workspaceFolder}\\back-api"
+      "cwd": "${workspaceFolder}\\api"
     },
     {
-      "name": "staff-app run",
+      "name": "staff dev",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run dev",
-      "cwd": "${workspaceFolder}\\staff-app"
+      "cwd": "${workspaceFolder}\\staff"
     },
     {
       "name": "db:setup",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run db:setup",
-      "cwd": "${workspaceFolder}\\back-api"
+      "cwd": "${workspaceFolder}\\api"
     },
     {
       "name": "db:migrations:local",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run db:migrations:local",
-      "cwd": "${workspaceFolder}\\back-api"
+      "cwd": "${workspaceFolder}\\api"
     },
     {
       "name": "images:local",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run images:local",
-      "cwd": "${workspaceFolder}\\back-api"
+      "cwd": "${workspaceFolder}\\api"
     },
     {
       "name": "schedules:local",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run schedules:local",
-      "cwd": "${workspaceFolder}\\back-api"
+      "cwd": "${workspaceFolder}\\api"
     }
   ],
   "compounds": [
     {
       "name": "all dev",
-      "configurations": [
-        "back-api run",
-        "front-web run",
-        "staff-app run"
-      ]
+      "configurations": ["api dev", "user dev", "staff dev"]
     }
   ]
 }

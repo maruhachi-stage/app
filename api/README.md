@@ -1,4 +1,4 @@
-# back-api
+# api
 
 Hono + Drizzle ORMを使ったAPIです。Cloudflare Workers上で動作し、データベースはD1、画像はR2を使います。ローカル開発も `wrangler dev` によるエミュレーション（ローカルD1 / R2）で行うため、DB用Dockerや外部DBの起動は不要です。
 

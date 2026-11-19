@@ -2,7 +2,7 @@ version: 2
 
 updates:
   - package-ecosystem: npm
-    directory: /front-web
+    directory: /user
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
@@ -12,7 +12,7 @@ updates:
           - "*"
 
   - package-ecosystem: npm
-    directory: /staff-app
+    directory: /staff
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
@@ -22,7 +22,7 @@ updates:
           - "*"
 
   - package-ecosystem: npm
-    directory: /back-api
+    directory: /api
     schedule:
       interval: weekly
     open-pull-requests-limit: 5

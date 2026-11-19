@@ -469,9 +469,9 @@ const pathItems: Record<string, JsonObject> = {
 export const openApiDocument = {
   openapi: '3.0.3',
   info: {
-    title: 'HAL Cinema back-api',
+    title: 'HAL Cinema API',
     version: '1.0.0',
-    description: 'back-apiの実装ルートから生成したAPI仕様です。',
+    description: 'apiの実装ルートから生成したAPI仕様です。',
   },
   servers: [{ url: '/', description: '同一オリジン（Pages / wrangler dev）' }],
   tags: [

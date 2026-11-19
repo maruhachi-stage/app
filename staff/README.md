@@ -26,7 +26,7 @@ npm run dev
 初期アカウントはバックエンドで作成します。
 
 ```bash
-cd ../back-api
+cd ../api
 npm run db:bootstrap-staff
 ```
 

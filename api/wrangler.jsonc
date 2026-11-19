@@ -7,7 +7,7 @@
   "observability": {
     "enabled": true,
   },
-  // ローカル開発時の待ち受けポート。front-web / staff-app の Vite proxy と SETUP.md の
+  // ローカル開発時の待ち受けポート。user / staff の Vite proxy と SETUP.md の
   // 記述に揃えるため、`npm run dev` も `npm run dev:scheduled` もここで指定した 3080 を使う。
   "dev": {
     "port": 3080,

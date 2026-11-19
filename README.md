@@ -8,8 +8,8 @@ maruhachi-stage のリポジトリです。
 
 ## 構成
 
-- `front-web` / `staff-app` : Cloudflare Pages（SPA + `/api/*`・`/images/*` 転送）
-- `back-api` : Cloudflare Workers（Hono + D1 + R2 + Cron）
+- `user` / `staff` : Cloudflare Pages（SPA + `/api/*`・`/images/*` 転送）
+- `api` : Cloudflare Workers（Hono + D1 + R2 + Cron）
 
 画像は R2 に置き、API Worker の `GET /images/*` が配信します。ローカル開発も `wrangler dev`（Miniflare の D1 / R2）で同じ構成のまま動くため、環境ごとの実装の分岐はありません。
 

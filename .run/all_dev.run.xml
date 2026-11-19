@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="all dev" type="CompoundRunConfigurationType" factoryName="Compound">
-    <toRun name="back-api run" type="js.build_tools.npm" />
-    <toRun name="front-web run" type="js.build_tools.npm" />
-    <toRun name="staff-app run" type="js.build_tools.npm" />
+    <toRun name="api dev" type="js.build_tools.npm" />
+    <toRun name="user dev" type="js.build_tools.npm" />
+    <toRun name="staff dev" type="js.build_tools.npm" />
     <method v="2" />
   </configuration>
 </component>

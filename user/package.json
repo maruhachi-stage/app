@@ -1,10 +1,11 @@
 {
-    "name": "staff-app",
+    "name": "hal-cinema-web",
     "private": true,
     "type": "module",
     "scripts": {
         "build": "react-router build",
         "dev": "react-router dev",
+        "start": "react-router-serve ./build/server/index.js",
         "typecheck": "react-router typegen && tsc",
         "lint": "eslint .",
         "format": "prettier --write .",

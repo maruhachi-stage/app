@@ -1,6 +1,6 @@
 # テスト方針
 
-このドキュメントでは、`front-web`、`staff-app`、`back-api` にテストを追加するときの種類・配置・命名・優先順位を定義します。テストランナーは各アプリの `package.json` に定義された `test` スクリプトから実行します。
+このドキュメントでは、`user`、`staff`、`api` にテストを追加するときの種類・配置・命名・優先順位を定義します。テストランナーは各アプリの `package.json` に定義された `test` スクリプトから実行します。
 
 ## テスト種別と責務
 
@@ -12,9 +12,9 @@
 
 ### アプリごとの主な対象
 
-- `front-web`: 予約フローの状態遷移、フォーム、表示用の変換をUnitで検証し、主要な予約操作をE2Eで検証します。
-- `staff-app`: スタッフ画面の入力・一覧操作、権限に応じた表示をUnit/Integrationで検証します。
-- `back-api`: ドメイン・サービスをUnitで検証し、ルートからレスポンスまでの契約をIntegrationで検証します。
+- `user`: 予約フローの状態遷移、フォーム、表示用の変換をUnitで検証し、主要な予約操作をE2Eで検証します。
+- `staff`: スタッフ画面の入力・一覧操作、権限に応じた表示をUnit/Integrationで検証します。
+- `api`: ドメイン・サービスをUnitで検証し、ルートからレスポンスまでの契約をIntegrationで検証します。
 
 ## 配置と命名
 
@@ -41,9 +41,9 @@
 
 ## Workers ランタイム上の結合テスト
 
-`back-api` は Cloudflare Workers（D1 / R2）で動作するため、ユニットテストも結合テストも Workers ランタイム上で実行します。ローカルとテストで実行環境が分かれないよう、設定は `vitest.config.ts` の1つだけです。
+`api` は Cloudflare Workers（D1 / R2）で動作するため、ユニットテストも結合テストも Workers ランタイム上で実行します。ローカルとテストで実行環境が分かれないよう、設定は `vitest.config.ts` の1つだけです。
 
-- 実行: `cd back-api; npm test`（`src/**/*.test.ts` と `test/workers/**/*.test.ts` を同じ環境で実行）
+- 実行: `cd api; npm test`（`src/**/*.test.ts` と `test/workers/**/*.test.ts` を同じ環境で実行）
 - 結合テストだけを実行: `npm run test:integration`
 - ランナー: `@cloudflare/vitest-plugin`。`wrangler.jsonc` のバインディングをそのまま読み込むため、本番と同じ D1 方言・R2 バインディングで検証できます。
 - DB: 各テストは独立した D1 を持ち、`test/workers/setup.ts` が `d1/migrations` を適用して `d1/seed.sql` を投入します。スキーマは本番と同じ migration を唯一の正とします。

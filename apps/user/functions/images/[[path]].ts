@@ -1,5 +1,7 @@
 interface Env {
-    API_ORIGIN: string
+    API: {
+        fetch(input: string | URL | Request, init?: RequestInit): Promise<Response>
+    }
 }
 
 type RequestContext = {
@@ -8,20 +10,17 @@ type RequestContext = {
 }
 
 /**
- * Forwards /images/* to the API Worker, which serves the R2 bucket. The API
- * returns image URLs as origin-relative paths, so serving them from this same
- * origin keeps the browser on one host and lets the bytes be cached at the
- * Pages edge.
+ * Calls the API Worker through a service binding. The API returns image URLs as
+ * origin-relative paths, so serving them from the Access-protected Pages origin
+ * keeps the browser on one host and lets the bytes be cached at the Pages edge.
  */
 export const onRequest = async ({ request, env }: RequestContext): Promise<Response> => {
     const url = new URL(request.url)
-    const apiOrigin = new URL(env.API_ORIGIN)
-
-    const target = new URL(url.pathname + url.search, apiOrigin)
+    const target = new URL(url.pathname + url.search, 'https://api.internal')
     const headers = new Headers(request.headers)
-    headers.set('host', apiOrigin.host)
+    headers.set('host', target.host)
 
-    const response = await fetch(target, {
+    const response = await env.API.fetch(target, {
         method: request.method,
         headers,
         redirect: 'manual',

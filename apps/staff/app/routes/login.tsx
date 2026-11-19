@@ -3,8 +3,8 @@ import { LoginPage } from '~/features/auth/pages/LoginPage'
 
 export function meta(_: Route.MetaArgs) {
     return [
-        { title: 'スタッフログイン | HAL Cinema' },
-        { name: 'description', content: 'HAL Cinema スタッフログイン' },
+        { title: 'スタッフログイン | 丸八ステージ' },
+        { name: 'description', content: '丸八ステージ スタッフログイン' },
     ]
 }
 

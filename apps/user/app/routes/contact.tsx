@@ -4,8 +4,8 @@ import { Input } from '~/components/Input'
 
 export function meta(_: Route.MetaArgs) {
     return [
-        { title: 'お問い合わせ | HALシネマ' },
-        { name: 'description', content: 'HALシネマへのお問い合わせ' },
+        { title: 'お問い合わせ | 丸八ステージ' },
+        { name: 'description', content: '丸八ステージへのお問い合わせ' },
     ]
 }
 
@@ -28,7 +28,7 @@ export default function Contact() {
 
                     <div className="space-y-2">
                         <label className="text-sm font-bold">メールアドレス</label>
-                        <Input type="email" placeholder="example@hal-cinema.jp" />
+                        <Input type="email" placeholder="example@example.com" />
                     </div>
 
                     <div className="space-y-2">

@@ -8,8 +8,8 @@ import Loading from '~/components/Loading'
 
 export function meta(_: Route.MetaArgs) {
     return [
-        { title: 'HALシネマ' },
-        { name: 'description', content: 'HALシネマのWeb座席予約システム' },
+        { title: '丸八ステージ' },
+        { name: 'description', content: '丸八ステージのWeb座席予約システム' },
     ]
 }
 

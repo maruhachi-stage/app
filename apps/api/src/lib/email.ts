@@ -33,13 +33,13 @@ export async function sendOtpEmail(
   await resend.emails.send({
     from: config.from,
     to,
-    subject: '【HALシネマ】認証コードのお知らせ',
+    subject: '【丸八ステージ】認証コードのお知らせ',
     text: [
       `認証コード: ${code}`,
       `有効期限: 10分`,
       ``,
       `このコードは送信から10分間有効です。`,
-      `お問い合わせ: info@hal-cinema.example.jp`,
+      `お問い合わせ: info@maruhachi-stage.example`,
     ].join('\n'),
   })
 }
@@ -66,7 +66,7 @@ export async function sendReservationEmail(
     return
   }
   const text = [
-    `この度はHALシネマをご利用いただき、ありがとうございます。`,
+    `この度は丸八ステージをご利用いただき、ありがとうございます。`,
     `以下の内容でご予約が完了しました。`,
     ``,
     `━━━━━━━━━━━━━━━━━━`,
@@ -92,8 +92,8 @@ export async function sendReservationEmail(
     params.reservationDetailUrl,
     ``,
     `━━━━━━━━━━━━━━━━━━`,
-    `HALシネマ`,
-    `お問い合わせ: info@hal-cinema.example.jp`,
+    `丸八ステージ`,
+    `お問い合わせ: info@maruhachi-stage.example`,
     `━━━━━━━━━━━━━━━━━━`,
     ``,
     `※このメールは送信専用です。返信はお受けできません。`,
@@ -103,7 +103,7 @@ export async function sendReservationEmail(
   await resend.emails.send({
     from: config.from,
     to: params.to,
-    subject: '【HALシネマ】ご予約完了のお知らせ',
+    subject: '【丸八ステージ】ご予約完了のお知らせ',
     text,
   })
 }

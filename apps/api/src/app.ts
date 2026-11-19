@@ -53,7 +53,12 @@ export function createApp() {
     }),
   )
 
-  app.use('/api/*', csrf())
+  app.use(
+    '/api/*',
+    csrf({
+      origin: (origin, c) => allowedOrigins(c.env).includes(origin),
+    }),
+  )
   app.use('/api/*', requestIdMiddleware)
   app.use('/api/*', sessionMiddleware)
   app.use('/api/*', auditLogMiddleware)
@@ -97,10 +102,6 @@ export function createApp() {
   api.get('/products', (c) => c.get('container').productController.listProducts(c))
   api.get('/products/:productId', (c) => c.get('container').productController.getProduct(c))
 
-  api.get('/pos/products', (c) => c.get('container').posController.listProducts(c))
-  api.get('/pos/sales', (c) => c.get('container').posController.listSales(c))
-  api.post('/pos/sales', (c) => c.get('container').posController.createSale(c))
-
   apiV1.get('/health', (c) => c.json({ status: 'ok' }))
 
   apiV1.use('/staff/*', staffSessionMiddleware)
@@ -128,6 +129,15 @@ export function createApp() {
     '/staff/accounts/:staffId/otp/reset',
     requireStaffPermission('staff.accounts.manage'),
     (c) => c.get('container').staffAuthController.resetOtp(c),
+  )
+  apiV1.get('/staff/pos/products', requireStaffPermission('staff.content.write'), (c) =>
+    c.get('container').posController.listProducts(c),
+  )
+  apiV1.get('/staff/pos/sales', requireStaffPermission('staff.content.write'), (c) =>
+    c.get('container').posController.listSales(c),
+  )
+  apiV1.post('/staff/pos/sales', requireStaffPermission('staff.content.write'), (c) =>
+    c.get('container').posController.createSale(c),
   )
 
   app.use('/images/*', async (c, next) => {

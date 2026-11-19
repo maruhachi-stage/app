@@ -3,7 +3,7 @@
 # このファイルは `.dev.vars` にコピーして使う（`.dev.vars` はコミットしない）。
 ENVIRONMENT=development
 CORS_ORIGIN=http://localhost:3030,http://localhost:3040
-RESEND_FROM_EMAIL=no-reply@hal-cinema.example.jp
+RESEND_FROM_EMAIL=no-reply@maruhachi-stage.example
 
 # 未設定ならメールは送らずにコンソールへ出力する（OTP はログで確認できる）
 RESEND_API_KEY=

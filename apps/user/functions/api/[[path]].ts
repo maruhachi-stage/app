@@ -1,5 +1,7 @@
 interface Env {
-    API_ORIGIN: string
+    API: {
+        fetch(input: string | URL | Request, init?: RequestInit): Promise<Response>
+    }
 }
 
 type RequestContext = {
@@ -8,17 +10,15 @@ type RequestContext = {
 }
 
 /**
- * Forwards /api/* to the API Worker so the browser only ever talks to this
- * Pages origin. Keeping the request same-origin lets the session cookie stay
- * `SameSite=Lax` instead of needing a cross-site cookie exception.
+ * Calls the API Worker through a service binding so the browser only talks to
+ * this Access-protected Pages origin. Keeping the cookie on this same origin
+ * prevents callers from bypassing Access through a public Worker URL.
  */
 export const onRequest = async ({ request, env }: RequestContext): Promise<Response> => {
     const url = new URL(request.url)
-    const apiOrigin = new URL(env.API_ORIGIN)
-
-    const target = new URL(url.pathname + url.search, apiOrigin)
+    const target = new URL(url.pathname + url.search, 'https://api.internal')
     const headers = new Headers(request.headers)
-    headers.set('host', apiOrigin.host)
+    headers.set('host', target.host)
     headers.set('x-forwarded-host', url.host)
     headers.set('x-forwarded-proto', url.protocol.replace(':', ''))
 
@@ -31,5 +31,5 @@ export const onRequest = async ({ request, env }: RequestContext): Promise<Respo
         init.body = request.body
     }
 
-    return fetch(target, init)
+    return env.API.fetch(target, init)
 }

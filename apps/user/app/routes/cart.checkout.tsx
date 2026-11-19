@@ -16,7 +16,7 @@ const PICKUP_TIMES = ['すぐ受け取り', '上映10分前', '上映20分前', 
 const PICKUP_LOCATION = '劇場内 ショップ受け取りカウンター'
 
 export function meta() {
-    return [{ title: 'ショップ決済 | HALシネマ' }]
+    return [{ title: 'ショップ決済 | 丸八ステージ' }]
 }
 
 export default function CartCheckoutPage() {

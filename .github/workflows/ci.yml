@@ -87,7 +87,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: 依存関係をインストール
-        run: npm install --ignore-scripts --no-audit --no-fund
+        run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
       - name: Format
         run: npm run format:check --workspace apps/user
@@ -122,7 +122,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: 依存関係をインストール
-        run: npm install --ignore-scripts --no-audit --no-fund
+        run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
       - name: Format
         run: npm run format:check --workspace apps/staff
@@ -157,7 +157,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: 依存関係をインストール
-        run: npm install --ignore-scripts --no-audit --no-fund
+        run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
       - name: Format
         run: npm run format:check --workspace apps/api

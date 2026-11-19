@@ -64,7 +64,7 @@ export function createContainer(env: Env) {
   /** Mail transport shared by every flow; credentials come from the bindings. */
   const emailSender = new ResendEmailSender({
     apiKey: env.RESEND_API_KEY,
-    from: env.RESEND_FROM_EMAIL ?? 'no-reply@hal-cinema.example.jp',
+    from: env.RESEND_FROM_EMAIL ?? 'no-reply@maruhachi-stage.example',
   })
 
   /** Shared by the controller and the session middleware. */

@@ -282,7 +282,7 @@ const routes: ApiRoute[] = [
   },
   {
     method: 'get',
-    path: '/api/pos/products',
+    path: '/api/v1/staff/pos/products',
     operationId: 'listPosProducts',
     summary: 'POS商品一覧を取得する',
     tags: ['POS'],
@@ -290,7 +290,7 @@ const routes: ApiRoute[] = [
   },
   {
     method: 'get',
-    path: '/api/pos/sales',
+    path: '/api/v1/staff/pos/sales',
     operationId: 'listPosSales',
     summary: 'POS売上一覧を取得する',
     tags: ['POS'],
@@ -299,7 +299,7 @@ const routes: ApiRoute[] = [
   },
   {
     method: 'post',
-    path: '/api/pos/sales',
+    path: '/api/v1/staff/pos/sales',
     operationId: 'createPosSale',
     summary: 'POS売上を登録する',
     tags: ['POS'],
@@ -469,7 +469,7 @@ const pathItems: Record<string, JsonObject> = {
 export const openApiDocument = {
   openapi: '3.0.3',
   info: {
-    title: 'HAL Cinema API',
+    title: '丸八ステージ API',
     version: '1.0.0',
     description: 'apiの実装ルートから生成したAPI仕様です。',
   },

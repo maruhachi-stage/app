@@ -38,7 +38,7 @@ const CONTENT_TYPES = {
 
 const root = path.resolve(import.meta.dirname, '..')
 const imageDir = path.resolve(root, process.env.IMAGE_DIR ?? 'assets/images')
-const bucket = process.env.R2_BUCKET_NAME ?? 'hal-cinema-images'
+const bucket = process.env.R2_BUCKET_NAME ?? 'maruhachi-stage-images'
 const accountId = process.env.R2_ACCOUNT_ID
 const concurrency = Number(process.env.CONCURRENCY ?? 16)
 const cacheControl = 'public, max-age=31536000, immutable'

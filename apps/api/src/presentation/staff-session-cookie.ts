@@ -6,15 +6,15 @@ import type { AppEnv } from '#types.js'
  * Staff cookie names and the only place that writes them. The tokens stay
  * opaque here; their meaning is resolved by StaffAuthService.
  */
-export const STAFF_SESSION_COOKIE = 'hal_staff_session'
-export const STAFF_CHALLENGE_COOKIE = 'hal_staff_challenge'
+export const STAFF_SESSION_COOKIE = 'maruhachi_stage_staff_session'
+export const STAFF_CHALLENGE_COOKIE = 'maruhachi_stage_staff_challenge'
 
 /** Production flag comes from the binding so local and deployed runs share one rule. */
 const isProduction = (c: Context<AppEnv>) => c.env.ENVIRONMENT === 'production'
 
 const cookieOptions = (c: Context<AppEnv>, maxAge: number) => ({
   httpOnly: true,
-  sameSite: 'Lax' as const,
+  sameSite: 'Strict' as const,
   path: '/',
   maxAge,
   secure: isProduction(c),

@@ -24,7 +24,7 @@ export default function MainLayout() {
                 <div className="border-b border-border bg-muted/30">
                     <div className="container-center py-8">
                         <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-primary">
-                            HAL Cinema
+                            丸八ステージ
                         </p>
                         <h1 className="mt-1 text-4xl font-black tracking-tight text-foreground">
                             {pageInfo.title}

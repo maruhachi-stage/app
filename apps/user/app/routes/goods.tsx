@@ -5,7 +5,7 @@ import { ProductCard } from '~/components/ProductCard'
 
 export function meta(_: Route.MetaArgs) {
     return [
-        { title: 'グッズショップ | HALシネマ' },
+        { title: 'グッズショップ | 丸八ステージ' },
         { name: 'description', content: '映画関連グッズ・オリジナルアイテム' },
     ]
 }

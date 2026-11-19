@@ -3,8 +3,8 @@
  * `src/infrastructure/database/seed-data.ts`.
  *
  * Apply the result with
- *   npx wrangler d1 execute hal-cinema --local  --file=d1/seed.sql
- *   npx wrangler d1 execute hal-cinema --remote --file=d1/seed.sql
+ *   npx wrangler d1 execute maruhachi-stage-db --local  --file=d1/seed.sql
+ *   npx wrangler d1 execute maruhachi-stage-db --remote --file=d1/seed.sql
  *
  * Usage: npm run db:seed:export
  */

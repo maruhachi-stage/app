@@ -2,7 +2,7 @@ import type { MiddlewareHandler, Context } from 'hono'
 import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
 import type { AppEnv, SessionData } from '#types.js'
 
-const SESSION_COOKIE = 'hal_cinema_session'
+const SESSION_COOKIE = 'maruhachi_stage_session'
 const SESSION_MAX_AGE = 7 * 24 * 60 * 60 // 7 days
 
 export const sessionMiddleware: MiddlewareHandler<AppEnv> = async (c, next) => {
@@ -15,7 +15,7 @@ export async function createSession(c: Context<AppEnv>, data: SessionData): Prom
   const sid = await c.get('container').sessionManager.create(data)
   setCookie(c, SESSION_COOKIE, sid, {
     httpOnly: true,
-    sameSite: 'Lax',
+    sameSite: 'Strict',
     maxAge: SESSION_MAX_AGE,
     path: '/',
     secure: c.env.ENVIRONMENT === 'production',

@@ -10,7 +10,7 @@ const FILTERS: MenuFilter[] = ['all', 'food', 'drink', 'set']
 
 export function meta(_: Route.MetaArgs) {
     return [
-        { title: 'フード＆ドリンク | HALシネマ' },
+        { title: 'フード＆ドリンク | 丸八ステージ' },
         { name: 'description', content: 'シアター内で楽しめるフード＆ドリンクメニュー' },
     ]
 }

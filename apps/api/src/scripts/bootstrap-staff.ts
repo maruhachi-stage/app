@@ -58,7 +58,7 @@ try {
   console.log(sql)
   console.log('--- SQL ---')
   console.log(
-    `\n適用例: npx wrangler d1 execute hal-cinema --remote --command "${sql.replaceAll('"', '\\"')}"`,
+    `\n適用例: npx wrangler d1 execute maruhachi-stage-db --remote --command "${sql.replaceAll('"', '\\"')}"`,
   )
 } finally {
   rl.close()

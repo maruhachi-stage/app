@@ -3,8 +3,8 @@ import { ProductDetailPage } from '~/components/ProductDetailPage'
 
 export function meta(_: Route.MetaArgs) {
     return [
-        { title: '商品詳細 | HALシネマ' },
-        { name: 'description', content: 'HALシネマのフード・ドリンク商品詳細' },
+        { title: '商品詳細 | 丸八ステージ' },
+        { name: 'description', content: '丸八ステージのフード・ドリンク商品詳細' },
     ]
 }
 

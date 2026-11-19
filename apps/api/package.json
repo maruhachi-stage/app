@@ -1,5 +1,5 @@
 {
-  "name": "hal-cinema-api",
+  "name": "maruhachi-stage-api",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
@@ -11,11 +11,11 @@
     "db:setup": "npm run db:generate && npm run db:migrations:export && npm run db:migrations:local && npm run db:seed:local",
     "db:generate": "drizzle-kit generate",
     "db:migrations:export": "node scripts/export-d1-migrations.mjs",
-    "db:migrations:local": "wrangler d1 migrations apply hal-cinema --local",
-    "db:migrations:remote": "wrangler d1 migrations apply hal-cinema --remote",
+    "db:migrations:local": "wrangler d1 migrations apply maruhachi-stage-db --local",
+    "db:migrations:remote": "wrangler d1 migrations apply maruhachi-stage-db --remote",
     "db:seed:export": "tsx scripts/export-d1-seed.ts",
-    "db:seed:local": "wrangler d1 execute hal-cinema --local --file=d1/seed.sql",
-    "db:seed:remote": "wrangler d1 execute hal-cinema --remote --file=d1/seed.sql",
+    "db:seed:local": "wrangler d1 execute maruhachi-stage-db --local --file=d1/seed.sql",
+    "db:seed:remote": "wrangler d1 execute maruhachi-stage-db --remote --file=d1/seed.sql",
     "setup": "npm run db:setup && npm run images:local",
     "schedules:local": "node scripts/trigger-scheduled.mjs",
     "db:bootstrap-staff": "tsx src/scripts/bootstrap-staff.ts",

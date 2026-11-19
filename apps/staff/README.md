@@ -22,7 +22,7 @@ npm run dev
 
 ユーザーIDとパスワードを検証したあと、登録済みメールアドレスへ6桁のOTPを送信します。
 開発環境では `RESEND_API_KEY` 未設定時にバックエンドのコンソールへOTPが出力されます。
-セッションは `HttpOnly` Cookie（`hal_staff_session`）で保持します。
+セッションは `HttpOnly` Cookie（`maruhachi_stage_staff_session`）で保持します。
 
 初期アカウントはバックエンドで作成します。
 
@@ -41,15 +41,15 @@ Cloudflare Pages へ **SPA として** 静的配信します（`react-router.con
 
 ```bash
 npm run build
-npx wrangler pages deploy
+npx wrangler pages deploy build/client --project-name maruhachi-stage-staff --branch main
 ```
 
 - `wrangler.toml` の `pages_build_output_dir` は `build/client`
 - `public/_redirects` の `/* /index.html 200` で SPA フォールバック
 - `public/_routes.json` で Pages Functions を `/api/*` だけに絞る
-- `functions/api/[[path]].ts` は `/api/*` を API Worker（`API_ORIGIN`）へ転送し、ブラウザから見ると同一オリジンのままにする（`SameSite=Lax` のセッション Cookie を維持するため）
+- `functions/api/[[path]].ts` は `API` サービスバインディングで Worker を直接呼び、ブラウザから見ると同一オリジンのままにする
 
-デプロイ前に `wrangler.toml` の `API_ORIGIN` を実際の Worker オリジンへ変更してください。
+API Worker は `workers.dev` を公開せず、Pages の Access を通過したリクエストだけを受けます。
 
 ## Validation
 

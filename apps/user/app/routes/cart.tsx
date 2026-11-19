@@ -10,7 +10,7 @@ import { Button } from '~/components/Button'
 const CART_CATEGORIES: ProductCategory[] = ['goods', 'food', 'drink', 'set']
 
 export function meta() {
-    return [{ title: 'カート | HALシネマ' }]
+    return [{ title: 'カート | 丸八ステージ' }]
 }
 
 export default function CartPage() {

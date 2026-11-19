@@ -53,7 +53,7 @@ export function AppLayout() {
                         </span>
                         <div className={collapsed ? 'sr-only' : 'min-w-0'}>
                             <p className="text-xs font-black tracking-[0.18em] text-admin-accent">
-                                HAL Cinema
+                                丸八ステージ
                             </p>
                             <h1 className="text-lg font-black">スタッフ</h1>
                         </div>
@@ -111,7 +111,7 @@ export function AppLayout() {
                             </button>
                             <div>
                                 <p className="text-xs font-bold text-admin-muted-foreground">
-                                    HAL Cinema
+                                    丸八ステージ
                                 </p>
                                 <h2 className="text-2xl font-black">スタッフ画面</h2>
                             </div>

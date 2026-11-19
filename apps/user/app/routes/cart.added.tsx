@@ -8,7 +8,7 @@ import { ProductCard } from '~/components/ProductCard'
 const PICKUP_LOCATION = '劇場内 ショップ受け取りカウンター'
 
 export function meta() {
-    return [{ title: 'カートに追加しました | HALシネマ' }]
+    return [{ title: 'カートに追加しました | 丸八ステージ' }]
 }
 
 export default function CartAddedPage() {

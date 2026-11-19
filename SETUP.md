@@ -127,11 +127,11 @@ cd apps/api
 npx wrangler login
 
 # D1
-npx wrangler d1 create hal-cinema
+npx wrangler d1 create maruhachi-stage-db
 # 表示された database_id を wrangler.jsonc の d1_databases[0].database_id に設定する
 
 # R2（非公開バケット）
-npx wrangler r2 bucket create hal-cinema-images
+npx wrangler r2 bucket create maruhachi-stage-images
 ```
 
 ### 2. スキーマ適用
@@ -140,7 +140,7 @@ npx wrangler r2 bucket create hal-cinema-images
 cd apps/api
 npm.cmd run db:generate          # schema.ts を変更したときのみ
 npm.cmd run db:migrations:export # drizzle-kit の出力を d1/migrations へ
-npx wrangler d1 migrations apply hal-cinema --remote
+npx wrangler d1 migrations apply maruhachi-stage-db --remote
 ```
 
 ### 3. マスタデータ投入
@@ -154,7 +154,7 @@ npm.cmd run db:seed:remote
 ```powershell
 npm.cmd run db:bootstrap-staff
 # 出力された SQL を --remote で実行する
-npx wrangler d1 execute hal-cinema --remote --file=<出力したSQLファイル>
+npx wrangler d1 execute maruhachi-stage-db --remote --file=<出力したSQLファイル>
 ```
 
 ### 5. 環境変数とシークレット
@@ -164,7 +164,7 @@ npx wrangler d1 execute hal-cinema --remote --file=<出力したSQLファイル>
 | 変数 | 本番の例 | 用途 |
 | --- | --- | --- |
 | `ENVIRONMENT` | `production` | セッション Cookie の `Secure` 判定 |
-| `CORS_ORIGIN` | `https://hal-cinema-web.pages.dev,https://hal-cinema-staff.pages.dev` | CORS 許可オリジン |
+| `CORS_ORIGIN` | `https://maruhachi-stage.pages.dev,https://maruhachi-stage-staff.pages.dev` | CORS 許可オリジン |
 | `RESEND_FROM_EMAIL` | `no-reply@example.jp` | 送信元 |
 
 画像 URL は `/images/<ファイル名>` の相対パスで返すため、画像用のオリジン設定はありません。予約メールのリンクもリクエスト元のオリジンから組み立てます。
@@ -184,13 +184,42 @@ cd apps/api
 $env:R2_ACCOUNT_ID="<account-id>"
 $env:R2_ACCESS_KEY_ID="<access-key>"
 $env:R2_SECRET_ACCESS_KEY="<secret-key>"
-$env:R2_BUCKET_NAME="hal-cinema-images"
+$env:R2_BUCKET_NAME="maruhachi-stage-images"
 npm.cmd run images:push
 ```
 
 `images:push` は `apps/api/assets/images` を R2 へアップロードします（既存キーはスキップ）。画像の実体は Git 管理外なので、環境を作り直すときは `npm.cmd run images:pull` で R2 から取得できます。
 
-### 7. デプロイ
+### 7. Cloudflare Access で限定公開
+
+公開サイトと管理画面は Cloudflare Pages の無料ドメインを使い、Cloudflare Access で許可した人だけに公開します。API Worker は `workers_dev = false` のままにするため、ブラウザからは Pages の `/api/*` だけを見せます。
+
+1. Cloudflare ダッシュボードで **Zero Trust → Access controls → Applications** を開く
+2. 公開サイト用の self-hosted アプリを作り、ホストを `maruhachi-stage.pages.dev` にする
+3. 管理画面用にもう1つアプリを作り、ホストを `maruhachi-stage-staff.pages.dev` にする
+4. それぞれの Allow ポリシーに、アクセスを許可する学生のメールアドレスまたは所属グループだけを登録する
+5. **Require Access protection** を有効にし、未設定のアプリやホストを既定で遮断する
+6. 公開サイトと管理画面を別々のアプリにする。1つのアプリへパスを共有させない
+
+Cloudflare Access は50人まで無料で利用できます。画面操作は [Access の self-hosted application 手順](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/self-hosted-public-app/) を参照してください。
+
+Access のログイン画面と、サイト内の利用者向けログインは別物です。Access はサイトを開ける人を制限し、サイト内ログインは予約機能を使うアカウントを区別します。
+
+### 8. GitHub Actions で main からデプロイ
+
+`.github/workflows/deploy.yml` が `main` への push と手動実行で動作します。GitHub の **Settings → Environments → production** に次の Secrets を登録してください。
+
+| Secret | 用途 |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | Workers、D1、Pages をデプロイする権限 |
+| `CLOUDFLARE_ACCOUNT_ID` | 対象の Cloudflare アカウント |
+| `RESEND_API_KEY` | OTP と予約メールの送信 |
+
+Cloudflare API Token はアカウント単位の最小権限で作成します。`RESEND_API_KEY` はコードやロックファイルに保存しません。
+
+`main` は公開用ブランチとして保護し、PR を経由してのみ更新します。デプロイでは API Worker、D1 migration/seed、Resend secret、公開サイト、管理画面の順に実行します。
+
+### 9. 旧手順のデプロイ
 
 ```powershell
 # API Worker
@@ -199,22 +228,22 @@ npm.cmd run deploy
 
 # user
 cd ../user
-npx wrangler pages deploy
+npx wrangler pages deploy build/client --project-name maruhachi-stage --branch main
 
 # staff
 cd ../staff
-npx wrangler pages deploy
+npx wrangler pages deploy build/client --project-name maruhachi-stage-staff --branch main
 ```
 
-`user` / `staff` の `wrangler.toml` にある `API_ORIGIN` は、デプロイした Worker のオリジンへ置き換えてから Pages をデプロイしてください。各 Pages の `/api/*` と `/images/*` は Pages Functions が同一オリジンのまま Worker へ転送するため、セッション Cookie は `SameSite=Lax` のまま機能し、画像も Pages のオリジンから配信されます。
+Pages Functions は `API` サービスバインディングで Worker を直接呼びます。API Worker の `workers.dev` を公開する必要はありません。セッション Cookie は Pages の同一オリジンで `SameSite=Strict` とし、画像も同じ Pages のオリジンから配信されます。
 
 ### 8. スモークテスト
 
 - `GET /api/v1/health` が 200
 - `GET /api/movies` が 200 で一覧が返る
 - `GET /images/<ファイル名>` が 200 と `Cache-Control: public, max-age=31536000, immutable`
-- `https://hal-cinema-web.pages.dev` で一覧 → 座席指定 → 予約が完了する
-- `https://hal-cinema-staff.pages.dev` でログイン（OTP）後、リロードしてもセッションが維持される
+- `https://maruhachi-stage.pages.dev` で一覧 → 座席指定 → 予約が完了する
+- `https://maruhachi-stage-staff.pages.dev` でログイン（OTP）後、リロードしてもセッションが維持される
 
 ### 既知の制約
 

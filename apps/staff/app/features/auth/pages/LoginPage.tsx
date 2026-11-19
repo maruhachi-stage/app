@@ -42,7 +42,9 @@ export function LoginPage() {
     return (
         <main className="grid min-h-dvh place-items-center bg-admin-canvas p-4">
             <section className="w-full max-w-md rounded-xl border border-admin-border bg-admin-surface p-6 shadow-sm">
-                <p className="text-sm font-black tracking-[0.18em] text-admin-accent">HAL CINEMA</p>
+                <p className="text-sm font-black tracking-[0.18em] text-admin-accent">
+                    丸八ステージ
+                </p>
                 <h1 className="mt-2 text-2xl font-black">スタッフログイン</h1>
                 <p className="mt-2 text-sm text-admin-muted-foreground">
                     {step === 'password'

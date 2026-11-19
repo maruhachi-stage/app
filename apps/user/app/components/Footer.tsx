@@ -110,9 +110,7 @@ export function Footer() {
 
                 {/* 下部バー */}
                 <div className="mt-10 flex flex-col items-start justify-between gap-2 border-t border-border pt-6 sm:flex-row sm:items-center">
-                    <p className="text-xs text-muted-foreground">
-                        © 2026 丸八ステージ
-                    </p>
+                    <p className="text-xs text-muted-foreground">© 2026 丸八ステージ</p>
                     <p className="text-xs text-muted-foreground font-mono">
                         v.0.9.2 — IMPROVED UX BUILD
                     </p>

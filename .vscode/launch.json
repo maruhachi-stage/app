@@ -6,49 +6,49 @@
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run dev",
-      "cwd": "${workspaceFolder}\\user"
+      "cwd": "${workspaceFolder}\\apps\\user"
     },
     {
       "name": "api dev",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run dev",
-      "cwd": "${workspaceFolder}\\api"
+      "cwd": "${workspaceFolder}\\apps\\api"
     },
     {
       "name": "staff dev",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run dev",
-      "cwd": "${workspaceFolder}\\staff"
+      "cwd": "${workspaceFolder}\\apps\\staff"
     },
     {
       "name": "db:setup",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run db:setup",
-      "cwd": "${workspaceFolder}\\api"
+      "cwd": "${workspaceFolder}\\apps\\api"
     },
     {
       "name": "db:migrations:local",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run db:migrations:local",
-      "cwd": "${workspaceFolder}\\api"
+      "cwd": "${workspaceFolder}\\apps\\api"
     },
     {
       "name": "images:local",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run images:local",
-      "cwd": "${workspaceFolder}\\api"
+      "cwd": "${workspaceFolder}\\apps\\api"
     },
     {
       "name": "schedules:local",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run schedules:local",
-      "cwd": "${workspaceFolder}\\api"
+      "cwd": "${workspaceFolder}\\apps\\api"
     }
   ],
   "compounds": [

@@ -1,6 +1,6 @@
 node_modules/
 **/node_modules/
-api/assets/images/
+apps/api/assets/images/
 dist/
 **/dist/
 coverage/

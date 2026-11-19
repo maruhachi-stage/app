@@ -1,4 +1,6 @@
-# Welcome to React Router!
+# apps/user
+
+npm の依存関係はリポジトリルートで `npm.cmd install` を1回実行すると、npm workspaces により3アプリ分がまとめてインストールされます。
 
 A modern, production-ready template for building full-stack React applications using React Router.
 
@@ -17,12 +19,6 @@ A modern, production-ready template for building full-stack React applications u
 ## Getting Started
 
 ### Installation
-
-Install the dependencies:
-
-```bash
-npm install
-```
 
 ### Development
 

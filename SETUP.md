@@ -14,14 +14,14 @@ apiのCIはNode.js 26で実行します。ほかのアプリは現在のCI Node.
 - `user` : React Router v7 フロントエンド（Cloudflare Pages / SPA）
 - `staff` : React Router v7 スタッフ画面（Cloudflare Pages / SPA）
 - `api` : Hono API + Drizzle ORM（Cloudflare Workers + D1 + R2）
-- 画像 : R2（`api/assets/images` を `scripts/images.mjs` で同期し、API Worker の `/images/*` が配信）
+- 画像 : R2（`apps/api/assets/images` を `scripts/images.mjs` で同期し、API Worker の `/images/*` が配信）
 
 ## 初回セットアップ
 
 PowerShellでnpmの実行ポリシーエラーが出る場合は、`npm` の代わりに `npm.cmd` を使ってください。
 
 ```powershell
-cd user
+cd apps/user
 npm.cmd install
 
 cd ../staff
@@ -42,7 +42,7 @@ npm.cmd run images:local
 スタッフ画面のログインに使う初期アカウントは、migration適用後に作成します。
 
 ```powershell
-cd api
+cd apps/api
 npm.cmd run db:bootstrap-staff
 ```
 
@@ -75,7 +75,7 @@ tailscale serve --bg --https=9443 http://127.0.0.1:3080   # api（/api/docs な�
 ### api
 
 ```powershell
-cd api
+cd apps/api
 npm.cmd run dev
 ```
 
@@ -98,19 +98,19 @@ npm.cmd run schedules:local
 各ディレクトリで依存関係をインストールしてから開発サーバーを起動します。Vite の proxy 設定により `/api` と `/images` は `http://localhost:3080` へ転送されるため、画像も本番と同じように API Worker から配信されます。
 
 ```powershell
-cd user
+cd apps/user
 npm.cmd run dev
 ```
 
 ```powershell
-cd staff
+cd apps/staff
 npm.cmd run dev
 ```
 
 ### api Test
 
 ```powershell
-cd api
+cd apps/api
 npm.cmd test
 ```
 
@@ -123,7 +123,7 @@ npm.cmd test
 ### 1. リソース作成
 
 ```powershell
-cd api
+cd apps/api
 npx wrangler login
 
 # D1
@@ -137,7 +137,7 @@ npx wrangler r2 bucket create hal-cinema-images
 ### 2. スキーマ適用
 
 ```powershell
-cd api
+cd apps/api
 npm.cmd run db:generate          # schema.ts を変更したときのみ
 npm.cmd run db:migrations:export # drizzle-kit の出力を d1/migrations へ
 npx wrangler d1 migrations apply hal-cinema --remote
@@ -180,7 +180,7 @@ npx wrangler secret put RESEND_API_KEY
 R2 の S3 API トークン（アクセスキー / シークレット）を用意し、環境変数で渡します。既存キーはスキップされるため、何度実行しても安全です。
 
 ```powershell
-cd api
+cd apps/api
 $env:R2_ACCOUNT_ID="<account-id>"
 $env:R2_ACCESS_KEY_ID="<access-key>"
 $env:R2_SECRET_ACCESS_KEY="<secret-key>"
@@ -188,13 +188,13 @@ $env:R2_BUCKET_NAME="hal-cinema-images"
 npm.cmd run images:push
 ```
 
-`images:push` は `api/assets/images` を R2 へアップロードします（既存キーはスキップ）。画像の実体は Git 管理外なので、環境を作り直すときは `npm.cmd run images:pull` で R2 から取得できます。
+`images:push` は `apps/api/assets/images` を R2 へアップロードします（既存キーはスキップ）。画像の実体は Git 管理外なので、環境を作り直すときは `npm.cmd run images:pull` で R2 から取得できます。
 
 ### 7. デプロイ
 
 ```powershell
 # API Worker
-cd api
+cd apps/api
 npm.cmd run deploy
 
 # user

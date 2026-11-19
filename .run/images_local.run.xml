@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="images:local" type="js.build_tools.npm" factoryName="npm">
-    <package-json value="$PROJECT_DIR$/api/package.json" />
+    <package-json value="$PROJECT_DIR$/apps/api/package.json" />
     <command value="run" />
     <scripts>
       <script value="images:local" />

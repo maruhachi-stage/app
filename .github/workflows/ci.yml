@@ -46,7 +46,7 @@ jobs:
           shared=false
           while IFS= read -r file; do
             case "$file" in
-              .github/*|.editorconfig|AGENTS.md|README.md|SETUP.md)
+              .github/*|.editorconfig|AGENTS.md|README.md|SETUP.md|package.json|package-lock.json)
                 shared=true
                 ;;
             esac
@@ -56,9 +56,9 @@ jobs:
             changed=false
             while IFS= read -r file; do
               case "$app:$file" in
-                user:user/*) changed=true ;;
-                staff:staff/*) changed=true ;;
-                api:api/*) changed=true ;;
+                user:apps/user/*) changed=true ;;
+                staff:apps/staff/*) changed=true ;;
+                api:apps/api/*) changed=true ;;
               esac
             done <<< "$files"
 
@@ -74,9 +74,6 @@ jobs:
     needs: changes
     if: needs.changes.outputs.user == 'true'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: user
 
     steps:
       - name: リポジトリをチェックアウト
@@ -87,34 +84,31 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: user/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: 依存関係をインストール
         run: npm install --ignore-scripts --no-audit --no-fund
 
       - name: Format
-        run: npm run format:check
+        run: npm run format:check --workspace apps/user
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint --workspace apps/user
 
       - name: Typecheck
-        run: npm run typecheck
+        run: npm run typecheck --workspace apps/user
 
       - name: Test
-        run: npm test
+        run: npm test --workspace apps/user
 
       - name: Build
-        run: npm run build
+        run: npm run build --workspace apps/user
 
   staff:
     name: Staff
     needs: changes
     if: needs.changes.outputs.staff == 'true'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: staff
 
     steps:
       - name: リポジトリをチェックアウト
@@ -125,34 +119,31 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: staff/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: 依存関係をインストール
         run: npm install --ignore-scripts --no-audit --no-fund
 
       - name: Format
-        run: npm run format:check
+        run: npm run format:check --workspace apps/staff
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint --workspace apps/staff
 
       - name: Typecheck
-        run: npm run typecheck
+        run: npm run typecheck --workspace apps/staff
 
       - name: Test
-        run: npm test
+        run: npm test --workspace apps/staff
 
       - name: Build
-        run: npm run build
+        run: npm run build --workspace apps/staff
 
   api:
     name: API
     needs: changes
     if: needs.changes.outputs.api == 'true'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: api
 
     steps:
       - name: リポジトリをチェックアウト
@@ -163,22 +154,22 @@ jobs:
         with:
           node-version: 26
           cache: npm
-          cache-dependency-path: api/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: 依存関係をインストール
         run: npm install --ignore-scripts --no-audit --no-fund
 
       - name: Format
-        run: npm run format:check
+        run: npm run format:check --workspace apps/api
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint --workspace apps/api
 
       - name: Typecheck
-        run: npm run typecheck
+        run: npm run typecheck --workspace apps/api
 
       - name: Test
-        run: npm test
+        run: npm test --workspace apps/api
 
       - name: Build
-        run: npm run build
+        run: npm run build --workspace apps/api

@@ -17,14 +17,14 @@ indent_size         = 2
 # TypeScript / TSX / JavaScript / JSX
 # ────────────────────────────────────────────
 # api: 2スペース（デフォルトのまま）
-[api/**/*.{ts,tsx,js,jsx}]
+[apps/api/**/*.{ts,tsx,js,jsx}]
 indent_size = 2
 
 # user / staff: 4スペース
-[user/**/*.{ts,tsx,js,jsx}]
+[apps/user/**/*.{ts,tsx,js,jsx}]
 indent_size = 4
 
-[staff/**/*.{ts,tsx,js,jsx}]
+[apps/staff/**/*.{ts,tsx,js,jsx}]
 indent_size = 4
 
 # ────────────────────────────────────────────

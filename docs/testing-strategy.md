@@ -43,7 +43,7 @@
 
 `api` は Cloudflare Workers（D1 / R2）で動作するため、ユニットテストも結合テストも Workers ランタイム上で実行します。ローカルとテストで実行環境が分かれないよう、設定は `vitest.config.ts` の1つだけです。
 
-- 実行: `cd api; npm test`（`src/**/*.test.ts` と `test/workers/**/*.test.ts` を同じ環境で実行）
+- 実行: `cd apps/api; npm test`（`src/**/*.test.ts` と `test/workers/**/*.test.ts` を同じ環境で実行）
 - 結合テストだけを実行: `npm run test:integration`
 - ランナー: `@cloudflare/vitest-plugin`。`wrangler.jsonc` のバインディングをそのまま読み込むため、本番と同じ D1 方言・R2 バインディングで検証できます。
 - DB: 各テストは独立した D1 を持ち、`test/workers/setup.ts` が `d1/migrations` を適用して `d1/seed.sql` を投入します。スキーマは本番と同じ migration を唯一の正とします。

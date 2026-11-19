@@ -2,27 +2,7 @@ version: 2
 
 updates:
   - package-ecosystem: npm
-    directory: /user
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-    groups:
-      all-dependencies:
-        patterns:
-          - "*"
-
-  - package-ecosystem: npm
-    directory: /staff
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-    groups:
-      all-dependencies:
-        patterns:
-          - "*"
-
-  - package-ecosystem: npm
-    directory: /api
+    directory: /
     schedule:
       interval: weekly
     open-pull-requests-limit: 5

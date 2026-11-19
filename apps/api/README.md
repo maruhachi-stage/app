@@ -1,11 +1,12 @@
-# api
+# apps/api
 
 Hono + Drizzle ORMを使ったAPIです。Cloudflare Workers上で動作し、データベースはD1、画像はR2を使います。ローカル開発も `wrangler dev` によるエミュレーション（ローカルD1 / R2）で行うため、DB用Dockerや外部DBの起動は不要です。
+
+npm の依存関係はリポジトリルートで `npm.cmd install` を1回実行すると、npm workspaces により `apps/user` / `apps/staff` / `apps/api` の3アプリ分がまとめてインストールされます。以下は `apps/api` で実行するコマンドです。
 
 ## 開発開始
 
 ```bash
-npm install
 npm run db:setup
 npm run images:local
 npm run dev
@@ -63,3 +64,4 @@ npm run deploy
 ## API docs
 
 サーバー起動中はSwagger UIを `http://localhost:3080/api/docs`、OpenAPI JSONを `http://localhost:3080/api/openapi.json` で確認できます。
+npm.cmd install はリポジトリルートで1回実行してください。npm workspaces により `apps/user` / `apps/staff` / `apps/api` の依存関係がまとめてインストールされます。

@@ -1,6 +1,8 @@
-# HAL Cinema Staff Web
+# apps/staff
 
 映画館スタッフ向けの Web アプリケーションです。React Router v7、TypeScript、TailwindCSS v4 で構成しています。
+
+npm の依存関係はリポジトリルートで `npm.cmd install` を1回実行すると、npm workspaces により3アプリ分がまとめてインストールされます。
 
 ## 主な画面
 
@@ -11,7 +13,6 @@
 ## Development
 
 ```bash
-npm install
 npm run dev
 ```
 

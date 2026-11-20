@@ -3,11 +3,6 @@
 import { appendFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 
-const outputFile = process.env.GITHUB_OUTPUT;
-if (!outputFile) {
-  throw new Error("GITHUB_OUTPUT is required");
-}
-
 const apps = ["user", "staff", "api"];
 const appPaths = {
   user: "apps/user/",
@@ -25,11 +20,14 @@ const sharedPrefixes = [
   "scripts/",
 ];
 
-const baseSha = process.env.PR_BASE_SHA?.trim();
-const headSha = process.env.PR_HEAD_SHA?.trim();
+const baseSha = process.env.BASE_SHA?.trim();
+const headSha = process.env.HEAD_SHA?.trim();
+const allChanged = process.env.ALL_CHANGED === "true";
 let changedFiles = [];
 
-if (baseSha && headSha && !/^0+$/.test(baseSha)) {
+if (allChanged) {
+  changedFiles = [...apps.map((app) => `${appPaths[app]}package.json`)];
+} else if (baseSha && headSha && !/^0+$/.test(baseSha)) {
   changedFiles = execFileSync(
     "git",
     ["diff", "--name-only", baseSha, headSha],
@@ -38,7 +36,7 @@ if (baseSha && headSha && !/^0+$/.test(baseSha)) {
     .split(/\r?\n/)
     .filter(Boolean);
 } else {
-  changedFiles = [...apps.map((app) => `${appPaths[app]}package.json`)];
+  throw new Error("BASE_SHA and HEAD_SHA are required unless ALL_CHANGED=true");
 }
 
 const sharedChanged = changedFiles.some((file) =>
@@ -48,9 +46,20 @@ const sharedChanged = changedFiles.some((file) =>
   ),
 );
 
-for (const app of apps) {
-  const changed =
-    sharedChanged ||
-    changedFiles.some((file) => file.startsWith(appPaths[app]));
-  appendFileSync(outputFile, `${app}=${changed}\n`);
+const results = Object.fromEntries(
+  apps.map((app) => {
+    const changed =
+      sharedChanged ||
+      changedFiles.some((file) => file.startsWith(appPaths[app]));
+    return [app, changed];
+  }),
+);
+
+const outputFile = process.env.GITHUB_OUTPUT;
+if (outputFile) {
+  for (const app of apps) {
+    appendFileSync(outputFile, `${app}=${results[app]}\n`);
+  }
+} else {
+  console.log(JSON.stringify({ changedFiles, apps: results }, null, 2));
 }

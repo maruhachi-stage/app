@@ -2,6 +2,9 @@ name: Deploy Preview
 
 on:
   pull_request:
+    branches:
+      - main
+      - develop
     types: [opened, synchronize, reopened]
 
 permissions:
@@ -36,32 +39,36 @@ jobs:
       - name: 変更アプリを判定
         id: changed
         env:
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: node scripts/detect-changed-apps.mjs
 
       - name: デプロイ設定を生成
+        if: steps.changed.outputs.user == 'true' || steps.changed.outputs.staff == 'true'
         env:
-          PAGES_BRANCH: pr-${{ github.event.pull_request.number }}
+          DEPLOY_ENVIRONMENT: preview
+          CONFIG_TARGETS: ${{ steps.changed.outputs.user == 'true' && 'user,' || '' }}${{ steps.changed.outputs.staff == 'true' && 'staff' || '' }}
           USER_PAGES_PROJECT: ${{ vars.USER_PAGES_PROJECT }}
           STAFF_PAGES_PROJECT: ${{ vars.STAFF_PAGES_PROJECT }}
-          API_SERVICE_NAME: ${{ vars.API_SERVICE_NAME }}
+          API_SERVICE_NAME: ${{ vars.PREVIEW_API_SERVICE_NAME }}
         run: node scripts/prepare-wrangler.mjs
 
       - name: 公開サイトをビルド
-        if: steps.changed.outputs.user == 'true' && env.CLOUDFLARE_API_TOKEN != ''
+        if: steps.changed.outputs.user == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npm run build --workspace apps/user
 
       - name: 管理画面をビルド
-        if: steps.changed.outputs.staff == 'true' && env.CLOUDFLARE_API_TOKEN != ''
+        if: steps.changed.outputs.staff == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npm run build --workspace apps/staff
 
       - name: 公開サイトプレビューをデプロイ
-        if: steps.changed.outputs.user == 'true' && env.CLOUDFLARE_API_TOKEN != ''
+        if: steps.changed.outputs.user == 'true'
         working-directory: apps/user
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -69,7 +76,7 @@ jobs:
         run: npx wrangler pages deploy build/client --project-name "${{ vars.USER_PAGES_PROJECT }}" --branch "pr-${{ github.event.pull_request.number }}" --config wrangler.generated.toml
 
       - name: 管理画面プレビューをデプロイ
-        if: steps.changed.outputs.staff == 'true' && env.CLOUDFLARE_API_TOKEN != ''
+        if: steps.changed.outputs.staff == 'true'
         working-directory: apps/staff
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

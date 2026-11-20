@@ -52,11 +52,11 @@ npm.cmd run db:bootstrap-staff
 
 ### 開発用ポート
 
-| アプリ | ポート | URL |
-| --- | --- | --- |
-| user | 3030 | `http://localhost:3030` |
-| staff | 3040 | `http://localhost:3040` |
-| api | 3080 | `http://localhost:3080` |
+| アプリ | ポート | URL                     |
+| ------ | ------ | ----------------------- |
+| user   | 3030   | `http://localhost:3030` |
+| staff  | 3040   | `http://localhost:3040` |
+| api    | 3080   | `http://localhost:3080` |
 
 画像（`/images/*`）も API Worker が提供するため、ローカルで開くアプリはこの3つだけです。
 
@@ -128,7 +128,7 @@ npx wrangler login
 
 # D1
 npx wrangler d1 create maruhachi-stage-db
-# 表示された database_id は wrangler.jsonc へ書かず、GitHub Variablesへ登録する
+# 表示された database_id は wrangler.jsonc へ書かず、対象EnvironmentのD1_DATABASE_IDへ登録する
 
 # R2（非公開バケット）
 npx wrangler r2 bucket create maruhachi-stage-images
@@ -161,11 +161,11 @@ npx wrangler d1 execute maruhachi-stage-db --remote --file=<出力したSQLフ�
 
 本番・開発・プレビューの値はリポジトリ内の `wrangler.jsonc` や `wrangler.toml` に置きません。GitHub Actions の Variables / Secrets から実行時に Wrangler 設定を生成します。ローカル開発用の値は `.dev.vars` にだけ書いてください（`.dev.vars.example` をコピー）。
 
-| 変数 | 本番の例 | 用途 |
-| --- | --- | --- |
-| `ENVIRONMENT` | `production` | セッション Cookie の `Secure` 判定 |
-| `CORS_ORIGIN` | `https://<公開サイト>.pages.dev,https://<管理画面>.pages.dev` | ActionsがPages名から生成 |
-| `RESEND_FROM_EMAIL` | `no-reply@example.jp` | Resendで認証済みの送信元 |
+| 変数                | 本番の例                                                      | 用途                               |
+| ------------------- | ------------------------------------------------------------- | ---------------------------------- |
+| `ENVIRONMENT`       | `production`                                                  | セッション Cookie の `Secure` 判定 |
+| `CORS_ORIGIN`       | `https://<公開サイト>.pages.dev,https://<管理画面>.pages.dev` | ActionsがPages名から生成           |
+| `RESEND_FROM_EMAIL` | `no-reply@example.jp`                                         | Resendで認証済みの送信元           |
 
 画像 URL は `/images/<ファイル名>` の相対パスで返すため、画像用のオリジン設定はありません。予約メールのリンクもリクエスト元のオリジンから組み立てます。
 
@@ -207,31 +207,40 @@ Access のログイン画面と、サイト内の利用者向けログインは�
 
 ### 8. GitHub Actions でデプロイ
 
-`.github/workflows/deploy.yml` が `main` / `develop` への push と手動実行で動作します。Pull Request は `.github/workflows/deploy-preview.yml` が変更されたアプリだけをプレビューへデプロイします。GitHub の **Settings → Environments** に `production`・`development`・`preview` を作成してください。
+`.github/workflows/deploy.yml` が `main` / `develop` への push と手動実行で動作します。Pull Request は `.github/workflows/deploy-preview.yml` が変更された Pages だけをプレビューへデプロイします。GitHub の **Settings → Environments** に `production`・`development`・`preview` を作成してください。
 
 各Environmentの Variables:
-| Variable | 用途 |
-| --- | --- |
-| `API_SERVICE_NAME` | production / development のAPI Worker名 |
-| `PREVIEW_API_SERVICE_NAME` | preview のAPI Worker名 |
-| `USER_PAGES_PROJECT` | 公開サイトのPagesプロジェクト名 |
-| `STAFF_PAGES_PROJECT` | 管理画面のPagesプロジェクト名 |
-| `D1_DATABASE_NAME` | 環境ごとのD1名 |
-| `D1_DATABASE_ID` | 環境ごとのD1 ID |
-| `R2_BUCKET_NAME` | 全環境で共有するR2バケット名 |
-| `RESEND_FROM_EMAIL` | Resendで認証済みの送信元 |
+
+| Variable                   | 用途                                                |
+| -------------------------- | --------------------------------------------------- |
+| `API_SERVICE_NAME`         | production / development のAPI Worker名             |
+| `PREVIEW_API_SERVICE_NAME` | preview の Pages が接続する既存の開発用API Worker名 |
+| `USER_PAGES_PROJECT`       | 公開サイトのPagesプロジェクト名                     |
+| `STAFF_PAGES_PROJECT`      | 管理画面のPagesプロジェクト名                       |
+| `D1_DATABASE_NAME`         | production / development ごとのD1名                 |
+| `D1_DATABASE_ID`           | production / development ごとのD1 ID                |
+| `R2_BUCKET_NAME`           | 全環境で共有するR2バケット名                        |
+| `RESEND_FROM_EMAIL`        | Resendで認証済みの送信元                            |
 
 各Environmentの Secrets:
 
-| Secret | 用途 |
-| --- | --- |
-| `CLOUDFLARE_API_TOKEN` | Workers、D1、Pages をデプロイする権限 |
-| `CLOUDFLARE_ACCOUNT_ID` | 対象の Cloudflare アカウント |
-| `RESEND_API_KEY` | OTP と予約メールの送信 |
+| Secret                  | 用途                                  |
+| ----------------------- | ------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | Workers、D1、Pages をデプロイする権限 |
+| `CLOUDFLARE_ACCOUNT_ID` | 対象の Cloudflare アカウント          |
+| `RESEND_API_KEY`        | OTP と予約メールの送信                |
 
 Cloudflare API Token はアカウント単位の最小権限で作成します。`RESEND_API_KEY` はコードやロックファイルに保存しません。
 
-`main` は公開用、`develop` は開発用として保護し、PR を経由してのみ更新します。デプロイでは変更された API Worker、D1 migration/seed、Resend secret、公開サイト、管理画面だけを実行します。`wrangler.generated.jsonc` / `wrangler.generated.toml` はActions実行時に生成され、Gitには保存しません。
+`main` は production、`develop` は development として保護し、PR を経由してのみ更新します。デプロイ対象は変更されたディレクトリに従います。
+
+- `apps/api` の変更は API Worker、その環境の D1 migration/seed、Resend secret を更新します。
+- `apps/user` の変更は公開サイトだけを Pages の環境にデプロイします。
+- `apps/staff` の変更は管理画面だけを Pages の環境にデプロイします。
+- `package-lock.json`、`scripts/`、Workflow などの共通ファイルの変更は、影響する3アプリすべてを検証し、Pages と API の両方をデプロイ対象にします。
+- PR プレビューは Pages を `pr-<番号>` ブランチへデプロイします。preview の設定は Pages だけを生成し、API の CORS は development と同じ許可元を使います。
+
+`wrangler.generated.jsonc` / `wrangler.generated.toml` は Actions 実行時に生成され、Git には保存しません。必要な Variables が欠けている場合はデプロイをスキップせず、設定生成を失敗させます。
 
 ### 9. 旧手順のデプロイ
 
@@ -275,17 +284,17 @@ Pages Functions は `API` サービスバインディングで Worker を直接�
 2. `all dev` … `api dev` / `user dev` / `staff dev` をまとめて起動
 3. `schedules:local` … 上映スケジュールを生成（`api dev` 起動中に実行）
 
-| 実行構成 | 内容 |
-| --- | --- |
-| `setup (db + images)` | `npm run setup`（`db:setup` + `images:local`、初回のみ） |
-| `all dev` | 3アプリの開発サーバーを同時起動（compound） |
-| `api dev` | `npm run dev`（`wrangler dev` + ローカル D1 / R2、`http://localhost:3080`） |
-| `user dev` | `npm run dev`（`http://localhost:3030`） |
-| `staff dev` | `npm run dev`（`http://localhost:3040`） |
-| `db:setup` | `npm run db:setup`（generate → migrations export → local apply → seed） |
-| `images:local` | `npm run images:local`（`assets/images` → ローカル R2） |
-| `schedules:local` | `npm run schedules:local`（Cron ハンドラを手動実行） |
-| `api test` | `npm test`（Workers ランタイム上のユニット + 結合） |
+| 実行構成              | 内容                                                                        |
+| --------------------- | --------------------------------------------------------------------------- |
+| `setup (db + images)` | `npm run setup`（`db:setup` + `images:local`、初回のみ）                    |
+| `all dev`             | 3アプリの開発サーバーを同時起動（compound）                                 |
+| `api dev`             | `npm run dev`（`wrangler dev` + ローカル D1 / R2、`http://localhost:3080`） |
+| `user dev`            | `npm run dev`（`http://localhost:3030`）                                    |
+| `staff dev`           | `npm run dev`（`http://localhost:3040`）                                    |
+| `db:setup`            | `npm run db:setup`（generate → migrations export → local apply → seed）     |
+| `images:local`        | `npm run images:local`（`assets/images` → ローカル R2）                     |
+| `schedules:local`     | `npm run schedules:local`（Cron ハンドラを手動実行）                        |
+| `api test`            | `npm test`（Workers ランタイム上のユニット + 結合）                         |
 
 画像配信は API Worker の `/images/*`（R2）に一本化したため、`image-server` の実行構成は削除しました。`db:up` / `db:down` / `db:reset` も、ローカル D1（`wrangler dev` が起動する Miniflare）に置き換わったため廃止しています。
 

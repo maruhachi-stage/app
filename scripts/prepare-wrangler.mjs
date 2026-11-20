@@ -4,10 +4,20 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 
 const optional = (name) => process.env[name]?.trim() || undefined;
+const required = (name) => {
+  const value = optional(name);
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+};
 
-const pagesBranch = optional("PAGES_BRANCH") ?? "main";
-const isProduction = pagesBranch === "main";
-const appEnvironment = isProduction ? "production" : "development";
+const environment = optional("DEPLOY_ENVIRONMENT") ?? "production";
+const knownEnvironments = ["production", "development", "preview"];
+if (!knownEnvironments.includes(environment)) {
+  throw new Error(`Unsupported DEPLOY_ENVIRONMENT: ${environment}`);
+}
+const isProduction = environment === "production";
 const targets = new Set(
   (optional("CONFIG_TARGETS") ?? "api,user,staff")
     .split(",")
@@ -26,9 +36,11 @@ const userOutputPath = resolve(
 const staffOutputPath = resolve(
   optional("STAFF_WRANGLER_OUTPUT") ?? "apps/staff/wrangler.generated.toml",
 );
-const apiServiceName =
-  optional("API_SERVICE_NAME") ??
-  `maruhachi-stage-api${isProduction ? "" : "-dev"}`;
+const apiServiceName = required("API_SERVICE_NAME");
+const d1DatabaseName = needsApi ? required("D1_DATABASE_NAME") : undefined;
+const d1DatabaseId = needsApi ? required("D1_DATABASE_ID") : undefined;
+const r2BucketName = needsApi ? required("R2_BUCKET_NAME") : undefined;
+const resendFromEmail = needsApi ? required("RESEND_FROM_EMAIL") : undefined;
 
 const pagesOrigin = (project) =>
   isProduction
@@ -36,13 +48,9 @@ const pagesOrigin = (project) =>
     : `https://*.${project}.pages.dev,https://${project}.pages.dev`;
 
 const userPagesProject =
-  needsUser || needsApi
-    ? (optional("USER_PAGES_PROJECT") ?? "maruhachi-stage")
-    : undefined;
+  needsUser || needsApi ? required("USER_PAGES_PROJECT") : undefined;
 const staffPagesProject =
-  needsStaff || needsApi
-    ? (optional("STAFF_PAGES_PROJECT") ?? "maruhachi-stage-staff")
-    : undefined;
+  needsStaff || needsApi ? required("STAFF_PAGES_PROJECT") : undefined;
 const corsOrigin = needsApi
   ? [pagesOrigin(userPagesProject), pagesOrigin(staffPagesProject)].join(",")
   : undefined;
@@ -58,25 +66,22 @@ const wranglerConfig = needsApi
       observability: { enabled: true },
       dev: { port: 3080 },
       vars: {
-        ENVIRONMENT: optional("APP_ENVIRONMENT") ?? appEnvironment,
+        ENVIRONMENT: environment,
         CORS_ORIGIN: corsOrigin,
-        RESEND_FROM_EMAIL:
-          optional("RESEND_FROM_EMAIL") ?? "no-reply@maruhachi-stage.example",
+        RESEND_FROM_EMAIL: resendFromEmail,
       },
       d1_databases: [
         {
           binding: "DB",
-          database_name: optional("D1_DATABASE_NAME") ?? "maruhachi-stage-db",
-          database_id:
-            optional("D1_DATABASE_ID") ??
-            "00000000-0000-0000-0000-000000000000",
+          database_name: d1DatabaseName,
+          database_id: d1DatabaseId,
           migrations_dir: "d1/migrations",
         },
       ],
       r2_buckets: [
         {
           binding: "IMAGES",
-          bucket_name: optional("R2_BUCKET_NAME") ?? "maruhachi-stage-images",
+          bucket_name: r2BucketName,
         },
       ],
       triggers: {

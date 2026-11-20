@@ -3,6 +3,7 @@ name: CI
 on:
   pull_request:
     branches:
+      - main
       - develop
   workflow_dispatch:
 
@@ -31,9 +32,16 @@ jobs:
       - name: 変更アプリを判定
         id: filter
         env:
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          ALL_CHANGED: ${{ github.event_name == 'workflow_dispatch' }}
         run: node scripts/detect-changed-apps.mjs
+
+      - name: 変更判定を確認
+        run: |
+          echo "user=${{ steps.filter.outputs.user }}"
+          echo "staff=${{ steps.filter.outputs.staff }}"
+          echo "api=${{ steps.filter.outputs.api }}"
 
   frontend:
     name: Web

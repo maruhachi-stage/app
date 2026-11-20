@@ -1,0 +1,7 @@
+{
+  "name": "maruhachi-stage-app",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ]
+}

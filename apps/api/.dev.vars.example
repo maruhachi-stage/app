@@ -1,0 +1,9 @@
+# ローカル開発（`wrangler dev`）専用の値。
+# 本番の値は wrangler.jsonc の [vars]、本番のシークレットは `wrangler secret put` で管理する。
+# このファイルは `.dev.vars` にコピーして使う（`.dev.vars` はコミットしない）。
+ENVIRONMENT=development
+CORS_ORIGIN=http://localhost:3030,http://localhost:3040
+RESEND_FROM_EMAIL=no-reply@maruhachi-stage.example
+
+# 未設定ならメールは送らずにコンソールへ出力する（OTP はログで確認できる）
+RESEND_API_KEY=

@@ -18,10 +18,9 @@ jobs:
     name: Changes
     runs-on: ubuntu-latest
     outputs:
-      front: ${{ steps.filter.outputs.front }}
+      user: ${{ steps.filter.outputs.user }}
       staff: ${{ steps.filter.outputs.staff }}
-      back: ${{ steps.filter.outputs.back }}
-      image: ${{ steps.filter.outputs.image }}
+      api: ${{ steps.filter.outputs.api }}
 
     steps:
       - name: リポジトリをチェックアウト
@@ -34,10 +33,9 @@ jobs:
         shell: bash
         run: |
           if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
-            echo "front=true" >> "$GITHUB_OUTPUT"
+            echo "user=true" >> "$GITHUB_OUTPUT"
             echo "staff=true" >> "$GITHUB_OUTPUT"
-            echo "back=true" >> "$GITHUB_OUTPUT"
-            echo "image=true" >> "$GITHUB_OUTPUT"
+            echo "api=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -48,20 +46,19 @@ jobs:
           shared=false
           while IFS= read -r file; do
             case "$file" in
-              .github/*|.editorconfig|AGENTS.md|README.md|SETUP.md)
+              .github/*|.editorconfig|AGENTS.md|README.md|SETUP.md|package.json|package-lock.json)
                 shared=true
                 ;;
             esac
           done <<< "$files"
 
-          for app in front staff back image; do
+          for app in user staff api; do
             changed=false
             while IFS= read -r file; do
               case "$app:$file" in
-                front:front-web/*) changed=true ;;
-                staff:staff-app/*) changed=true ;;
-                back:back-api/*) changed=true ;;
-                image:image-server/*) changed=true ;;
+                user:apps/user/*) changed=true ;;
+                staff:apps/staff/*) changed=true ;;
+                api:apps/api/*) changed=true ;;
               esac
             done <<< "$files"
 
@@ -73,13 +70,10 @@ jobs:
           done
 
   frontend:
-    name: Frontend
+    name: Web
     needs: changes
-    if: needs.changes.outputs.front == 'true'
+    if: needs.changes.outputs.user == 'true'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: front-web
 
     steps:
       - name: リポジトリをチェックアウト
@@ -90,34 +84,31 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: front-web/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: 依存関係をインストール
-        run: npm install --ignore-scripts --no-audit --no-fund
+        run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
       - name: Format
-        run: npm run format:check
+        run: npm run format:check --workspace apps/user
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint --workspace apps/user
 
       - name: Typecheck
-        run: npm run typecheck
+        run: npm run typecheck --workspace apps/user
 
       - name: Test
-        run: npm test
+        run: npm test --workspace apps/user
 
       - name: Build
-        run: npm run build
+        run: npm run build --workspace apps/user
 
   staff:
     name: Staff
     needs: changes
     if: needs.changes.outputs.staff == 'true'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: staff-app
 
     steps:
       - name: リポジトリをチェックアウト
@@ -128,34 +119,31 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: staff-app/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: 依存関係をインストール
-        run: npm install --ignore-scripts --no-audit --no-fund
+        run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
       - name: Format
-        run: npm run format:check
+        run: npm run format:check --workspace apps/staff
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint --workspace apps/staff
 
       - name: Typecheck
-        run: npm run typecheck
+        run: npm run typecheck --workspace apps/staff
 
       - name: Test
-        run: npm test
+        run: npm test --workspace apps/staff
 
       - name: Build
-        run: npm run build
+        run: npm run build --workspace apps/staff
 
   api:
     name: API
     needs: changes
-    if: needs.changes.outputs.back == 'true'
+    if: needs.changes.outputs.api == 'true'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: back-api
 
     steps:
       - name: リポジトリをチェックアウト
@@ -166,57 +154,22 @@ jobs:
         with:
           node-version: 26
           cache: npm
-          cache-dependency-path: back-api/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: 依存関係をインストール
-        run: npm install --ignore-scripts --no-audit --no-fund
+        run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
 
       - name: Format
-        run: npm run format:check
+        run: npm run format:check --workspace apps/api
 
       - name: Lint
-        run: npm run lint
+        run: npm run lint --workspace apps/api
 
       - name: Typecheck
-        run: npm run typecheck
-
-      - name: Unit Test
-        run: npm test
-
-      - name: Build
-        run: npm run build
-
-      - name: Integration Test
-        run: npm run test:integration
-
-  image-server:
-    name: Image Server
-    needs: changes
-    if: needs.changes.outputs.image == 'true'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: image-server
-
-    steps:
-      - name: リポジトリをチェックアウト
-        uses: actions/checkout@v7
-
-      - name: Node.jsをセットアップ
-        uses: actions/setup-node@v7
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: image-server/package-lock.json
-
-      - name: 依存関係をインストール
-        run: npm install --ignore-scripts --no-audit --no-fund
-
-      - name: Format
-        run: npm run format:check
-
-      - name: Lint
-        run: npm run lint
+        run: npm run typecheck --workspace apps/api
 
       - name: Test
-        run: npm test
+        run: npm test --workspace apps/api
+
+      - name: Build
+        run: npm run build --workspace apps/api

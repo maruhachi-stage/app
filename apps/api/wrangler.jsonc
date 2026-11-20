@@ -1,0 +1,38 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "maruhachi-stage-api",
+  "workers_dev": false,
+  "main": "src/worker.ts",
+  "compatibility_date": "2025-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+  },
+  // ローカル開発時の待ち受けポート。user / staff の Vite proxy と SETUP.md の
+  // 記述に合わせるため、`npm run dev` と `npm run dev:scheduled` もここで指定し、3080 を使う。
+  "dev": {
+    "port": 3080,
+  },
+  "vars": {
+    "ENVIRONMENT": "production",
+    "CORS_ORIGIN": "https://maruhachi-stage.pages.dev,https://maruhachi-stage-staff.pages.dev",
+    "RESEND_FROM_EMAIL": "no-reply@maruhachi-stage.example",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "maruhachi-stage-db",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "migrations_dir": "d1/migrations",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "maruhachi-stage-images",
+    },
+  ],
+  "triggers": {
+    "crons": ["0 15 * * *"],
+  },
+}

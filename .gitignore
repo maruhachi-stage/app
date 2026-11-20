@@ -1,7 +1,6 @@
 node_modules/
 **/node_modules/
-image-server/images/
-image-server/node_modules/
+apps/api/assets/images/
 dist/
 **/dist/
 coverage/
@@ -12,6 +11,10 @@ pnpm-debug.log*
 .DS_Store
 .env
 .env.*
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+.wrangler/
 .idea/
 .claude
 /sql/

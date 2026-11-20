@@ -1,0 +1,61 @@
+{
+  "name": "maruhachi-stage-api",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "dev:scheduled": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "type-check": "npm run typecheck",
+    "db:setup": "npm run db:generate && npm run db:migrations:export && npm run db:migrations:local && npm run db:seed:local",
+    "db:generate": "drizzle-kit generate",
+    "db:migrations:export": "node scripts/export-d1-migrations.mjs",
+    "db:migrations:local": "wrangler d1 migrations apply maruhachi-stage-db --local",
+    "db:migrations:remote": "wrangler d1 migrations apply maruhachi-stage-db --remote",
+    "db:seed:export": "tsx scripts/export-d1-seed.ts",
+    "db:seed:local": "wrangler d1 execute maruhachi-stage-db --local --file=d1/seed.sql",
+    "db:seed:remote": "wrangler d1 execute maruhachi-stage-db --remote --file=d1/seed.sql",
+    "setup": "npm run db:setup && npm run images:local",
+    "schedules:local": "node scripts/trigger-scheduled.mjs",
+    "db:bootstrap-staff": "tsx src/scripts/bootstrap-staff.ts",
+    "images:push": "node scripts/images.mjs push",
+    "images:pull": "node scripts/images.mjs pull",
+    "images:local": "node scripts/images.mjs local",
+    "db:check": "drizzle-kit check",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:integration": "vitest run test/workers"
+  },
+  "dependencies": {
+    "@hono/swagger-ui": "^0.6.1",
+    "drizzle-orm": "^1.0.0-rc.4",
+    "hono": "^4.12.15",
+    "resend": "^6.12.2",
+    "zod": "^4.3.6"
+  },
+  "imports": {
+    "#*": "./src/*"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.1170.0",
+    "@cloudflare/vitest-plugin": "^1.8.3",
+    "@cloudflare/workers-types": "^5.20261117.1",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.4.0",
+    "drizzle-kit": "^1.0.0-rc.4",
+    "eslint": "^10.9.1",
+    "globals": "^17.11.0",
+    "prettier": "^3.9.6",
+    "tsx": "^4.7.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.69.0",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.163.0"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}

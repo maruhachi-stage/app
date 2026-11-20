@@ -1,0 +1,74 @@
+import { and, desc, eq, gt } from 'drizzle-orm'
+import type { OtpPurpose } from '#application/dto/auth.js'
+import type { Database } from '#infrastructure/database/database.js'
+import { otpTokens } from '#infrastructure/database/schema.js'
+import type { OtpToken } from '#domain/entities/otp-token.js'
+import type { OtpTokenRepository } from '#domain/interfaces/repositories/otp-token-repository.js'
+
+export class DrizzleOtpTokenRepository implements OtpTokenRepository {
+  constructor(private readonly db: Database) {}
+
+  async findRecent(
+    memberId: number,
+    purpose: OtpPurpose,
+    sinceSeconds: number,
+  ): Promise<OtpToken | null> {
+    const since = new Date(Date.now() - sinceSeconds * 1000)
+    const [row] = await this.db
+      .select()
+      .from(otpTokens)
+      .where(
+        and(
+          eq(otpTokens.memberId, memberId),
+          eq(otpTokens.purpose, purpose),
+          gt(otpTokens.createdAt, since),
+        ),
+      )
+      .limit(1)
+    return row ? this.token(row) : null
+  }
+
+  async create(
+    memberId: number,
+    tokenHash: string,
+    purpose: OtpPurpose,
+    expiresAt: Date,
+  ): Promise<void> {
+    await this.db.insert(otpTokens).values({ memberId, tokenHash, purpose, expiresAt })
+  }
+
+  async findLatest(memberId: number, purpose: OtpPurpose): Promise<OtpToken | null> {
+    const [row] = await this.db
+      .select()
+      .from(otpTokens)
+      .where(and(eq(otpTokens.memberId, memberId), eq(otpTokens.purpose, purpose)))
+      .orderBy(desc(otpTokens.createdAt))
+      .limit(1)
+    return row ? this.token(row) : null
+  }
+
+  async recordFailure(id: number, failedAttempts: number, lockedUntil?: Date): Promise<void> {
+    await this.db
+      .update(otpTokens)
+      .set(lockedUntil ? { failedAttempts, lockedUntil } : { failedAttempts })
+      .where(eq(otpTokens.id, id))
+  }
+
+  async markUsed(id: number): Promise<void> {
+    await this.db.update(otpTokens).set({ usedAt: new Date() }).where(eq(otpTokens.id, id))
+  }
+
+  private token(row: typeof otpTokens.$inferSelect): OtpToken {
+    return {
+      id: row.id,
+      memberId: row.memberId,
+      tokenHash: row.tokenHash,
+      purpose: row.purpose,
+      expiresAt: row.expiresAt,
+      usedAt: row.usedAt,
+      failedAttempts: row.failedAttempts,
+      lockedUntil: row.lockedUntil,
+      createdAt: row.createdAt,
+    }
+  }
+}

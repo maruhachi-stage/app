@@ -1,0 +1,138 @@
+import { and, asc, desc, eq, gte, lt, sql } from 'drizzle-orm'
+import type { Database } from '#infrastructure/database/database.js'
+import { schedules, screens, screenings } from '#infrastructure/database/schema.js'
+import type { Movie } from '#domain/entities/movie.js'
+import type { MovieSchedule } from '#domain/entities/movie-schedule.js'
+import type { PublicSchedule } from '#domain/entities/public-schedule.js'
+import type { MovieRepository } from '#domain/interfaces/repositories/movie-repository.js'
+import { jstDateUtcRange } from '#lib/jst-date-range.js'
+import { screeningThumbnail } from './screening-thumbnail.js'
+
+const remainingSeats = (now: Date) => sql<number>`${screens.totalSeats} - COALESCE((
+  SELECT COUNT(*) FROM reservation_seats rs
+  JOIN reservations r ON r.id = rs.reservation_id
+  WHERE rs.schedule_id = ${schedules.id}
+    AND (r.status = 'confirmed' OR (r.status = 'pending' AND r.expires_at > ${now.getTime()}))
+), 0)`
+
+const hasPublicScheduleOn = (date: string) => {
+  const { start, end } = jstDateUtcRange(date)
+  return sql`${screenings.id} IN (
+    SELECT DISTINCT screening_id FROM schedules
+    WHERE is_public = 1 AND starts_at >= ${start.getTime()} AND starts_at < ${end.getTime()}
+  )`
+}
+
+export class DrizzleMovieRepository implements MovieRepository {
+  constructor(private readonly db: Database) {}
+
+  async findMovies({
+    status,
+    date,
+  }: {
+    status?: Movie['status']
+    date?: string
+  }): Promise<Movie[]> {
+    const conditions = [eq(screenings.type, 'movie')]
+    if (status) conditions.push(eq(screenings.status, status))
+    if (date) conditions.push(hasPublicScheduleOn(date))
+
+    const rows = await this.db
+      .select({
+        id: screenings.id,
+        title: screenings.title,
+        description: screenings.description,
+        durationMin: screenings.durationMin,
+        status: screenings.status,
+        thumbnailFilename: screeningThumbnail,
+      })
+      .from(screenings)
+      .where(and(...conditions))
+      .orderBy(desc(screenings.createdAt))
+
+    return rows.map((row) => ({ ...row, status: row.status as Movie['status'] }))
+  }
+
+  async findMovieById(movieId: number): Promise<Movie | null> {
+    const [row] = await this.db
+      .select({
+        id: screenings.id,
+        title: screenings.title,
+        description: screenings.description,
+        durationMin: screenings.durationMin,
+        status: screenings.status,
+        thumbnailFilename: screeningThumbnail,
+      })
+      .from(screenings)
+      .where(and(eq(screenings.id, movieId), eq(screenings.type, 'movie')))
+
+    return row ? { ...row, status: row.status as Movie['status'] } : null
+  }
+
+  async findSchedulesByMovieId(movieId: number, date?: string): Promise<MovieSchedule[]> {
+    const conditions = [eq(schedules.screeningId, movieId), eq(schedules.isPublic, true)]
+    if (date) {
+      const { start, end } = jstDateUtcRange(date)
+      conditions.push(gte(schedules.startsAt, start), lt(schedules.startsAt, end))
+    }
+
+    const rows = await this.db
+      .select({
+        scheduleId: schedules.id,
+        screenName: screens.name,
+        startsAt: schedules.startsAt,
+        endsAt: schedules.endsAt,
+        remainingSeats: remainingSeats(new Date()),
+        totalSeats: screens.totalSeats,
+      })
+      .from(schedules)
+      .innerJoin(screens, eq(screens.id, schedules.screenId))
+      .where(and(...conditions))
+      .orderBy(asc(schedules.startsAt))
+
+    return rows.map((row) => ({
+      ...row,
+      remainingSeats: Number(row.remainingSeats),
+      totalSeats: Number(row.totalSeats),
+    }))
+  }
+
+  async findPublicScheduleById(scheduleId: number): Promise<PublicSchedule | null> {
+    const [row] = await this.db
+      .select({
+        scheduleId: schedules.id,
+        type: screenings.type,
+        screeningId: schedules.screeningId,
+        title: screenings.title,
+        thumbnailFilename: screeningThumbnail,
+        durationMin: screenings.durationMin,
+        screenName: screens.name,
+        startsAt: schedules.startsAt,
+        endsAt: schedules.endsAt,
+        remainingSeats: remainingSeats(new Date()),
+        totalSeats: screens.totalSeats,
+      })
+      .from(schedules)
+      .innerJoin(screenings, eq(screenings.id, schedules.screeningId))
+      .innerJoin(screens, eq(screens.id, schedules.screenId))
+      .where(and(eq(schedules.id, scheduleId), eq(schedules.isPublic, true)))
+
+    if (!row) return null
+    const isMovie = row.type === 'movie'
+    return {
+      scheduleId: row.scheduleId,
+      type: row.type,
+      movieId: isMovie ? row.screeningId : null,
+      movieTitle: isMovie ? row.title : null,
+      stageId: isMovie ? null : row.screeningId,
+      stageTitle: isMovie ? null : row.title,
+      thumbnailFilename: row.thumbnailFilename,
+      durationMin: row.durationMin,
+      screenName: row.screenName,
+      startsAt: row.startsAt,
+      endsAt: row.endsAt,
+      remainingSeats: Number(row.remainingSeats),
+      totalSeats: Number(row.totalSeats),
+    }
+  }
+}

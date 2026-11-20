@@ -2,58 +2,59 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "front-web run",
+      "name": "user dev",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run dev",
-      "cwd": "${workspaceFolder}\\front-web"
+      "cwd": "${workspaceFolder}\\apps\\user"
     },
     {
-      "name": "back-api run",
+      "name": "api dev",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run dev",
-      "cwd": "${workspaceFolder}\\back-api"
+      "cwd": "${workspaceFolder}\\apps\\api"
     },
     {
-      "name": "staff-app run",
+      "name": "staff dev",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run dev",
-      "cwd": "${workspaceFolder}\\staff-app"
+      "cwd": "${workspaceFolder}\\apps\\staff"
     },
     {
       "name": "db:setup",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm.cmd run db:setup",
-      "cwd": "${workspaceFolder}\\back-api"
+      "cwd": "${workspaceFolder}\\apps\\api"
     },
     {
-      "name": "db:reset",
+      "name": "db:migrations:local",
       "type": "node-terminal",
       "request": "launch",
-      "command": "npm.cmd run db:reset",
-      "cwd": "${workspaceFolder}\\back-api"
+      "command": "npm.cmd run db:migrations:local",
+      "cwd": "${workspaceFolder}\\apps\\api"
     },
     {
-      "name": "image-server run",
+      "name": "images:local",
       "type": "node-terminal",
       "request": "launch",
-      "command": "node server.js",
-      "cwd": "${workspaceFolder}\\image-server"
+      "command": "npm.cmd run images:local",
+      "cwd": "${workspaceFolder}\\apps\\api"
+    },
+    {
+      "name": "schedules:local",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm.cmd run schedules:local",
+      "cwd": "${workspaceFolder}\\apps\\api"
     }
   ],
   "compounds": [
     {
       "name": "all dev",
-      "configurations": [
-        "db:setup",
-        "back-api run",
-        "front-web run",
-        "staff-app run",
-        "image-server run"
-      ]
+      "configurations": ["api dev", "user dev", "staff dev"]
     }
   ]
 }

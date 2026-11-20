@@ -26,6 +26,18 @@ function allowedOrigins(env: Env | undefined): string[] {
     .filter(Boolean)
 }
 
+function matchesOrigin(pattern: string, origin: string): boolean {
+  if (pattern === '*') return true
+  if (!pattern.includes('*')) return pattern === origin
+
+  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replaceAll('*', '[^.]+')
+  return new RegExp(`^${escaped}$`).test(origin)
+}
+
+function isAllowedOrigin(env: Env | undefined, origin: string): boolean {
+  return allowedOrigins(env).some((pattern) => matchesOrigin(pattern, origin))
+}
+
 export function createApp() {
   const app = new Hono<AppEnv>()
   // Legacy API: keep this prefix stable for the existing frontend.
@@ -42,9 +54,7 @@ export function createApp() {
     '/api/*',
     cors({
       origin: (origin, c) => {
-        const origins = allowedOrigins(c.env)
-        if (origins.includes(origin)) return origin
-        if (origins.includes('*')) return origin
+        if (isAllowedOrigin(c.env, origin)) return origin
         return null
       },
       credentials: true,
@@ -56,7 +66,7 @@ export function createApp() {
   app.use(
     '/api/*',
     csrf({
-      origin: (origin, c) => allowedOrigins(c.env).includes(origin),
+      origin: (origin, c) => isAllowedOrigin(c.env, origin),
     }),
   )
   app.use('/api/*', requestIdMiddleware)

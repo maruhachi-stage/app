@@ -44,7 +44,7 @@ npm run build
 
 ```bash
 npm run build
-npx wrangler pages deploy build/client --project-name maruhachi-stage --branch main
+npx wrangler pages deploy build/client --project-name maruhachi-stage --branch main --config wrangler.toml
 ```
 
 - `wrangler.toml` の `pages_build_output_dir` は `build/client`

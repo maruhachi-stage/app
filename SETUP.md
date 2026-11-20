@@ -84,7 +84,7 @@ npm.cmd run dev
 - OpenAPI JSON: `http://localhost:3080/api/openapi.json`
 - スケジュール生成（Cron）の手動実行: `npm.cmd run schedules:local`（別ターミナルで実行）
 
-ローカルでは `wrangler dev` が `wrangler.jsonc` の `[vars]` と `.dev.vars` を読み込みます。`wrangler.jsonc` の `[vars]` は本番値なので、ローカル専用の値は `.dev.vars` にだけ書きます（`.dev.vars.example` をコピーして作成）。画像もローカル R2 から配信されるため、API 以外に起動するプロセスはありません。
+ローカルでは `wrangler dev` がローカル用の `wrangler.jsonc` の binding と `.dev.vars` を読み込みます。本番・開発・プレビューの値はActionsで生成するため、ローカル専用の値は `.dev.vars` にだけ書きます（`.dev.vars.example` をコピーして作成）。画像もローカル R2 から配信されるため、API 以外に起動するプロセスはありません。
 
 上映スケジュールはマスタではなく実行時生成のデータなので、初回は次のコマンドで生成します（未実行だと一覧が空に見えます）。本番では Cron Triggers が毎日 0:00 JST に同じ処理を実行します。
 
@@ -128,7 +128,7 @@ npx wrangler login
 
 # D1
 npx wrangler d1 create maruhachi-stage-db
-# 表示された database_id を wrangler.jsonc の d1_databases[0].database_id に設定する
+# 表示された database_id は wrangler.jsonc へ書かず、GitHub Variablesへ登録する
 
 # R2（非公開バケット）
 npx wrangler r2 bucket create maruhachi-stage-images
@@ -159,13 +159,13 @@ npx wrangler d1 execute maruhachi-stage-db --remote --file=<出力したSQLフ�
 
 ### 5. 環境変数とシークレット
 
-`wrangler.jsonc` の `[vars]` は **本番値**です。ローカル開発用の値は `.dev.vars` にだけ書いてください（`.dev.vars.example` をコピー）。
+本番・開発・プレビューの値はリポジトリ内の `wrangler.jsonc` や `wrangler.toml` に置きません。GitHub Actions の Variables / Secrets から実行時に Wrangler 設定を生成します。ローカル開発用の値は `.dev.vars` にだけ書いてください（`.dev.vars.example` をコピー）。
 
 | 変数 | 本番の例 | 用途 |
 | --- | --- | --- |
 | `ENVIRONMENT` | `production` | セッション Cookie の `Secure` 判定 |
-| `CORS_ORIGIN` | `https://maruhachi-stage.pages.dev,https://maruhachi-stage-staff.pages.dev` | CORS 許可オリジン |
-| `RESEND_FROM_EMAIL` | `no-reply@example.jp` | 送信元 |
+| `CORS_ORIGIN` | `https://<公開サイト>.pages.dev,https://<管理画面>.pages.dev` | ActionsがPages名から生成 |
+| `RESEND_FROM_EMAIL` | `no-reply@example.jp` | Resendで認証済みの送信元 |
 
 画像 URL は `/images/<ファイル名>` の相対パスで返すため、画像用のオリジン設定はありません。予約メールのリンクもリクエスト元のオリジンから組み立てます。
 
@@ -205,9 +205,23 @@ Cloudflare Access は50人まで無料で利用できます。画面操作は [A
 
 Access のログイン画面と、サイト内の利用者向けログインは別物です。Access はサイトを開ける人を制限し、サイト内ログインは予約機能を使うアカウントを区別します。
 
-### 8. GitHub Actions で main からデプロイ
+### 8. GitHub Actions でデプロイ
 
-`.github/workflows/deploy.yml` が `main` への push と手動実行で動作します。GitHub の **Settings → Environments → production** に次の Secrets を登録してください。
+`.github/workflows/deploy.yml` が `main` / `develop` への push と手動実行で動作します。Pull Request は `.github/workflows/deploy-preview.yml` が変更されたアプリだけをプレビューへデプロイします。GitHub の **Settings → Environments** に `production`・`development`・`preview` を作成してください。
+
+各Environmentの Variables:
+| Variable | 用途 |
+| --- | --- |
+| `API_SERVICE_NAME` | production / development のAPI Worker名 |
+| `PREVIEW_API_SERVICE_NAME` | preview のAPI Worker名 |
+| `USER_PAGES_PROJECT` | 公開サイトのPagesプロジェクト名 |
+| `STAFF_PAGES_PROJECT` | 管理画面のPagesプロジェクト名 |
+| `D1_DATABASE_NAME` | 環境ごとのD1名 |
+| `D1_DATABASE_ID` | 環境ごとのD1 ID |
+| `R2_BUCKET_NAME` | 全環境で共有するR2バケット名 |
+| `RESEND_FROM_EMAIL` | Resendで認証済みの送信元 |
+
+各Environmentの Secrets:
 
 | Secret | 用途 |
 | --- | --- |
@@ -217,7 +231,7 @@ Access のログイン画面と、サイト内の利用者向けログインは�
 
 Cloudflare API Token はアカウント単位の最小権限で作成します。`RESEND_API_KEY` はコードやロックファイルに保存しません。
 
-`main` は公開用ブランチとして保護し、PR を経由してのみ更新します。デプロイでは API Worker、D1 migration/seed、Resend secret、公開サイト、管理画面の順に実行します。
+`main` は公開用、`develop` は開発用として保護し、PR を経由してのみ更新します。デプロイでは変更された API Worker、D1 migration/seed、Resend secret、公開サイト、管理画面だけを実行します。`wrangler.generated.jsonc` / `wrangler.generated.toml` はActions実行時に生成され、Gitには保存しません。
 
 ### 9. 旧手順のデプロイ
 
@@ -228,11 +242,11 @@ npm.cmd run deploy
 
 # user
 cd ../user
-npx wrangler pages deploy build/client --project-name maruhachi-stage --branch main
+npx wrangler pages deploy build/client --project-name maruhachi-stage --branch main --config wrangler.toml
 
 # staff
 cd ../staff
-npx wrangler pages deploy build/client --project-name maruhachi-stage-staff --branch main
+npx wrangler pages deploy build/client --project-name maruhachi-stage-staff --branch main --config wrangler.toml
 ```
 
 Pages Functions は `API` サービスバインディングで Worker を直接呼びます。API Worker の `workers.dev` を公開する必要はありません。セッション Cookie は Pages の同一オリジンで `SameSite=Strict` とし、画像も同じ Pages のオリジンから配信されます。

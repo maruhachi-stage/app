@@ -62,7 +62,7 @@ DI → Application / Infrastructure
 - 必要なdirectoryだけ作る。
 - 1fileに1つの責務を持たせる。
 - 循環依存を作らない。
-- ローカルと本番で実装を分けない。環境差分は`wrangler.jsonc`の`[vars]`（本番値）と`.dev.vars`（ローカルのみ）で表現し、コードに`localhost`や`NODE_ENV`による分岐を書かない。
+- ローカルと本番で実装を分けない。環境差分は GitHub Actions の Variables / Secrets から実行時に生成する Wrangler 設定と、`.dev.vars`（ローカルのみ）で表現し、コードに`localhost`や`NODE_ENV`による分岐を書かない。
 
 ## 各層のルール
 

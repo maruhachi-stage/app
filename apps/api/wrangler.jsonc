@@ -8,31 +8,24 @@
   "observability": {
     "enabled": true,
   },
-  // ローカル開発時の待ち受けポート。user / staff の Vite proxy と SETUP.md の
-  // 記述に合わせるため、`npm run dev` と `npm run dev:scheduled` もここで指定し、3080 を使う。
   "dev": {
     "port": 3080,
-  },
-  "vars": {
-    "ENVIRONMENT": "production",
-    "CORS_ORIGIN": "https://maruhachi-stage.pages.dev,https://maruhachi-stage-staff.pages.dev",
-    "RESEND_FROM_EMAIL": "no-reply@maruhachi-stage.example",
   },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "maruhachi-stage-db",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "database_name": "local-database",
+      "database_id": "00000000-0000-0000-0000-000000000000",
       "migrations_dir": "d1/migrations",
     },
   ],
   "r2_buckets": [
     {
       "binding": "IMAGES",
-      "bucket_name": "maruhachi-stage-images",
+      "bucket_name": "local-images",
     },
   ],
   "triggers": {
-    "crons": ["0 15 * * *"],
+    "crons": [],
   },
 }

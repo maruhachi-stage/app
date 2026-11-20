@@ -41,7 +41,7 @@ Cloudflare Pages へ **SPA として** 静的配信します（`react-router.con
 
 ```bash
 npm run build
-npx wrangler pages deploy build/client --project-name maruhachi-stage-staff --branch main
+npx wrangler pages deploy build/client --project-name maruhachi-stage-staff --branch main --config wrangler.toml
 ```
 
 - `wrangler.toml` の `pages_build_output_dir` は `build/client`

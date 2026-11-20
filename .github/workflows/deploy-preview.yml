@@ -42,7 +42,6 @@ jobs:
 
       - name: デプロイ設定を生成
         env:
-          CONFIG_TARGETS: user,staff
           PAGES_BRANCH: pr-${{ github.event.pull_request.number }}
           USER_PAGES_PROJECT: ${{ vars.USER_PAGES_PROJECT }}
           STAFF_PAGES_PROJECT: ${{ vars.STAFF_PAGES_PROJECT }}
@@ -50,15 +49,19 @@ jobs:
         run: node scripts/prepare-wrangler.mjs
 
       - name: 公開サイトをビルド
-        if: steps.changed.outputs.user == 'true'
+        if: steps.changed.outputs.user == 'true' && env.CLOUDFLARE_API_TOKEN != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npm run build --workspace apps/user
 
       - name: 管理画面をビルド
-        if: steps.changed.outputs.staff == 'true'
+        if: steps.changed.outputs.staff == 'true' && env.CLOUDFLARE_API_TOKEN != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npm run build --workspace apps/staff
 
       - name: 公開サイトプレビューをデプロイ
-        if: steps.changed.outputs.user == 'true'
+        if: steps.changed.outputs.user == 'true' && env.CLOUDFLARE_API_TOKEN != ''
         working-directory: apps/user
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -66,7 +69,7 @@ jobs:
         run: npx wrangler pages deploy build/client --project-name "${{ vars.USER_PAGES_PROJECT }}" --branch "pr-${{ github.event.pull_request.number }}" --config wrangler.generated.toml
 
       - name: 管理画面プレビューをデプロイ
-        if: steps.changed.outputs.staff == 'true'
+        if: steps.changed.outputs.staff == 'true' && env.CLOUDFLARE_API_TOKEN != ''
         working-directory: apps/staff
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -3,17 +3,9 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 
-const required = (name) => {
-  const value = process.env[name]?.trim();
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-  return value;
-};
-
 const optional = (name) => process.env[name]?.trim() || undefined;
 
-const pagesBranch = required("PAGES_BRANCH");
+const pagesBranch = optional("PAGES_BRANCH") ?? "main";
 const isProduction = pagesBranch === "main";
 const appEnvironment = isProduction ? "production" : "development";
 const targets = new Set(
@@ -34,7 +26,9 @@ const userOutputPath = resolve(
 const staffOutputPath = resolve(
   optional("STAFF_WRANGLER_OUTPUT") ?? "apps/staff/wrangler.generated.toml",
 );
-const apiServiceName = required("API_SERVICE_NAME");
+const apiServiceName =
+  optional("API_SERVICE_NAME") ??
+  `maruhachi-stage-api${isProduction ? "" : "-dev"}`;
 
 const pagesOrigin = (project) =>
   isProduction
@@ -42,9 +36,13 @@ const pagesOrigin = (project) =>
     : `https://*.${project}.pages.dev,https://${project}.pages.dev`;
 
 const userPagesProject =
-  needsUser || needsApi ? required("USER_PAGES_PROJECT") : undefined;
+  needsUser || needsApi
+    ? (optional("USER_PAGES_PROJECT") ?? "maruhachi-stage")
+    : undefined;
 const staffPagesProject =
-  needsStaff || needsApi ? required("STAFF_PAGES_PROJECT") : undefined;
+  needsStaff || needsApi
+    ? (optional("STAFF_PAGES_PROJECT") ?? "maruhachi-stage-staff")
+    : undefined;
 const corsOrigin = needsApi
   ? [pagesOrigin(userPagesProject), pagesOrigin(staffPagesProject)].join(",")
   : undefined;
@@ -62,20 +60,23 @@ const wranglerConfig = needsApi
       vars: {
         ENVIRONMENT: optional("APP_ENVIRONMENT") ?? appEnvironment,
         CORS_ORIGIN: corsOrigin,
-        RESEND_FROM_EMAIL: required("RESEND_FROM_EMAIL"),
+        RESEND_FROM_EMAIL:
+          optional("RESEND_FROM_EMAIL") ?? "no-reply@maruhachi-stage.example",
       },
       d1_databases: [
         {
           binding: "DB",
-          database_name: required("D1_DATABASE_NAME"),
-          database_id: required("D1_DATABASE_ID"),
+          database_name: optional("D1_DATABASE_NAME") ?? "maruhachi-stage-db",
+          database_id:
+            optional("D1_DATABASE_ID") ??
+            "00000000-0000-0000-0000-000000000000",
           migrations_dir: "d1/migrations",
         },
       ],
       r2_buckets: [
         {
           binding: "IMAGES",
-          bucket_name: required("R2_BUCKET_NAME"),
+          bucket_name: optional("R2_BUCKET_NAME") ?? "maruhachi-stage-images",
         },
       ],
       triggers: {

@@ -2,3 +2,4 @@ node_modules
 build
 dist
 .react-router
+wrangler.generated.toml

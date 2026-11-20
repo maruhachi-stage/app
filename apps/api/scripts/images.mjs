@@ -38,7 +38,7 @@ const CONTENT_TYPES = {
 
 const root = path.resolve(import.meta.dirname, '..')
 const imageDir = path.resolve(root, process.env.IMAGE_DIR ?? 'assets/images')
-const bucket = process.env.R2_BUCKET_NAME ?? 'maruhachi-stage-images'
+const bucket = process.env.R2_BUCKET_NAME
 const accountId = process.env.R2_ACCOUNT_ID
 const concurrency = Number(process.env.CONCURRENCY ?? 16)
 const cacheControl = 'public, max-age=31536000, immutable'
@@ -71,7 +71,7 @@ function listLocalKeys(dir = imageDir, prefix = '') {
 }
 
 function requireCredentials() {
-  if (!accountId || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY) {
+  if (!accountId || !bucket || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY) {
     console.error(
       '[images] R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_BUCKET_NAME を設定してください',
     )

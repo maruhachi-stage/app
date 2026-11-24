@@ -50,16 +50,24 @@ const pagesOrigin = (project) =>
   isProduction
     ? `https://${project}.pages.dev`
     : `https://*.${project}.pages.dev,https://${project}.pages.dev`;
+const developerOrigins = ["http://localhost:3030", "http://localhost:3040"];
 
 const userPagesProject =
   needsUser || needsApi ? required("USER_PAGES_PROJECT") : undefined;
 const staffPagesProject =
   needsStaff || needsApi ? required("STAFF_PAGES_PROJECT") : undefined;
 const corsOrigin = needsApi
-  ? [pagesOrigin(userPagesProject), pagesOrigin(staffPagesProject)].join(",")
+  ? [
+      pagesOrigin(userPagesProject),
+      pagesOrigin(staffPagesProject),
+      ...developerOrigins,
+    ].join(",")
   : undefined;
 
+// Every environment gets a public workers.dev URL so the API can be tested
+// directly. The URLs are placed behind Cloudflare Access (see SETUP.md).
 const apiBindings = {
+  workers_dev: true,
   vars: {
     ENVIRONMENT: environment,
     CORS_ORIGIN: corsOrigin,

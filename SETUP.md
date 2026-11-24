@@ -192,14 +192,15 @@ npm.cmd run images:push
 
 ### 7. Cloudflare Access で限定公開
 
-公開サイトと管理画面は Cloudflare Pages の無料ドメインを使い、Cloudflare Access で許可した人だけに公開します。API Worker は `workers_dev = false` のままにするため、ブラウザからは Pages の `/api/*` だけを見せます。
+公開サイトと管理画面は Cloudflare Pages の無料ドメインを使い、Cloudflare Access で許可した人だけに公開します。API Worker も `workers_dev = true` で URL を発行しますが、同じ Access アプリの内側に置いて直接テストできるようにします。
 
 1. Cloudflare ダッシュボードで **Zero Trust → Access controls → Applications** を開く
 2. 公開サイト用の self-hosted アプリを作り、ホストを `maruhachi-stage.pages.dev` にする
 3. 管理画面用にもう1つアプリを作り、ホストを `maruhachi-stage-staff.pages.dev` にする
-4. それぞれの Allow ポリシーに、アクセスを許可する学生のメールアドレスまたは所属グループだけを登録する
-5. **Require Access protection** を有効にし、未設定のアプリやホストを既定で遮断する
-6. 公開サイトと管理画面を別々のアプリにする。1つのアプリへパスを共有させない
+4. API Worker 用にもアプリを作り、ホストを `maruhachi-stage-api.<アカウントのサブドメイン>.workers.dev` と `maruhachi-stage-api-develop.<アカウントのサブドメイン>.workers.dev` にする（`workers.dev` URL はデプロイ後にログで確認できる）
+5. それぞれの Allow ポリシーに、アクセスを許可する学生のメールアドレスまたは所属グループだけを登録する
+6. **Require Access protection** を有効にし、未設定のアプリやホストを既定で遮断する
+7. 公開サイトと管理画面を別々のアプリにする。1つのアプリへパスを共有させない
 
 Cloudflare Access は50人まで無料で利用できます。画面操作は [Access の self-hosted application 手順](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/self-hosted-public-app/) を参照してください。
 
@@ -236,7 +237,7 @@ Cloudflare API Token はアカウント単位の最小権限で作成します�
 
 `main` は production、`develop` は development として保護し、PR を経由してのみ更新します。デプロイ対象は変更されたディレクトリに従います。
 
-- `apps/api` の変更は API Worker を更新します。Worker は `maruhachi-stage-api` の1プロジェクトで、production はトップレベル、development は Wrangler environment `develop`（Worker 名 `maruhachi-stage-api-develop`）にデプロイします。preview は development の Worker を参照し、専用 Worker は作りません。D1 migration/seed、Resend secret も同じ環境へ適用します。
+- `apps/api` の変更は API Worker を更新します。Worker は `maruhachi-stage-api` の1プロジェクトで、production はトップレベル、development は Wrangler environment `develop`（Worker 名 `maruhachi-stage-api-develop`）にデプロイします。両環境とも `workers_dev = true` で `*.workers.dev` URL を発行し、Cloudflare Access の内側で直接テストできるようにします。Pages からは引き続き `/api/*` のサービスバインディング経由で利用します。preview は development の Worker を参照し、専用 Worker は作りません。D1 migration/seed、Resend secret も同じ環境へ適用します。
 - `apps/user` の変更は公開サイトだけを Pages の環境にデプロイします。
 - `apps/staff` の変更は管理画面だけを Pages の環境にデプロイします。
 - `package-lock.json`、`scripts/`、Workflow などの共通ファイルの変更は、影響する3アプリすべてを検証し、Pages と API の両方をデプロイ対象にします。
@@ -260,7 +261,7 @@ cd ../staff
 npx wrangler pages deploy build/client --project-name maruhachi-stage-staff --branch main --config wrangler.toml
 ```
 
-Pages Functions は `API` サービスバインディングで Worker を直接呼びます。API Worker の `workers.dev` を公開する必要はありません。セッション Cookie は Pages の同一オリジンで `SameSite=Strict` とし、画像も同じ Pages のオリジンから配信されます。
+Pages Functions は `API` サービスバインディングで Worker を直接呼びます。API Worker の `workers.dev` URL は Access の内側で直接テストするために使い、通常の画面からは Pages の `/api/*` を通ります。セッション Cookie は Pages の同一オリジンで `SameSite=Strict` とし、画像も同じ Pages のオリジンから配信されます。
 
 ### 8. スモークテスト
 

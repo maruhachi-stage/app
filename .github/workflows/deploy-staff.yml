@@ -1,0 +1,88 @@
+name: Deploy Staff
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Deploy environment
+        required: true
+        default: production
+        type: choice
+        options:
+          - production
+          - development
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-staff-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.event_name == 'workflow_dispatch' && inputs.environment || github.ref_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  deploy:
+    name: Deploy staff app to Cloudflare Pages
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'pull_request' && 'preview' || (github.event_name == 'workflow_dispatch' && inputs.environment || (github.ref_name == 'main' && 'production' || 'development')) }}
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Node.jsをセットアップ
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: 依存関係をインストール
+        run: npm ci
+
+      - name: 変更アプリを判定
+        id: changed
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          ALL_CHANGED: ${{ github.event_name == 'workflow_dispatch' }}
+        run: node scripts/detect-changed-apps.mjs
+
+      - name: デプロイ設定を生成
+        if: steps.changed.outputs.staff == 'true'
+        env:
+          DEPLOY_ENVIRONMENT: ${{ github.event_name == 'pull_request' && 'preview' || (github.event_name == 'workflow_dispatch' && inputs.environment || (github.ref_name == 'main' && 'production' || 'development')) }}
+          CONFIG_TARGETS: staff
+          STAFF_PAGES_PROJECT: ${{ vars.STAFF_PAGES_PROJECT }}
+          API_SERVICE_NAME: ${{ github.event_name == 'pull_request' && vars.PREVIEW_API_SERVICE_NAME || vars.API_SERVICE_NAME }}
+        run: node scripts/prepare-wrangler.mjs
+
+      - name: 管理画面をビルド
+        if: steps.changed.outputs.staff == 'true'
+        run: npm run build --workspace apps/staff
+
+      - name: 管理画面をデプロイ
+        if: steps.changed.outputs.staff == 'true'
+        working-directory: apps/staff
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DEPLOY_ENVIRONMENT: ${{ github.event_name == 'pull_request' && 'preview' || (github.event_name == 'workflow_dispatch' && inputs.environment || (github.ref_name == 'main' && 'production' || 'development')) }}
+        run: |
+          PAGES_BRANCH=main
+          if [ "$DEPLOY_ENVIRONMENT" = "preview" ]; then
+            PAGES_BRANCH="pr-${{ github.event.pull_request.number }}"
+          elif [ "$DEPLOY_ENVIRONMENT" = "development" ]; then
+            PAGES_BRANCH=develop
+          fi
+          npx wrangler pages deploy build/client --project-name "${{ vars.STAFF_PAGES_PROJECT }}" --branch "$PAGES_BRANCH" --config wrangler.generated.toml

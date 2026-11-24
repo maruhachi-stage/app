@@ -17,7 +17,7 @@ npm run dev
 - 画像もローカルR2から配信されるため、別プロセスの起動は不要です（API と同じコードが本番と同じように動きます）
 - Cronによるスケジュール生成は手動実行できます: `curl http://localhost:3080/cdn-cgi/local/scheduled`
 
-変数は本番値が `wrangler.jsonc` の `[vars]`、ローカル差分だけを `.dev.vars`（`.dev.vars.example` をコピー）で管理します。どちらもリポジトリへは含めません。
+変数は GitHub Actions の Variables / Secrets からデプロイ実行時に組み立てます。ローカル差分だけを `.dev.vars`（`.dev.vars.example` をコピー）で管理し、リポジトリへは含めません。
 
 ## Database scripts
 
@@ -59,7 +59,7 @@ npm run test:integration  # 結合テストのみ
 npm run deploy
 ```
 
-事前にD1 / R2の作成、`wrangler secret put RESEND_API_KEY`、`wrangler.jsonc` の `database_id` と本番 `[vars]` の設定が必要です。手順の全体はリポジトリ直下の `SETUP.md` を参照してください。
+本番デプロイは GitHub Actions が D1 / R2 / Pages / Worker の値を実行時に生成します。手順の全体はリポジトリ直下の `SETUP.md` を参照してください。
 
 ## API docs
 

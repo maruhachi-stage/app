@@ -1,8 +1,13 @@
 name: CI
 
 on:
+  push:
+    branches:
+      - main
+      - develop
   pull_request:
     branches:
+      - main
       - develop
   workflow_dispatch:
 
@@ -30,44 +35,17 @@ jobs:
 
       - name: 変更アプリを判定
         id: filter
-        shell: bash
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          ALL_CHANGED: ${{ github.event_name == 'workflow_dispatch' }}
+        run: node scripts/detect-changed-apps.mjs
+
+      - name: 変更判定を確認
         run: |
-          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
-            echo "user=true" >> "$GITHUB_OUTPUT"
-            echo "staff=true" >> "$GITHUB_OUTPUT"
-            echo "api=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          files="$(git diff --name-only \
-            "${{ github.event.pull_request.base.sha }}" \
-            "${{ github.event.pull_request.head.sha }}")"
-
-          shared=false
-          while IFS= read -r file; do
-            case "$file" in
-              .github/*|.editorconfig|AGENTS.md|README.md|SETUP.md|package.json|package-lock.json)
-                shared=true
-                ;;
-            esac
-          done <<< "$files"
-
-          for app in user staff api; do
-            changed=false
-            while IFS= read -r file; do
-              case "$app:$file" in
-                user:apps/user/*) changed=true ;;
-                staff:apps/staff/*) changed=true ;;
-                api:apps/api/*) changed=true ;;
-              esac
-            done <<< "$files"
-
-            if [ "$shared" = "true" ]; then
-              changed=true
-            fi
-
-            echo "$app=$changed" >> "$GITHUB_OUTPUT"
-          done
+          echo "user=${{ steps.filter.outputs.user }}"
+          echo "staff=${{ steps.filter.outputs.staff }}"
+          echo "api=${{ steps.filter.outputs.api }}"
 
   frontend:
     name: Web
@@ -87,7 +65,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: 依存関係をインストール
-        run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Format
         run: npm run format:check --workspace apps/user
@@ -122,7 +100,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: 依存関係をインストール
-        run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Format
         run: npm run format:check --workspace apps/staff
@@ -157,7 +135,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: 依存関係をインストール
-        run: npm install --package-lock=false --ignore-scripts --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Format
         run: npm run format:check --workspace apps/api

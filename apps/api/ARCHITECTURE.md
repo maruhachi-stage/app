@@ -63,7 +63,7 @@ DI → Application / Infrastructure
 - 1fileに1つの責務を持たせる。
 - 循環依存を作らない。
 - ローカルと本番で実装を分けない。環境差分は GitHub Actions の Variables / Secrets から実行時に生成する Wrangler 設定と、`.dev.vars`（ローカルのみ）で表現し、コードに`localhost`や`NODE_ENV`による分岐を書かない。
-- API Worker は1プロジェクト（`maruhachi-stage-api`）にまとめ、production はトップレベル、development は Wrangler environment `develop` として設定を生成する。preview は development の Worker を参照し、専用 Worker は作らない。
+- API Worker は `maruhachi-stage-api` の1つだけに集約する。production / development の差分はデプロイ時に生成する Wrangler 設定のバインディングで表現し、コードにホスト名や環境による分岐を書かない。同じ Worker 名へデプロイするため、最後にデプロイした環境が有効になる。
 
 ## 各層のルール
 

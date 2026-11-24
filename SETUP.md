@@ -207,7 +207,7 @@ Access のログイン画面と、サイト内の利用者向けログインは�
 
 ### 8. GitHub Actions でデプロイ
 
-`.github/workflows/deploy.yml` が `main` / `develop` への push と手動実行で動作します。Pull Request は `.github/workflows/deploy-preview.yml` が変更された Pages だけをプレビューへデプロイします。GitHub の **Settings → Environments** に `production`・`development`・`preview` を作成してください。
+`.github/workflows/deploy-api.yml` / `deploy-user.yml` / `deploy-staff.yml` が、変更のあったアプリだけを `main` / `develop` への push と手動実行でデプロイします。Pull Request は `deploy-user.yml` / `deploy-staff.yml` が変更された Pages だけをプレビューへデプロイします（API はプレビューをデプロイしません）。GitHub の **Settings → Environments** に `production`・`development`・`preview` を作成してください。
 
 各Environmentの Variables:
 

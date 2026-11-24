@@ -64,6 +64,7 @@ jobs:
           DEPLOY_ENVIRONMENT: ${{ github.event_name == 'pull_request' && 'preview' || (github.event_name == 'workflow_dispatch' && inputs.environment || (github.ref_name == 'main' && 'production' || 'development')) }}
           CONFIG_TARGETS: staff
           STAFF_PAGES_PROJECT: ${{ vars.STAFF_PAGES_PROJECT }}
+          STAFF_WRANGLER_OUTPUT: apps/staff/wrangler.toml
           API_SERVICE_NAME: ${{ github.event_name == 'pull_request' && vars.PREVIEW_API_SERVICE_NAME || vars.API_SERVICE_NAME }}
         run: node scripts/prepare-wrangler.mjs
 
@@ -85,4 +86,4 @@ jobs:
           elif [ "$DEPLOY_ENVIRONMENT" = "development" ]; then
             PAGES_BRANCH=develop
           fi
-          npx wrangler pages deploy build/client --project-name "${{ vars.STAFF_PAGES_PROJECT }}" --branch "$PAGES_BRANCH" --config wrangler.generated.toml
+          npx wrangler pages deploy build/client --project-name "${{ vars.STAFF_PAGES_PROJECT }}" --branch "$PAGES_BRANCH"

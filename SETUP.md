@@ -213,16 +213,16 @@ Access のログイン画面と、サイト内の利用者向けログインは�
 
 各Environmentの Variables:
 
-| Variable                   | 用途                                                |
-| -------------------------- | --------------------------------------------------- |
-| `API_SERVICE_NAME`         | production / development のAPI Worker名             |
-| `PREVIEW_API_SERVICE_NAME` | preview の Pages が接続する既存の開発用API Worker名 |
-| `USER_PAGES_PROJECT`       | 公開サイトのPagesプロジェクト名                     |
-| `STAFF_PAGES_PROJECT`      | 管理画面のPagesプロジェクト名                       |
-| `D1_DATABASE_NAME`         | production / development ごとのD1名                 |
-| `D1_DATABASE_ID`           | production / development ごとのD1 ID                |
-| `R2_BUCKET_NAME`           | 全環境で共有するR2バケット名                        |
-| `RESEND_FROM_EMAIL`        | Resendで認証済みの送信元                            |
+| Variable                   | 用途                                              |
+| -------------------------- | ------------------------------------------------- |
+| `API_SERVICE_NAME`         | API Worker の基底名（`maruhachi-stage-api`）      |
+| `PREVIEW_API_SERVICE_NAME` | preview の Pages が接続する development Worker 名 |
+| `USER_PAGES_PROJECT`       | 公開サイトのPagesプロジェクト名                   |
+| `STAFF_PAGES_PROJECT`      | 管理画面のPagesプロジェクト名                     |
+| `D1_DATABASE_NAME`         | production / development ごとのD1名               |
+| `D1_DATABASE_ID`           | production / development ごとのD1 ID              |
+| `R2_BUCKET_NAME`           | 全環境で共有するR2バケット名                      |
+| `RESEND_FROM_EMAIL`        | Resendで認証済みの送信元                          |
 
 各Environmentの Secrets:
 
@@ -236,7 +236,7 @@ Cloudflare API Token はアカウント単位の最小権限で作成します�
 
 `main` は production、`develop` は development として保護し、PR を経由してのみ更新します。デプロイ対象は変更されたディレクトリに従います。
 
-- `apps/api` の変更は API Worker、その環境の D1 migration/seed、Resend secret を更新します。
+- `apps/api` の変更は API Worker を更新します。Worker は `maruhachi-stage-api` の1プロジェクトで、production はトップレベル、development は Wrangler environment `develop`（Worker 名 `maruhachi-stage-api-develop`）にデプロイします。preview は development の Worker を参照し、専用 Worker は作りません。D1 migration/seed、Resend secret も同じ環境へ適用します。
 - `apps/user` の変更は公開サイトだけを Pages の環境にデプロイします。
 - `apps/staff` の変更は管理画面だけを Pages の環境にデプロイします。
 - `package-lock.json`、`scripts/`、Workflow などの共通ファイルの変更は、影響する3アプリすべてを検証し、Pages と API の両方をデプロイ対象にします。

@@ -46,22 +46,15 @@ const pagesOrigin = (project) =>
   isProduction
     ? `https://${project}.pages.dev`
     : `https://*.${project}.pages.dev,https://${project}.pages.dev`;
-const developerOrigins = ["http://localhost:3030", "http://localhost:3040"];
 
 const userPagesProject =
   needsUser || needsApi ? required("USER_PAGES_PROJECT") : undefined;
 const staffPagesProject =
   needsStaff || needsApi ? required("STAFF_PAGES_PROJECT") : undefined;
 const corsOrigin = needsApi
-  ? [
-      pagesOrigin(userPagesProject),
-      pagesOrigin(staffPagesProject),
-      ...developerOrigins,
-    ].join(",")
+  ? [pagesOrigin(userPagesProject), pagesOrigin(staffPagesProject)].join(",")
   : undefined;
 
-// All environments get a public workers.dev URL so the API can be tested
-// directly. The URLs are placed behind Cloudflare Access (see SETUP.md).
 const apiBindings = {
   vars: {
     ENVIRONMENT: environment,
@@ -89,7 +82,7 @@ const apiBindings = {
 const apiCommon = {
   $schema: "node_modules/wrangler/config-schema.json",
   name: apiServiceName,
-  workers_dev: true,
+  workers_dev: false,
   main: "src/worker.ts",
   compatibility_date: optional("COMPATIBILITY_DATE") ?? "2025-11-01",
   compatibility_flags: ["nodejs_compat"],

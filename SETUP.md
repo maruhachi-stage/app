@@ -197,7 +197,7 @@ npm.cmd run images:push
 1. Cloudflare ダッシュボードで **Zero Trust → Access controls → Applications** を開く
 2. 公開サイト用の self-hosted アプリを作り、ホストを `maruhachi-stage.pages.dev` にする
 3. 管理画面用にもう1つアプリを作り、ホストを `maruhachi-stage-staff.pages.dev` にする
-4. API Worker 用にもアプリを作り、ホストを `maruhachi-stage-api.<アカウントのサブドメイン>.workers.dev` と `maruhachi-stage-api-develop.<アカウントのサブドメイン>.workers.dev` にする（`workers.dev` URL はデプロイ後にログで確認できる）
+4. API Worker 用にもアプリを作り、ホストを `maruhachi-stage-api.<アカウントのサブドメイン>.workers.dev` にする（デプロイ後にログで確認できる。Worker は1つだけ）
 5. それぞれの Allow ポリシーに、アクセスを許可する学生のメールアドレスまたは所属グループだけを登録する
 6. **Require Access protection** を有効にし、未設定のアプリやホストを既定で遮断する
 7. 公開サイトと管理画面を別々のアプリにする。1つのアプリへパスを共有させない
@@ -233,11 +233,11 @@ Access のログイン画面と、サイト内の利用者向けログインは�
 | `CLOUDFLARE_ACCOUNT_ID` | 対象の Cloudflare アカウント          |
 | `RESEND_API_KEY`        | OTP と予約メールの送信                |
 
-Cloudflare API Token はアカウント単位の最小権限で作成します。`RESEND_API_KEY` はコードやロックファイルに保存しません。
+Cloudflare API Token はアカウント単位の最小権限で作成します。`RESEND_API_KEY` はコードやロックファイルに保存しません。API Worker は1つだけなので、production と development は同じ `*.workers.dev` URL を共有します。最後にデプロイした環境の D1 / R2 がバインドされ、両方を同時に並べて見ることはできません。
 
 `main` は production、`develop` は development として保護し、PR を経由してのみ更新します。デプロイ対象は変更されたディレクトリに従います。
 
-- `apps/api` の変更は API Worker を更新します。Worker は `maruhachi-stage-api` の1プロジェクトで、production はトップレベル、development は Wrangler environment `develop`（Worker 名 `maruhachi-stage-api-develop`）にデプロイします。両環境とも `workers_dev = true` で `*.workers.dev` URL を発行し、Cloudflare Access の内側で直接テストできるようにします。Pages からは引き続き `/api/*` のサービスバインディング経由で利用します。preview は development の Worker を参照し、専用 Worker は作りません。D1 migration/seed、Resend secret も同じ環境へ適用します。
+- `apps/api` の変更は API Worker を更新します。Worker は `maruhachi-stage-api` の**1つだけ**で、Wrangler environment は使いません。production / development のどちらをデプロイしても同じ Worker 名にデプロイされ、その環境の D1 / R2 / vars / cron が設定として入ります（最後にデプロイした環境が有効）。`workers_dev = true` で `*.workers.dev` URL を発行し、Cloudflare Access の内側で直接テストできるようにします。Pages からは `/api/*` のサービスバインディング経由で利用します。preview と development は同じ Worker を参照します。D1 migration/seed、Resend secret もデプロイした環境へ適用します。
 - `apps/user` の変更は公開サイトだけを Pages の環境にデプロイします。
 - `apps/staff` の変更は管理画面だけを Pages の環境にデプロイします。
 - `package-lock.json`、`scripts/`、Workflow などの共通ファイルの変更は、影響する3アプリすべてを検証し、Pages と API の両方をデプロイ対象にします。

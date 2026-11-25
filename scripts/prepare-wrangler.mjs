@@ -37,10 +37,6 @@ const staffOutputPath = resolve(
   optional("STAFF_WRANGLER_OUTPUT") ?? "apps/staff/wrangler.generated.toml",
 );
 const apiServiceName = required("API_SERVICE_NAME");
-// Wrangler environments deploy as `<top-level-name>-<environment-name>`.
-// The base name is shared by production (top level) and development (`develop`).
-const workerBaseName = apiServiceName.replace(/-develop$/, "");
-const DEVELOP_ENV_NAME = "develop";
 const d1DatabaseName = needsApi ? required("D1_DATABASE_NAME") : undefined;
 const d1DatabaseId = needsApi ? required("D1_DATABASE_ID") : undefined;
 const r2BucketName = needsApi ? required("R2_BUCKET_NAME") : undefined;
@@ -64,10 +60,9 @@ const corsOrigin = needsApi
     ].join(",")
   : undefined;
 
-// Every environment gets a public workers.dev URL so the API can be tested
+// All environments get a public workers.dev URL so the API can be tested
 // directly. The URLs are placed behind Cloudflare Access (see SETUP.md).
 const apiBindings = {
-  workers_dev: true,
   vars: {
     ENVIRONMENT: environment,
     CORS_ORIGIN: corsOrigin,
@@ -93,21 +88,17 @@ const apiBindings = {
 };
 const apiCommon = {
   $schema: "node_modules/wrangler/config-schema.json",
-  name: workerBaseName,
-  workers_dev: false,
+  name: apiServiceName,
+  workers_dev: true,
   main: "src/worker.ts",
   compatibility_date: optional("COMPATIBILITY_DATE") ?? "2025-11-01",
   compatibility_flags: ["nodejs_compat"],
   observability: { enabled: true },
   dev: { port: 3080 },
 };
-// production uses the top-level config; development lives under `env.develop`
-// so both environments belong to the same Worker project in Cloudflare.
-const wranglerConfig = needsApi
-  ? isProduction
-    ? { ...apiCommon, ...apiBindings }
-    : { ...apiCommon, env: { [DEVELOP_ENV_NAME]: apiBindings } }
-  : undefined;
+// A single Worker is deployed for all environments. The selected environment's
+// bindings are written to the top level, so the code never branches by host.
+const wranglerConfig = needsApi ? { ...apiCommon, ...apiBindings } : undefined;
 
 const pagesConfig = (name) =>
   `name = "${name}"\n` +
